@@ -1,0 +1,11 @@
+<mp-topbar
+  titulo="mi_plancha · CMS"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Administrador"
+  (cerrarSesion)="cerrarSesion()"
+/>
+<!-- Se añaden pestañas a medida que se construyen sus historias (ADM-02, ADM-06, ADM-07...). -->
+<nav class="admin-nav">
+  <a routerLink="ingredientes" routerLinkActive="activo">Ingredientes</a>
+</nav>
+<router-outlet />

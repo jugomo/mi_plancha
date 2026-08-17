@@ -1,0 +1,43 @@
+@if (cargando()) {
+  <p class="cargando">Cargando…</p>
+} @else {
+  <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
+    <h2>{{ esEdicion ? 'Editar ingrediente' : 'Nuevo ingrediente' }}</h2>
+
+    <label>
+      Nombre
+      <input type="text" name="nombre" [(ngModel)]="nombre" required />
+    </label>
+
+    <label>
+      Capacidad (unidades de plancha)
+      <input type="number" name="capacidadUnidad" [(ngModel)]="capacidadUnidad" required min="0" step="1" />
+    </label>
+
+    <label>
+      Tiempo de cocción (segundos)
+      <input type="number" name="tiempoCoccionSeg" [(ngModel)]="tiempoCoccionSeg" required min="0" step="1" />
+    </label>
+
+    <label>
+      Stock
+      <input type="number" name="stock" [(ngModel)]="stock" required min="0" step="1" />
+    </label>
+
+    <label>
+      Precio (€)
+      <input type="number" name="precio" [(ngModel)]="precio" required min="0" step="0.01" />
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="acciones">
+      <a routerLink="/admin/ingredientes" class="btn secundario">Cancelar</a>
+      <button type="submit" [disabled]="f.invalid || guardando()">
+        {{ guardando() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+}

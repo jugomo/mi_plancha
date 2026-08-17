@@ -1,0 +1,44 @@
+<div class="lista-header">
+  <h2>Ingredientes</h2>
+  <a routerLink="nuevo" class="btn">+ Nuevo ingrediente</a>
+</div>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Capacidad</th>
+        <th>Tiempo cocción</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (ingrediente of ingredientes(); track ingrediente.id) {
+        <tr [class.stock-bajo]="ingrediente.stock <= 5">
+          <td>{{ ingrediente.nombre }}</td>
+          <td>{{ ingrediente.capacidadUnidad }}</td>
+          <td>{{ ingrediente.tiempoCoccionSeg }} s</td>
+          <td>{{ ingrediente.precio | number: '1.2-2' }} €</td>
+          <td>{{ ingrediente.stock }}</td>
+          <td class="acciones">
+            <a [routerLink]="[ingrediente.id]">Editar</a>
+            <button type="button" (click)="eliminar(ingrediente)" [disabled]="borrando() === ingrediente.id">
+              {{ borrando() === ingrediente.id ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="vacio">Todavía no hay ingredientes.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

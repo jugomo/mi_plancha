@@ -22,7 +22,24 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, rolGuard(['administrador'])],
-    loadComponent: () => import('./features/admin/home/home').then((m) => m.AdminHome),
+    loadComponent: () => import('./features/admin/shell/shell').then((m) => m.AdminShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'ingredientes' },
+      {
+        path: 'ingredientes',
+        loadComponent: () => import('./features/admin/ingredientes/lista/lista').then((m) => m.Lista),
+      },
+      {
+        path: 'ingredientes/nuevo',
+        loadComponent: () =>
+          import('./features/admin/ingredientes/formulario/formulario').then((m) => m.Formulario),
+      },
+      {
+        path: 'ingredientes/:id',
+        loadComponent: () =>
+          import('./features/admin/ingredientes/formulario/formulario').then((m) => m.Formulario),
+      },
+    ],
   },
   { path: '**', redirectTo: 'login' },
 ];

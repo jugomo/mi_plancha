@@ -2,6 +2,6 @@
 // o el Firebase Emulator Suite, todavía no configurado en este proyecto.
 import { describe, it } from 'vitest';
 
-describe('AdminHome', () => {
+describe('AdminShell', () => {
   it.todo('cubrir con Firebase Emulator Suite (Auth + Firestore)');
 });

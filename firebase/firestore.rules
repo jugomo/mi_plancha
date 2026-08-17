@@ -135,9 +135,14 @@ service cloud.firestore {
     match /ingredientes/{ingredienteId} {
       allow read: if autenticado();
 
-      // CMS: alta, precio, capacidad, tiempo de cocción.
-      allow create, delete: if esRol('administrador');
-      allow update: if esRol('administrador');
+      // CMS: alta, precio, capacidad, tiempo de cocción. Ninguno puede ser negativo
+      // (criterio de aceptación de ADM-01).
+      allow create, update: if esRol('administrador')
+        && request.resource.data.capacidadUnidad >= 0
+        && request.resource.data.tiempoCoccionSeg >= 0
+        && request.resource.data.stock >= 0
+        && request.resource.data.precio >= 0;
+      allow delete: if esRol('administrador');
 
       // Descuento de stock al colocar un ingrediente en la plancha: el cocinero
       // solo puede tocar `stock`, y solo para bajarlo (nunca negativo). No hay forma

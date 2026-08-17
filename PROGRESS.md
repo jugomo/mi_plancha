@@ -24,7 +24,7 @@ _(vacío — nada a medias todavía)_
 
 - [x] GEN-01 — Iniciar sesión (pendiente de que el usuario confirme login manual en `ng serve` — solo él tiene la contraseña del admin)
 - [x] ADM-01 — Gestionar ingredientes (listado + alta + edición + baja; falta que el usuario confirme la UI en el navegador)
-- [ ] ADM-02 — Configurar la capacidad de la plancha
+- [x] ADM-02 — Configurar la capacidad de la plancha (falta confirmación del usuario en el navegador)
 - [ ] ADM-06 — Configurar el número de mesas
 - [ ] ADM-07 — Gestionar usuarios y roles
 - [ ] CAM-01 — Abrir una mesa para un cliente

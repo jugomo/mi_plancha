@@ -52,9 +52,33 @@ service cloud.firestore {
     }
 
     // ---------- config (CMS) ----------
-    match /config/{doc} {
+    // Un bloque por documento (en vez de uno genérico /config/{doc}) para poder
+    // validar cada uno con sus propias reglas de rango — un match genérico que
+    // solapara con estos se combinaría con OR y anularía la validación (las
+    // reglas de Firestore no se "sobrescriben" por especificidad).
+    match /config/plancha {
       allow read: if autenticado();
-      allow write: if esRol('administrador');
+      allow write: if esRol('administrador') && request.resource.data.capacidadTotal > 0;
+    }
+    match /config/division {
+      allow read: if autenticado();
+      allow write: if esRol('administrador')
+        && request.resource.data.umbral > 0
+        && request.resource.data.tamanoSubgrupo > 0;
+    }
+    match /config/antiInanicion {
+      allow read: if autenticado();
+      allow write: if esRol('administrador') && request.resource.data.tiempoMaximoEsperaMin > 0;
+    }
+    match /config/overflow {
+      allow read: if autenticado();
+      allow write: if esRol('administrador')
+        && request.resource.data.porcentaje >= 0
+        && request.resource.data.porcentaje <= 100;
+    }
+    match /config/mesas {
+      allow read: if autenticado();
+      allow write: if esRol('administrador') && request.resource.data.numeroDeMesas > 0;
     }
 
     // ---------- mesas ----------

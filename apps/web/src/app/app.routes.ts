@@ -39,6 +39,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/ingredientes/formulario/formulario').then((m) => m.Formulario),
       },
+      {
+        path: 'plancha',
+        loadComponent: () => import('./features/admin/plancha/plancha').then((m) => m.Plancha),
+      },
     ],
   },
   { path: '**', redirectTo: 'login' },

@@ -1,0 +1,41 @@
+{
+  "id": "03-overflow-manual",
+  "descripcion": "Con el overflow manual activado por el cocinero, el techo de capacidad (+10%) se aplica a toda la cola, no solo a pedidos forzados — a diferencia del caso 02.",
+  "input": {
+    "ahora": "2026-08-17T12:00:00Z",
+    "planchaCapacidadTotal": 100,
+    "overflowPorcentaje": 10,
+    "overflowManualActivo": true,
+    "capacidadUsadaActual": 90,
+    "tiempoMaximoEsperaMin": 15,
+    "division": { "umbral": 6, "tamanoSubgrupo": 3 },
+    "ingredientes": {
+      "filete": { "capacidadUnidad": 12, "tiempoCoccionSeg": 300 },
+      "chorizo": { "capacidadUnidad": 8, "tiempoCoccionSeg": 420 }
+    },
+    "pedidos": [
+      {
+        "id": "300",
+        "creadoEn": "2026-08-17T11:55:00Z",
+        "lineas": [
+          { "id": "L1", "ingrediente": "filete", "cantidad": 1, "estado": "pendiente" }
+        ]
+      },
+      {
+        "id": "301",
+        "creadoEn": "2026-08-17T11:56:00Z",
+        "lineas": [
+          { "id": "L2", "ingrediente": "chorizo", "cantidad": 1, "estado": "pendiente" }
+        ]
+      }
+    ]
+  },
+  "output": {
+    "sugerencia": [
+      { "pedidoId": "300", "lineaId": "L1", "ingrediente": "filete", "cantidad": 1, "usandoOverflow": true },
+      { "pedidoId": "301", "lineaId": "L2", "ingrediente": "chorizo", "cantidad": 1, "usandoOverflow": true }
+    ],
+    "capacidadUsadaResultante": 110,
+    "alertas": []
+  }
+}

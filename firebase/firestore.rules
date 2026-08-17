@@ -1,0 +1,162 @@
+// Firestore Security Rules — mi_plancha
+//
+// Ver DATA_MODEL.md para el esquema completo y ARCHITECTURE.md para por qué no hay
+// backend (Firebase plan Spark, sin Cloud Functions): estas reglas son la ÚNICA capa
+// de validación de servidor de todo el sistema. No hay Admin SDK que repare datos
+// inconsistentes ni custom claims — el rol de cada usuario vive en `usuarios/{uid}.rol`
+// y se resuelve aquí con get().
+//
+// Límite conocido y aceptado para el MVP (app interna, solo personal de confianza):
+// dentro de una misma transacción del cliente (ej. "abrir mesa" = crear cliente +
+// actualizar mesa), cada documento se valida por separado; las reglas no pueden
+// garantizar el invariante cruzado entre ambos documentos, solo que cada uno, por sí
+// mismo, hace una transición válida. La atomicidad y consistencia del par depende de
+// que el cliente (Angular/SwiftUI/Compose) use siempre `runTransaction` como se
+// describe en DATA_MODEL.md.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function rolDe(uid) {
+      return get(/databases/$(database)/documents/usuarios/$(uid)).data.rol;
+    }
+
+    function esRol(r) {
+      return autenticado() && rolDe(request.auth.uid) == r;
+    }
+
+    function soloCambianCampos(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+
+    // ---------- usuarios ----------
+    // Lectura abierta al personal autenticado (para mostrar nombres/roles en la UI).
+    // El primer administrador se da de alta manualmente en la consola de Firebase
+    // (ver ARCHITECTURE.md); a partir de ahí, solo un administrador gestiona usuarios.
+    match /usuarios/{uid} {
+      allow read: if autenticado();
+      allow create, update: if esRol('administrador');
+      allow delete: if false; // se desactiva con activo:false, nunca se borra
+    }
+
+    // ---------- config (CMS) ----------
+    match /config/{doc} {
+      allow read: if autenticado();
+      allow write: if esRol('administrador');
+    }
+
+    // ---------- mesas ----------
+    match /mesas/{numero} {
+      allow read: if autenticado();
+
+      // Alta/baja de mesas: solo administrador, a partir de config/mesas.numeroDeMesas.
+      allow create, delete: if esRol('administrador');
+
+      // Abrir mesa (libre -> ocupada) o generar cuenta / liberar (ocupada -> libre).
+      allow update: if esRol('camarero')
+        && soloCambianCampos(['estado', 'clienteId'])
+        && (
+          (resource.data.estado == 'libre' && request.resource.data.estado == 'ocupada'
+            && request.resource.data.clienteId != null)
+          || (resource.data.estado == 'ocupada' && request.resource.data.estado == 'libre'
+            && request.resource.data.clienteId == null)
+        );
+    }
+
+    // ---------- clientes ----------
+    match /clientes/{clienteId} {
+      allow read: if autenticado();
+
+      allow create: if esRol('camarero')
+        && request.resource.data.camareroId == request.auth.uid
+        && get(/databases/$(database)/documents/mesas/$(request.resource.data.mesaId)).data.estado == 'libre';
+
+      allow update: if false; // datos de apertura inmutables
+
+      allow delete: if esRol('camarero'); // generar cuenta libera al cliente
+    }
+
+    // ---------- pedidos ----------
+    match /pedidos/{pedidoId} {
+      allow read: if autenticado();
+
+      allow create: if esRol('camarero')
+        && request.resource.data.camareroId == request.auth.uid
+        && request.resource.data.cocineroId == null
+        && request.resource.data.cuentaId == null;
+
+      // Tomar pedido: exclusividad — solo si nadie lo había tomado ya.
+      allow update: if esRol('cocinero')
+        && resource.data.cocineroId == null
+        && request.resource.data.cocineroId == request.auth.uid
+        && soloCambianCampos(['cocineroId']);
+
+      // Marcarlo como facturado, al generar la cuenta de su cliente.
+      allow update: if esRol('camarero')
+        && resource.data.cuentaId == null
+        && request.resource.data.cuentaId != null
+        && soloCambianCampos(['cuentaId']);
+
+      allow delete: if false; // se conserva como historial operativo
+    }
+
+    match /pedidos/{pedidoId}/lineas/{lineaId} {
+      allow read: if autenticado();
+
+      allow create: if esRol('camarero')
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.cantidad > 0;
+
+      // Colocar en la plancha o marcar lista: solo el cocinero asignado al pedido
+      // padre, y respetando la secuencia pendiente -> en_plancha -> listo.
+      allow update: if esRol('cocinero')
+        && get(/databases/$(database)/documents/pedidos/$(pedidoId)).data.cocineroId == request.auth.uid
+        && (
+          (resource.data.estado == 'pendiente' && request.resource.data.estado == 'en_plancha')
+          || (resource.data.estado == 'en_plancha' && request.resource.data.estado == 'listo')
+        );
+
+      allow delete: if false;
+    }
+
+    // ---------- ingredientes ----------
+    match /ingredientes/{ingredienteId} {
+      allow read: if autenticado();
+
+      // CMS: alta, precio, capacidad, tiempo de cocción.
+      allow create, delete: if esRol('administrador');
+      allow update: if esRol('administrador');
+
+      // Descuento de stock al colocar un ingrediente en la plancha: el cocinero
+      // solo puede tocar `stock`, y solo para bajarlo (nunca negativo). No hay forma
+      // de atar aquí el descuento a la línea de pedido exacta que lo originó —
+      // límite de confianza aceptado (ver cabecera de este archivo).
+      allow update: if esRol('cocinero')
+        && soloCambianCampos(['stock'])
+        && request.resource.data.stock >= 0
+        && request.resource.data.stock <= resource.data.stock;
+    }
+
+    // ---------- plancha (estado operativo, no confundir con config/plancha) ----------
+    match /plancha/estado {
+      allow read: if autenticado();
+      allow write: if esRol('cocinero')
+        && soloCambianCampos(['overflowManualActivo', 'activadoPor', 'activadoEn']);
+    }
+
+    // ---------- cuentas (histórico permanente) ----------
+    match /cuentas/{cuentaId} {
+      allow read: if autenticado();
+      allow create: if esRol('camarero') && request.resource.data.camareroId == request.auth.uid;
+      allow update, delete: if false; // registro histórico inmutable
+    }
+  }
+}

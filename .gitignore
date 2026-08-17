@@ -1,0 +1,24 @@
+# Sistema
+.DS_Store
+
+# Angular (apps/web)
+apps/web/node_modules/
+apps/web/dist/
+apps/web/.angular/
+
+# Xcode (apps/ios)
+apps/ios/build/
+apps/ios/DerivedData/
+apps/ios/**/xcuserdata/
+apps/ios/*.xcuserstate
+
+# Android / Gradle (apps/android)
+apps/android/build/
+apps/android/**/build/
+apps/android/.gradle/
+apps/android/local.properties
+
+# Firebase CLI
+firebase/.firebase/
+firebase/firebase-debug.log
+firebase/.runtimeconfig.json

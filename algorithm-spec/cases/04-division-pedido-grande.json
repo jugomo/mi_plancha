@@ -1,0 +1,35 @@
+{
+  "id": "04-division-pedido-grande",
+  "descripcion": "Un pedido dividido en subgrupos: solo las líneas de su subgrupo actual son candidatas. La línea L2 (subgrupo 2) cabría por capacidad de sobra si fuera candidata, pero se excluye únicamente porque el pedido todavía va por el subgrupo 1 — distingue 'no elegible todavía' de 'no cabe'.",
+  "input": {
+    "ahora": "2026-08-17T12:00:00Z",
+    "planchaCapacidadTotal": 100,
+    "overflowPorcentaje": 10,
+    "overflowManualActivo": false,
+    "capacidadUsadaActual": 50,
+    "tiempoMaximoEsperaMin": 20,
+    "division": { "umbral": 6, "tamanoSubgrupo": 3 },
+    "ingredientes": {
+      "pinchito": { "capacidadUnidad": 6, "tiempoCoccionSeg": 240 },
+      "filete": { "capacidadUnidad": 12, "tiempoCoccionSeg": 300 }
+    },
+    "pedidos": [
+      {
+        "id": "400",
+        "creadoEn": "2026-08-17T11:50:00Z",
+        "subgrupoActual": 1,
+        "lineas": [
+          { "id": "L1", "ingrediente": "pinchito", "cantidad": 3, "estado": "pendiente", "subgrupo": 1 },
+          { "id": "L2", "ingrediente": "filete", "cantidad": 2, "estado": "pendiente", "subgrupo": 2 }
+        ]
+      }
+    ]
+  },
+  "output": {
+    "sugerencia": [
+      { "pedidoId": "400", "lineaId": "L1", "ingrediente": "pinchito", "cantidad": 3, "usandoOverflow": false }
+    ],
+    "capacidadUsadaResultante": 68,
+    "alertas": []
+  }
+}

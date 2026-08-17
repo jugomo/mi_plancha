@@ -1,0 +1,40 @@
+{
+  "id": "02-overflow-automatico",
+  "descripcion": "Un pedido forzado por anti-inanición no cabe en la capacidad base pero sí en la extendida (+10%): se coloca automáticamente usando overflow. Un pedido no forzado que llega después NO puede usar el overflow restante, aunque quede hueco extendido libre.",
+  "input": {
+    "ahora": "2026-08-17T12:00:00Z",
+    "planchaCapacidadTotal": 100,
+    "overflowPorcentaje": 10,
+    "overflowManualActivo": false,
+    "capacidadUsadaActual": 95,
+    "tiempoMaximoEsperaMin": 10,
+    "division": { "umbral": 6, "tamanoSubgrupo": 3 },
+    "ingredientes": {
+      "chorizo": { "capacidadUnidad": 8, "tiempoCoccionSeg": 420 },
+      "montadito": { "capacidadUnidad": 5, "tiempoCoccionSeg": 180 }
+    },
+    "pedidos": [
+      {
+        "id": "200",
+        "creadoEn": "2026-08-17T11:49:00Z",
+        "lineas": [
+          { "id": "L1", "ingrediente": "chorizo", "cantidad": 1, "estado": "pendiente" }
+        ]
+      },
+      {
+        "id": "201",
+        "creadoEn": "2026-08-17T11:58:00Z",
+        "lineas": [
+          { "id": "L2", "ingrediente": "montadito", "cantidad": 1, "estado": "pendiente" }
+        ]
+      }
+    ]
+  },
+  "output": {
+    "sugerencia": [
+      { "pedidoId": "200", "lineaId": "L1", "ingrediente": "chorizo", "cantidad": 1, "usandoOverflow": true }
+    ],
+    "capacidadUsadaResultante": 103,
+    "alertas": []
+  }
+}

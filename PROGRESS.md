@@ -63,6 +63,7 @@ _(vacío — nada a medias todavía)_
 - [x] Apps Web/iOS/Android registradas y configs descargadas a `apps/*`
 - [x] Primer administrador dado de alta (Auth + `usuarios/{uid}`)
 - [x] Config CMS, mesas e ingredientes de referencia sembrados (`firebase/seed.js`)
-- [ ] `apps/web` inicializado (`ng new`)
+- [x] `apps/web` inicializado (Angular CLI 22.1.4 — standalone, zone.js, Vitest, SCSS, sin SSR, prefijo `mp`)
 - [ ] `apps/ios` inicializado (proyecto Xcode)
 - [ ] `apps/android` inicializado (proyecto Gradle)
+- [ ] `@angular/fire` instalado y conectado a `mi-plancha` en `apps/web`

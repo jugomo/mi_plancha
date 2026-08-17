@@ -6,11 +6,19 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: especificación completa (`DOMAIN.md`, `ARCHITECTURE.md`, `ALGORITHM.md`, `DATA_MODEL.md`, `firebase/firestore.rules`, `algorithm-spec/`, `USER_STORIES.md`, wireframes) → **arrancando implementación**, empezando por P0.
+**Fase**: especificación completa → **implementación en curso**, infraestructura Firebase lista. Siguiente: inicializar `apps/web` (Angular) y empezar las historias P0.
 
 ## En curso ahora mismo
 
 _(vacío — nada a medias todavía)_
+
+## Datos del proyecto Firebase (referencia rápida)
+
+- Project ID: `mi-plancha` (plan Spark, región Firestore `eur3`)
+- Apps registradas: Web, iOS (`com.jugomo.miplancha`), Android (`com.jugomo.miplancha`)
+- Primer administrador: ya sembrado en `usuarios/`
+- `firebase/service-account.json` existe en local (no versionado) — necesario para volver a ejecutar `firebase/seed.js`
+- Dos apps huérfanas con bundle/package antiguo (`com.miplancha.app`) pendientes de borrar manualmente desde la consola cuando convenga (no bloquean nada)
 
 ## P0 — Núcleo operativo mínimo
 
@@ -49,8 +57,12 @@ _(vacío — nada a medias todavía)_
 
 ## Infraestructura (no son historias de usuario, pero bloquean las de arriba)
 
-- [ ] Proyecto Firebase creado (plan Spark) y `firebase init` ejecutado en `firebase/`
+- [x] Proyecto Firebase creado (plan Spark) — `mi-plancha`
+- [x] Firestore creado (región `eur3`), reglas e índices desplegados
+- [x] Authentication activado (email/contraseña)
+- [x] Apps Web/iOS/Android registradas y configs descargadas a `apps/*`
+- [x] Primer administrador dado de alta (Auth + `usuarios/{uid}`)
+- [x] Config CMS, mesas e ingredientes de referencia sembrados (`firebase/seed.js`)
 - [ ] `apps/web` inicializado (`ng new`)
 - [ ] `apps/ios` inicializado (proyecto Xcode)
 - [ ] `apps/android` inicializado (proyecto Gradle)
-- [ ] Primer administrador dado de alta manualmente en la consola de Firebase (ver `ARCHITECTURE.md`)

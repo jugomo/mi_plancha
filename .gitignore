@@ -22,3 +22,10 @@ apps/android/local.properties
 firebase/.firebase/
 firebase/firebase-debug.log
 firebase/.runtimeconfig.json
+firebase-debug.log
+
+# Credencial de administrador — NUNCA se commitea
+firebase/service-account.json
+
+# Dependencias del script de seed
+firebase/node_modules/

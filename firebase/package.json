@@ -1,0 +1,12 @@
+{
+  "name": "mi-plancha-firebase-scripts",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Scripts de administración del proyecto Firebase (seed de datos vía Admin SDK, ver DATA_MODEL.md)",
+  "scripts": {
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

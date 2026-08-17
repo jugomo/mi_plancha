@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "612370750966",
+    "project_id": "mi-plancha",
+    "storage_bucket": "mi-plancha.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612370750966:android:b0b9d30d0283aa3065fbd7",
+        "android_client_info": {
+          "package_name": "com.jugomo.miplancha"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCx-Is71TNY_qR3La61HtN0UmUga3eBtUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:612370750966:android:e4babd277a44227165fbd7",
+        "android_client_info": {
+          "package_name": "com.miplancha.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCx-Is71TNY_qR3La61HtN0UmUga3eBtUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

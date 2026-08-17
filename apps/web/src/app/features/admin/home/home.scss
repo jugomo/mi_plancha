@@ -1,0 +1,13 @@
+.placeholder {
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 0 20px;
+  text-align: center;
+  color: #56606f;
+
+  .ids {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    margin-top: 8px;
+  }
+}

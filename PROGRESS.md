@@ -22,7 +22,7 @@ _(vacío — nada a medias todavía)_
 
 ## P0 — Núcleo operativo mínimo
 
-- [ ] GEN-01 — Iniciar sesión
+- [x] GEN-01 — Iniciar sesión (pendiente de que el usuario confirme login manual en `ng serve` — solo él tiene la contraseña del admin)
 - [ ] ADM-01 — Gestionar ingredientes
 - [ ] ADM-02 — Configurar la capacidad de la plancha
 - [ ] ADM-06 — Configurar el número de mesas

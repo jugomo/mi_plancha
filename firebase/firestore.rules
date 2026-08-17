@@ -25,12 +25,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function rolDe(uid) {
-      return get(/databases/$(database)/documents/usuarios/$(uid)).data.rol;
+    function usuarioDoc(uid) {
+      return get(/databases/$(database)/documents/usuarios/$(uid)).data;
     }
 
+    // Un usuario desactivado (activo:false) no debe poder operar aunque
+    // conserve su rol — ver criterio de aceptación de ADM-07 en USER_STORIES.md.
     function esRol(r) {
-      return autenticado() && rolDe(request.auth.uid) == r;
+      return autenticado()
+        && usuarioDoc(request.auth.uid).activo == true
+        && usuarioDoc(request.auth.uid).rol == r;
     }
 
     function soloCambianCampos(campos) {

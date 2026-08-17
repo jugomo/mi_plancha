@@ -1,0 +1,10 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+<main class="placeholder">
+  <p>Próximamente: mesas en vivo, crear pedido, ver estado de pedidos, generar cuenta.</p>
+  <p class="ids">CAM-01 a CAM-06 — ver USER_STORIES.md</p>
+</main>

@@ -1,0 +1,24 @@
+<main class="login">
+  <form class="login-card" (ngSubmit)="enviar()" #f="ngForm">
+    <h1>mi_plancha</h1>
+    <p class="subtitulo">Inicia sesión</p>
+
+    <label>
+      Email
+      <input type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
+    </label>
+
+    <label>
+      Contraseña
+      <input type="password" name="password" [(ngModel)]="password" required autocomplete="current-password" />
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="f.invalid || enviando()">
+      {{ enviando() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+</main>

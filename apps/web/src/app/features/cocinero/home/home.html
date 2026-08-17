@@ -1,0 +1,10 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Cocinero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+<main class="placeholder">
+  <p>Próximamente: pedidos pendientes + sugerencia, plancha en vivo, marcar ingredientes.</p>
+  <p class="ids">COC-01 a COC-08 — ver USER_STORIES.md</p>
+</main>

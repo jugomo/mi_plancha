@@ -12,6 +12,8 @@ npm run build     # ng build — genera dist/
 npm test          # ng test — Vitest
 ```
 
-## Configuración de Firebase
+## Firebase
 
-El SDK de Firebase para esta app usa la config en [`firebase-config.js`](./firebase-config.js) (descargada del proyecto real `mi-plancha`, no es secreta — ver `../../firebase/README.md`). Pendiente de integrarla en `src/environments/` cuando se instale `@angular/fire`.
+Se usa el **SDK modular de `firebase`** directamente (paquete `firebase`), no `@angular/fire` — a fecha de esta app, `@angular/fire` todavía no publica una versión compatible con Angular 22 (su release candidate más reciente solo llega a Angular 21). La config del proyecto `mi-plancha` está en [`src/environments/environment.ts`](./src/environments/environment.ts) — no es secreta (ver `../../firebase/README.md`), la seguridad real vive en `firebase/firestore.rules`.
+
+Firestore y Auth se exponen como `InjectionToken`s en [`src/app/core/firebase.providers.ts`](./src/app/core/firebase.providers.ts) (`FIRESTORE`, `AUTH`), en vez de llamar a los getters globales del SDK desde cada componente/servicio.

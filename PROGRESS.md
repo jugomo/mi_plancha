@@ -66,4 +66,4 @@ _(vacío — nada a medias todavía)_
 - [x] `apps/web` inicializado (Angular CLI 22.1.4 — standalone, zone.js, Vitest, SCSS, sin SSR, prefijo `mp`)
 - [ ] `apps/ios` inicializado (proyecto Xcode)
 - [ ] `apps/android` inicializado (proyecto Gradle)
-- [ ] `@angular/fire` instalado y conectado a `mi-plancha` en `apps/web`
+- [x] Firebase conectado en `apps/web` (SDK modular `firebase`, no `@angular/fire` — sin soporte aún para Angular 22; Firestore/Auth expuestos como `InjectionToken`s en `src/app/core/firebase.providers.ts`)

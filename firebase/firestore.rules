@@ -86,7 +86,12 @@ service cloud.firestore {
       allow read: if autenticado();
 
       // Alta/baja de mesas: solo administrador, a partir de config/mesas.numeroDeMesas.
-      allow create, delete: if esRol('administrador');
+      // Una mesa nueva siempre nace libre; una mesa ocupada no se puede borrar
+      // (evita dejar un cliente con la mesa desaparecida bajo los pies).
+      allow create: if esRol('administrador')
+        && request.resource.data.estado == 'libre'
+        && request.resource.data.clienteId == null;
+      allow delete: if esRol('administrador') && resource.data.estado == 'libre';
 
       // Abrir mesa (libre -> ocupada) o generar cuenta / liberar (ocupada -> libre).
       allow update: if esRol('camarero')

@@ -43,6 +43,10 @@ export const routes: Routes = [
         path: 'plancha',
         loadComponent: () => import('./features/admin/plancha/plancha').then((m) => m.Plancha),
       },
+      {
+        path: 'mesas',
+        loadComponent: () => import('./features/admin/mesas/mesas').then((m) => m.Mesas),
+      },
     ],
   },
   { path: '**', redirectTo: 'login' },

@@ -1,0 +1,27 @@
+@if (cargando()) {
+  <p class="cargando">Cargando…</p>
+} @else {
+  <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
+    <h2>Mesas</h2>
+
+    <label>
+      Número de mesas
+      <input type="number" name="numeroDeMesas" [(ngModel)]="numeroDeMesas" required min="1" step="1" />
+      <span class="ayuda">
+        Se generan automáticamente mesas numeradas del 1 al {{ numeroDeMesas }}, reutilizables entre clientes.
+        Reducir el número borra las mesas sobrantes, salvo que alguna esté ocupada ahora mismo.
+      </span>
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    @if (guardado()) {
+      <p class="ok" role="status">Guardado.</p>
+    }
+
+    <button type="submit" [disabled]="f.invalid || guardando()">
+      {{ guardando() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </form>
+}

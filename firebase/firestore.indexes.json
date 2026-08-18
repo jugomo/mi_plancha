@@ -7,6 +7,14 @@
         { "fieldPath": "estado", "order": "ASCENDING" },
         { "fieldPath": "pedidoCreadoEn", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "mesas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "numero", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

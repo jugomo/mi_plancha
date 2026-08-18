@@ -1,0 +1,46 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="abrir-mesa">
+  <form class="form-card" (ngSubmit)="abrir()" #f="ngForm">
+    <h2>Abrir mesa</h2>
+
+    <label>
+      Mesa
+      <select name="mesaId" [(ngModel)]="mesaId" required>
+        <option value="" disabled>Elige una mesa libre</option>
+        @for (mesa of mesasLibres(); track mesa.id) {
+          <option [value]="mesa.id">Mesa {{ mesa.numero }}</option>
+        }
+      </select>
+      @if (mesasLibres().length === 0) {
+        <span class="ayuda">No hay mesas libres ahora mismo.</span>
+      }
+    </label>
+
+    <label>
+      Nombre del cliente
+      <input type="text" name="nombre" [(ngModel)]="nombre" required />
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="f.invalid || guardando()">
+      {{ guardando() ? 'Abriendo…' : 'Abrir mesa' }}
+    </button>
+  </form>
+
+  @if (abierta(); as a) {
+    <p class="confirmacion" role="status">Mesa {{ a.mesa }} abierta para {{ a.nombre }}.</p>
+  }
+
+  <p class="proximamente">
+    Próximamente: ver todas las mesas en vivo, crear pedidos, generar cuenta (CAM-02 a CAM-06).
+  </p>
+</main>

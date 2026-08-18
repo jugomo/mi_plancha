@@ -1,0 +1,82 @@
+.abrir-mesa {
+  max-width: 420px;
+  margin: 40px auto 0;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #d9e0e9;
+  border-radius: 10px;
+  padding: 24px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #56606f;
+  }
+
+  .ayuda {
+    font-weight: 400;
+    font-size: 0.76rem;
+  }
+
+  input,
+  select {
+    border: 1px solid #aab6c6;
+    border-radius: 7px;
+    padding: 9px 11px;
+    font-size: 0.92rem;
+    font-family: inherit;
+  }
+
+  .error {
+    margin: 0;
+    color: #c1443b;
+    font-size: 0.85rem;
+  }
+
+  button[type="submit"] {
+    border: none;
+    border-radius: 7px;
+    padding: 10px;
+    background: #2f5fa3;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.confirmacion {
+  margin: 0;
+  text-align: center;
+  color: #2f8a5b;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.proximamente {
+  text-align: center;
+  color: #56606f;
+  font-size: 0.8rem;
+}

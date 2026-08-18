@@ -12,7 +12,7 @@ export const routes: Routes = [
   {
     path: 'camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
-    loadComponent: () => import('./features/camarero/home/home').then((m) => m.CamareroHome),
+    loadComponent: () => import('./features/camarero/abrir-mesa/abrir-mesa').then((m) => m.AbrirMesa),
   },
   {
     path: 'cocinero',

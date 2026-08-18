@@ -36,7 +36,7 @@ _(vacío — nada a medias todavía)_
 - [x] COC-03 — Tomar un pedido (exclusividad ya la garantizaban las reglas; falta confirmación del usuario en el navegador)
 - [x] COC-04 — Colocar un ingrediente en la plancha (descuenta stock atómicamente; falta confirmación del usuario en el navegador)
 - [x] COC-05 — Ver la plancha en tiempo real (capacidad por tipo + temporizadores; sin overflow todavía — COC-07/ADM-05, P2; **bug real encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
-- [x] COC-06 — Marcar un ingrediente como listo (en la misma pantalla del pedido asignado; falta confirmación del usuario en el navegador)
+- [x] COC-06 — Retirar un ingrediente y confirmar su entrega en mesa (en la misma pantalla del pedido asignado; nuevo estado intermedio `pendiente_entrega` entre `en_plancha` y `listo` — ver ARCHITECTURE.md; reglas actualizadas y verificadas con custom-token real: salto directo `en_plancha`→`listo` rechazado, secuencia completa aceptada; falta confirmación del usuario en el navegador)
 
 ## P1 — El diferenciador del producto
 

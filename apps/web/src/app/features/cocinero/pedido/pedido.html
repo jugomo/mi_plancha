@@ -25,8 +25,11 @@
                 {{ linea.restanteSeg === 0 ? 'Cocción terminada' : formatoRestante(linea.restanteSeg) + ' restante' }}
               </span>
             }
+            @if (linea.estado === 'pendiente_entrega') {
+              <span class="timer pendiente-entrega-texto">Pendiente de entrega</span>
+            }
             @if (linea.estado === 'listo') {
-              <span class="timer listo-texto">Listo</span>
+              <span class="timer listo-texto">Entregado</span>
             }
           </div>
 
@@ -35,8 +38,12 @@
               {{ ocupada() === linea.id ? 'Colocando…' : 'Poner en plancha' }}
             </button>
           } @else if (linea.estado === 'en_plancha') {
-            <button type="button" (click)="marcarListo(linea)" [disabled]="ocupada() === linea.id">
-              {{ ocupada() === linea.id ? 'Marcando…' : 'Retirar y marcar listo' }}
+            <button type="button" (click)="retirarDePlancha(linea)" [disabled]="ocupada() === linea.id">
+              {{ ocupada() === linea.id ? 'Retirando…' : 'Retirar de la plancha' }}
+            </button>
+          } @else if (linea.estado === 'pendiente_entrega') {
+            <button type="button" class="confirmar-entrega" (click)="confirmarEntrega(linea)" [disabled]="ocupada() === linea.id">
+              {{ ocupada() === linea.id ? 'Confirmando…' : 'Confirmar entrega en mesa' }}
             </button>
           }
         </div>

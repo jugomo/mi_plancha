@@ -54,7 +54,8 @@ export class Detalle {
   protected readonly estadoPedido = computed<EstadoLinea>(() => {
     const lineas = this.lineas();
     if (lineas.length > 0 && lineas.every((l) => l.estado === 'listo')) return 'listo';
-    if (lineas.some((l) => l.estado === 'en_plancha' || l.estado === 'listo')) return 'en_plancha';
+    if (lineas.some((l) => l.estado === 'pendiente_entrega' || l.estado === 'listo')) return 'pendiente_entrega';
+    if (lineas.some((l) => l.estado === 'en_plancha')) return 'en_plancha';
     return 'pendiente';
   });
 
@@ -77,6 +78,11 @@ export class Detalle {
   }
 
   etiquetaEstado(estado: EstadoLinea): string {
-    return { pendiente: 'Pendiente', en_plancha: 'En plancha', listo: 'Listo' }[estado];
+    return {
+      pendiente: 'Pendiente',
+      en_plancha: 'En plancha',
+      pendiente_entrega: 'Pendiente de entrega',
+      listo: 'Entregado',
+    }[estado];
   }
 }

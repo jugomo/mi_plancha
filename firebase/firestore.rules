@@ -160,13 +160,15 @@ service cloud.firestore {
         && request.resource.data.cantidad
           <= get(/databases/$(database)/documents/ingredientes/$(request.resource.data.ingredienteId)).data.stock;
 
-      // Colocar en la plancha o marcar lista: solo el cocinero asignado al pedido
-      // padre, y respetando la secuencia pendiente -> en_plancha -> listo.
+      // Colocar en la plancha, retirarla (pendiente de entrega) o confirmar que
+      // se entregó en mesa: solo el cocinero asignado al pedido padre, y
+      // respetando la secuencia pendiente -> en_plancha -> pendiente_entrega -> listo.
       allow update: if esRol('cocinero')
         && get(/databases/$(database)/documents/pedidos/$(pedidoId)).data.cocineroId == request.auth.uid
         && (
           (resource.data.estado == 'pendiente' && request.resource.data.estado == 'en_plancha')
-          || (resource.data.estado == 'en_plancha' && request.resource.data.estado == 'listo')
+          || (resource.data.estado == 'en_plancha' && request.resource.data.estado == 'pendiente_entrega')
+          || (resource.data.estado == 'pendiente_entrega' && request.resource.data.estado == 'listo')
         );
 
       // Mismo criterio que borrar el pedido padre: solo una vez facturado, y

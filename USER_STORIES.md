@@ -60,7 +60,7 @@ Como camarero, quiero crear un pedido eligiendo ingredientes y cantidades para l
 - Un mismo cliente puede tener varios pedidos activos a la vez (ej. rondas sucesivas).
 
 ### CAM-04 — Ver el estado en tiempo real de un pedido
-Como camarero, quiero ver el estado de cada línea de un pedido (pendiente / en plancha / listo) a medida que cambia, para saber cuándo puedo servirlo sin tener que preguntar en cocina.
+Como camarero, quiero ver el estado de cada línea de un pedido (pendiente / en plancha / pendiente de entrega / listo) a medida que cambia, para saber en qué punto está sin tener que preguntar en cocina.
 - Si el pedido está dividido en tandas (ver `config/division`), veo claramente qué tanda está en curso.
 - Si algún ingrediente del pedido tiene alerta de stock, la veo destacada en esta pantalla.
 
@@ -106,10 +106,12 @@ Como cocinero, quiero ver cuánta capacidad de la plancha está en uso ahora mis
 - Veo un temporizador por cada ingrediente en cocción, y aviso visual cuando está a punto de terminar.
 - Si hay overflow en uso (manual o automático), la barra de capacidad lo muestra extendido más allá del 100%.
 
-### COC-06 — Marcar un ingrediente como listo
-Como cocinero, quiero marcar un ingrediente como listo cuando decido retirarlo de la plancha, para que el camarero sepa que ya puede servirlo.
+### COC-06 — Retirar un ingrediente y confirmar su entrega en mesa
+Como cocinero, quiero retirar un ingrediente de la plancha cuando decido que ya está listo, y confirmar por separado cuando lo he entregado en la mesa, para que quede constancia real de si el pedido ya llegó al cliente o solo está preparado.
 - El sistema me avisa cuando la cocción de un ingrediente ha terminado, pero soy yo quien decide y confirma el momento de retirarlo.
-- Solo puedo marcar como listo un ingrediente que yo mismo coloqué en plancha, de un pedido que tengo asignado.
+- Al retirarlo, la línea pasa a "pendiente de entrega" — todavía no es "listo".
+- Cuando lo llevo a la mesa, pulso "Confirmar entrega en mesa" y ahí sí pasa a "listo".
+- Solo puedo retirar y confirmar la entrega de un ingrediente que yo mismo coloqué en plancha, de un pedido que tengo asignado.
 
 ### COC-07 — Activar/desactivar el overflow manualmente
 Como cocinero, quiero activar manualmente la capacidad extra de la plancha en momentos de mucha demanda, para poder apretar más ingredientes de lo habitual cuando lo considere necesario, y desactivarla cuando ya no la necesite.

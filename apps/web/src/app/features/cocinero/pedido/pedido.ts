@@ -105,14 +105,27 @@ export class Pedido {
     }
   }
 
-  async marcarListo(linea: LineaVista): Promise<void> {
+  async retirarDePlancha(linea: LineaVista): Promise<void> {
     if (this.ocupada()) return;
     this.error.set(null);
     this.ocupada.set(linea.id);
     try {
-      await this.pedidosService.marcarListo(this.pedidoId, linea.id);
+      await this.pedidosService.retirarDePlancha(this.pedidoId, linea.id);
     } catch {
-      this.error.set('No se pudo marcar como listo. Inténtalo de nuevo.');
+      this.error.set('No se pudo retirar de la plancha. Inténtalo de nuevo.');
+    } finally {
+      this.ocupada.set(null);
+    }
+  }
+
+  async confirmarEntrega(linea: LineaVista): Promise<void> {
+    if (this.ocupada()) return;
+    this.error.set(null);
+    this.ocupada.set(linea.id);
+    try {
+      await this.pedidosService.confirmarEntrega(this.pedidoId, linea.id);
+    } catch {
+      this.error.set('No se pudo confirmar la entrega. Inténtalo de nuevo.');
     } finally {
       this.ocupada.set(null);
     }

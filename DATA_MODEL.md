@@ -64,9 +64,10 @@ No se guarda un campo `estado` agregado en el pedido: se deriva siempre de sus l
 
 - `ingredienteId: string`
 - `cantidad: number`
-- `estado: "pendiente" | "en_plancha" | "listo"`
+- `estado: "pendiente" | "en_plancha" | "pendiente_entrega" | "listo"` — ver la máquina de estados completa en [ARCHITECTURE.md](./ARCHITECTURE.md#máquina-de-estados-de-una-línea-de-pedido)
 - `subgrupo: number`
 - `colocadoEn: timestamp | null`
+- `retiradoEn: timestamp | null`
 - `listoEn: timestamp | null`
 - `usandoOverflow: boolean`
 - Denormalizado desde el pedido padre, **solo para poder hacer *collection group queries* eficientes** (ver abajo): `pedidoCreadoEn: timestamp`, `cocineroId: uid | null`, `mesaNumero: number`.

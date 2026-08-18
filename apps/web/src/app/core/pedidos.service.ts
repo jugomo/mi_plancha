@@ -41,7 +41,11 @@ export interface PedidoResumen {
   cuentaId: string | null;
 }
 
-export type EstadoLinea = 'pendiente' | 'en_plancha' | 'listo';
+// pendiente_entrega: el cocinero ya retiró el ingrediente de la plancha, pero
+// todavía no ha confirmado que lo entregó físicamente en la mesa. "listo" pasa
+// a significar "ya entregado", no solo "ya cocinado" — ver ARCHITECTURE.md
+// (Máquina de estados de una línea de pedido).
+export type EstadoLinea = 'pendiente' | 'en_plancha' | 'pendiente_entrega' | 'listo';
 
 export interface LineaPedido {
   id: string;
@@ -49,6 +53,7 @@ export interface LineaPedido {
   cantidad: number;
   estado: EstadoLinea;
   colocadoEn: Timestamp | null;
+  retiradoEn: Timestamp | null;
   listoEn: Timestamp | null;
 }
 
@@ -84,6 +89,7 @@ export class PedidosService {
         estado: 'pendiente',
         subgrupo: 1,
         colocadoEn: null,
+        retiradoEn: null,
         listoEn: null,
         usandoOverflow: false,
         // Denormalizado para las collection group queries del algoritmo de
@@ -177,8 +183,14 @@ export class PedidosService {
     });
   }
 
-  /** COC-06: el cocinero decide y confirma cuándo retira el ingrediente de la plancha. */
-  async marcarListo(pedidoId: string, lineaId: string): Promise<void> {
+  /** COC-06: el cocinero decide y confirma cuándo retira el ingrediente de la plancha — queda pendiente de entrega, no listo todavía. */
+  async retirarDePlancha(pedidoId: string, lineaId: string): Promise<void> {
+    const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
+    await updateDoc(lineaRef, { estado: 'pendiente_entrega', retiradoEn: serverTimestamp() });
+  }
+
+  /** COC-06b: el cocinero confirma que ya lo entregó en la mesa — aquí es cuando la línea pasa a "listo". */
+  async confirmarEntrega(pedidoId: string, lineaId: string): Promise<void> {
     const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
     await updateDoc(lineaRef, { estado: 'listo', listoEn: serverTimestamp() });
   }

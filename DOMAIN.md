@@ -21,7 +21,7 @@ Sistema de gestión de cocina en tiempo real para optimizar el uso de una planch
 | **Ingrediente** | nombre, capacidad consumida (unidades), tiempo de cocción, stock actual, precio | CMS (administrador) |
 | **Pedido** | cliente asociado, camarero responsable, timestamp de creación, líneas de ingredientes, prioridad, estado derivado | Camarero |
 | **Cuenta** | cliente y mesa de origen (conservados aunque el cliente se borre), listado de pedidos con su suma, total, timestamp de generación | Camarero (al generar cuenta) |
-| **Línea de pedido** | ingrediente, cantidad, estado (pendiente / en plancha / listo), cocinero asignado | — |
+| **Línea de pedido** | ingrediente, cantidad, estado (pendiente / en plancha / pendiente de entrega / listo), cocinero asignado | — |
 | **Plancha** | capacidad total (ej. 100 unidades), capacidad usada en tiempo real | CMS (única, capacidad configurable) |
 | **Config. de división** | umbral de tamaño de pedido, tamaño de subgrupo | CMS |
 | **Config. anti-inanición** | tiempo máximo de espera por pedido | CMS |
@@ -35,9 +35,9 @@ Sistema de gestión de cocina en tiempo real para optimizar el uso de una planch
 4. El cocinero ve los pedidos pendientes y una **sugerencia activa** de qué ingredientes cocinar juntos ahora mismo, maximizando el uso de la plancha (capacidad + tiempos de cocción + prioridad).
 5. El cocinero selecciona un pedido → queda asignado en exclusiva a él (solo él puede completarlo).
 6. El cocinero toca cada ingrediente que coloca físicamente en la plancha → el ítem pasa a "en plancha", se descuenta stock en ese momento y arranca su temporizador de cocción.
-7. El sistema avisa en tiempo real cuándo un ingrediente terminó su cocción; el cocinero decide visualmente cuándo retirarlo y lo marca como "listo".
+7. El sistema avisa en tiempo real cuándo un ingrediente terminó su cocción; el cocinero decide visualmente cuándo retirarlo, y al hacerlo el ítem pasa a "pendiente de entrega" — todavía no es "listo". El cocinero lo lleva físicamente a la mesa y, al confirmarlo en la app, el ítem pasa a "listo" (ver [ARCHITECTURE.md](./ARCHITECTURE.md#máquina-de-estados-de-una-línea-de-pedido)).
 8. Si el pedido supera el umbral de división configurado en el CMS, se puede preparar y entregar por subgrupos sin esperar a que esté completo.
-9. El camarero ve en tiempo real el estado de los pedidos de su cliente (faltan ingredientes / en cocción / listo) y los entrega en mesa.
+9. El camarero ve en tiempo real el estado de los pedidos de su cliente (faltan ingredientes / en cocción / pendiente de entrega / listo) — de cara al camarero es informativo, ya que en este flujo es el propio cocinero quien entrega y confirma en mesa.
 10. Cuando el cliente termina, el camarero **genera la cuenta**: un listado con la suma de cada uno de sus pedidos y el total. Al generarla, el cliente se elimina del sistema y su mesa vuelve a quedar libre para un nuevo cliente.
 
 ## Reglas de negocio clave

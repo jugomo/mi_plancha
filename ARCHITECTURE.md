@@ -55,6 +55,23 @@ Matices importantes, porque Angular/SwiftUI/Compose no comparten toolchain (no h
 - El ganador real de esta estructura es `algorithm-spec/`: los mismos casos de prueba (ver el ejemplo numérico de `ALGORITHM.md`) se versionan una vez y cada app los consume en su propio framework de test, evitando que las tres implementaciones del algoritmo diverjan sin que nadie se entere.
 - `firestore.rules` y la configuración de Firebase viven junto al código que las usa, no en un repo aparte.
 
+## Máquina de estados de una línea de pedido
+
+Cada línea de pedido (`pedidos/{id}/lineas/{id}`, ver [DATA_MODEL.md](./DATA_MODEL.md)) recorre cuatro estados, en secuencia estricta, cada transición disparada por una acción explícita del cocinero:
+
+```
+pendiente ──(poner en plancha)──> en_plancha ──(retirar de la plancha)──> pendiente_entrega ──(confirmar entrega en mesa)──> listo
+```
+
+- **`pendiente`**: todavía no se ha colocado el ingrediente en la plancha.
+- **`en_plancha`**: colocado y cociéndose; arranca el temporizador de cocción (`colocadoEn` + `tiempoCoccionSeg` del ingrediente).
+- **`pendiente_entrega`**: el cocinero ya retiró el ingrediente de la plancha (decisión visual suya, no automática — ver `DOMAIN.md`), pero todavía no lo ha llevado físicamente a la mesa. Es un estado intermedio explícito para diferenciar "ya está cocinado" de "ya está en la mesa": antes de introducirlo, ambos hechos se confundían bajo un único `listo`, lo que no dejaba constancia de si el pedido ya había llegado al cliente o solo estaba preparado esperando a que alguien lo llevara.
+- **`listo`**: el cocinero confirmó en la app que lo entregó en la mesa. Es el estado final de la línea.
+
+Igual que el resto de transiciones de estado del sistema (ver "Estrategia de coste cero"), esta secuencia se valida **solo en el cliente y en las Firestore Security Rules** (`firebase/firestore.rules`, regla de `update` sobre `pedidos/{pedidoId}/lineas/{lineaId}`): cada paso exige que el `estado` actual del documento sea exactamente el anterior de la cadena y que quien escribe sea el cocinero asignado al pedido — no se puede saltar de `en_plancha` a `listo` directamente, ni retroceder.
+
+Nótese que, en este flujo, es el **cocinero** quien confirma la entrega en mesa, no el camarero — una particularidad de este negocio (plancha abierta, el propio cocinero lleva los platos) más que una regla general de "quién sirve"; el camarero conserva la vista en tiempo real de estos cuatro estados (CAM-04) a título informativo.
+
 ## Decisiones abiertas para siguientes pasos
 
 _(ninguna pendiente ahora mismo — ver "Próximos pasos" para lo que sigue)_
@@ -68,6 +85,7 @@ _(ninguna pendiente ahora mismo — ver "Próximos pasos" para lo que sigue)_
 - **Modelo de datos**: detallado en [DATA_MODEL.md](./DATA_MODEL.md) (colecciones, denormalización, transacciones clave sin backend).
 - **Retención del histórico**: las cuentas generadas se conservan de forma permanente en `cuentas/` (snapshot de precios incluido) — ver `DATA_MODEL.md`.
 - **Firestore Security Rules**: escritas en [`firebase/firestore.rules`](./firebase/firestore.rules) (roles, exclusividad de asignación, transiciones de estado válidas, límites de confianza documentados al no haber backend).
+- **Máquina de estados de una línea de pedido**: cuatro estados con confirmación explícita de entrega en mesa — ver [más arriba](#máquina-de-estados-de-una-línea-de-pedido).
 - **Estructura del repositorio**: monorepo ya montado (`apps/web`, `apps/ios`, `apps/android`, `firebase/`, `algorithm-spec/`) — ver más abajo.
 - **Casos de prueba del algoritmo**: 4 casos "golden" en [`algorithm-spec/`](./algorithm-spec/) (adelantamiento básico, overflow automático, overflow manual, división de pedidos grandes).
 - **Historias de usuario**: escritas en [`USER_STORIES.md`](./USER_STORIES.md), por rol, con criterios de aceptación trazables a `DOMAIN.md`/`ALGORITHM.md`/`DATA_MODEL.md`/`firebase/firestore.rules`.

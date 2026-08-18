@@ -70,6 +70,10 @@ h2 {
     &.listo-texto {
       color: #2f8a5b;
     }
+
+    &.pendiente-entrega-texto {
+      color: #b8791b;
+    }
   }
 
   button {
@@ -86,6 +90,10 @@ h2 {
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+    }
+
+    &.confirmar-entrega {
+      background: #b8791b;
     }
   }
 }

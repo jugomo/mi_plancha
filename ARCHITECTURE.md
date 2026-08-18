@@ -70,6 +70,8 @@ pendiente ──(cocinero: poner en plancha)──> en_plancha ──(cocinero: 
 
 Igual que el resto de transiciones de estado del sistema (ver "Estrategia de coste cero"), esta secuencia se valida **solo en el cliente y en las Firestore Security Rules** (`firebase/firestore.rules`, dos reglas de `update` distintas sobre `pedidos/{pedidoId}/lineas/{lineaId}`, una por rol): cada paso exige que el `estado` actual del documento sea exactamente el anterior de la cadena, y que quien escribe sea, según el paso, el cocinero asignado al pedido (`cocineroId`) o su camarero responsable (`camareroId`) — no se puede saltar de `en_plancha` a `listo` directamente, ni retroceder, ni que un rol haga el paso del otro.
 
+**Nota de vocabulario**: el overview de pedido que ve el camarero (CAM-04) no muestra estos cuatro nombres literales como estado agregado del pedido — usa un vocabulario propio, derivado, pensado para lo que a él le importa: *Esperando* (`cocineroId` todavía `null`, nadie en cocina lo ha tomado), *Cocinando* (tomado, pero ninguna línea ha llegado aún a `pendiente_entrega`), *Pendiente entrega en mesa* (alguna línea ya en `pendiente_entrega`) y *Entregado* (todas las líneas en `listo`). Es una vista calculada, no un campo persistido; cada línea, por separado, sigue mostrando su propio `estado` con las cuatro etiquetas de arriba.
+
 ## Decisiones abiertas para siguientes pasos
 
 _(ninguna pendiente ahora mismo — ver "Próximos pasos" para lo que sigue)_

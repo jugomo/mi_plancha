@@ -15,7 +15,7 @@
 
     <div class="cabecera">
       <h2>Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</h2>
-      <span class="chip estado-{{ estadoPedido() }}">{{ etiquetaEstado(estadoPedido()) }}</span>
+      <span class="chip estado-{{ estadoPedido() }}">{{ etiquetaEstadoPedido(estadoPedido()) }}</span>
     </div>
 
     @if (hayStockBajo()) {

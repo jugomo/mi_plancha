@@ -13,6 +13,10 @@ interface LineaVista extends LineaPedido {
   stockBajo: boolean;
 }
 
+// Estado agregado del pedido tal como lo ve el camarero en el overview — vocabulario
+// propio, distinto del EstadoLinea de cada línea individual (ver ARCHITECTURE.md).
+type EstadoPedidoVista = 'esperando' | 'cocinando' | 'pendiente_entrega' | 'listo';
+
 @Component({
   selector: 'mp-camarero-pedido-detalle',
   imports: [RouterLink, Topbar],
@@ -38,6 +42,11 @@ export class Detalle {
   private readonly ingredientes = toSignal(this.ingredientesService.listar(), {
     initialValue: [] as Ingrediente[],
   });
+  // En vivo (no el `pedido` cargado una vez en el constructor) para poder distinguir
+  // "esperando" de "cocinando" en cuanto un cocinero toma el pedido, sin recargar.
+  private readonly pedidoEnVivo = toSignal(this.pedidosService.pedidoEnVivo(this.pedidoId), {
+    initialValue: undefined as PedidoResumen | undefined,
+  });
 
   protected readonly lineasVista = computed<LineaVista[]>(() => {
     const ingredientePorId = new Map(this.ingredientes().map((i) => [i.id, i]));
@@ -53,12 +62,13 @@ export class Detalle {
 
   protected readonly hayStockBajo = computed(() => this.lineasVista().some((l) => l.stockBajo));
 
-  protected readonly estadoPedido = computed<EstadoLinea>(() => {
+  protected readonly estadoPedido = computed<EstadoPedidoVista>(() => {
+    const cocineroId = this.pedidoEnVivo()?.cocineroId ?? this.pedido?.cocineroId ?? null;
+    if (cocineroId === null) return 'esperando';
     const lineas = this.lineas();
     if (lineas.length > 0 && lineas.every((l) => l.estado === 'listo')) return 'listo';
     if (lineas.some((l) => l.estado === 'pendiente_entrega' || l.estado === 'listo')) return 'pendiente_entrega';
-    if (lineas.some((l) => l.estado === 'en_plancha')) return 'en_plancha';
-    return 'pendiente';
+    return 'cocinando';
   });
 
   constructor() {
@@ -84,6 +94,15 @@ export class Detalle {
       pendiente: 'Pendiente',
       en_plancha: 'En plancha',
       pendiente_entrega: 'Pendiente de entrega',
+      listo: 'Entregado',
+    }[estado];
+  }
+
+  etiquetaEstadoPedido(estado: EstadoPedidoVista): string {
+    return {
+      esperando: 'Esperando',
+      cocinando: 'Cocinando',
+      pendiente_entrega: 'Pendiente entrega en mesa',
       listo: 'Entregado',
     }[estado];
   }

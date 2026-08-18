@@ -18,7 +18,7 @@ import {
 import { Observable } from 'rxjs';
 
 import { FIRESTORE } from './firebase.providers';
-import { collectionData$ } from './firestore-rx';
+import { collectionData$, docData$ } from './firestore-rx';
 
 export interface LineaNueva {
   ingredienteId: string;
@@ -125,6 +125,11 @@ export class PedidosService {
   async obtenerPedido(pedidoId: string): Promise<PedidoResumen | undefined> {
     const snap = await getDoc(doc(this.firestore, 'pedidos', pedidoId));
     return snap.exists() ? { id: snap.id, ...(snap.data() as Omit<PedidoResumen, 'id'>) } : undefined;
+  }
+
+  /** Cabecera de un pedido en tiempo real — para saber, sin recargar, en cuanto lo toma un cocinero (CAM-04). */
+  pedidoEnVivo(pedidoId: string): Observable<PedidoResumen | undefined> {
+    return docData$<Omit<PedidoResumen, 'id'>>(doc(this.firestore, 'pedidos', pedidoId));
   }
 
   /** Líneas de un pedido en tiempo real — el corazón de CAM-04 y del checklist de cocina. */

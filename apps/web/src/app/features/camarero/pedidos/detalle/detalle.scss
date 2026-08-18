@@ -46,13 +46,15 @@
   letter-spacing: 0.03em;
   white-space: nowrap;
 
-  &.estado-pendiente {
+  &.estado-pendiente,
+  &.estado-esperando {
     background: #f6f8fb;
     color: #56606f;
     border: 1px solid #d9e0e9;
   }
 
-  &.estado-en_plancha {
+  &.estado-en_plancha,
+  &.estado-cocinando {
     background: #dde8f8;
     color: #2f5fa3;
   }

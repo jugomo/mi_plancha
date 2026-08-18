@@ -32,8 +32,11 @@
     border-radius: 7px;
     background: #f6f8fb;
 
+    // Seleccionado, se aplana igual que Pendientes/Plancha seleccionados —
+    // como si formara parte del mismo panel de abajo, no un botón suelto.
     &.activo {
       border-color: #dde8f8;
+      border-radius: 7px 7px 0 0;
     }
   }
 }

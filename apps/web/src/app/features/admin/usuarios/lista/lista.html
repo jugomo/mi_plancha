@@ -1,0 +1,64 @@
+<div class="lista-header">
+  <h2>Usuarios y roles</h2>
+  <a routerLink="invitar" class="btn">+ Invitar usuario</a>
+</div>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (usuario of usuarios(); track usuario.id) {
+        <tr>
+          <td>
+            {{ usuario.nombre }}
+            @if (esMiPropioUsuario(usuario)) {
+              <span class="tu">(tú)</span>
+            }
+          </td>
+          <td>
+            <select
+              [value]="usuario.rol"
+              (change)="cambiarRol(usuario, $any($event.target).value)"
+              [disabled]="ocupado() === usuario.id || esMiPropioUsuario(usuario)"
+              [title]="esMiPropioUsuario(usuario) ? 'No puedes cambiar tu propio rol' : ''"
+            >
+              <option value="camarero">Camarero</option>
+              <option value="cocinero">Cocinero</option>
+              <option value="administrador">Administrador</option>
+            </select>
+          </td>
+          <td>
+            <span class="chip" [class.activo]="usuario.activo" [class.inactivo]="!usuario.activo">
+              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <button
+              type="button"
+              (click)="alternarActivo(usuario)"
+              [disabled]="ocupado() === usuario.id || esMiPropioUsuario(usuario)"
+              [title]="esMiPropioUsuario(usuario) ? 'No puedes desactivarte a ti mismo' : ''"
+            >
+              {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4" class="vacio">Todavía no hay usuarios.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

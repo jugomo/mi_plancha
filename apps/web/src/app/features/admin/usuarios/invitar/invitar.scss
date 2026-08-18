@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #d9e0e9;
+  border-radius: 10px;
+  padding: 24px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #56606f;
+  }
+
+  .ayuda {
+    font-weight: 400;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  input,
+  select {
+    border: 1px solid #aab6c6;
+    border-radius: 7px;
+    padding: 9px 11px;
+    font-size: 0.92rem;
+    font-family: inherit;
+  }
+
+  .error {
+    margin: 0;
+    color: #c1443b;
+    font-size: 0.85rem;
+  }
+
+  .acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+
+    .btn.secundario {
+      background: #f6f8fb;
+      color: #1c2530;
+      border: 1px solid #d9e0e9;
+      border-radius: 7px;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    button[type="submit"] {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 18px;
+      background: #2f5fa3;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}

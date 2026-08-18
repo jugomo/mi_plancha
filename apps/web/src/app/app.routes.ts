@@ -47,6 +47,14 @@ export const routes: Routes = [
         path: 'mesas',
         loadComponent: () => import('./features/admin/mesas/mesas').then((m) => m.Mesas),
       },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/admin/usuarios/lista/lista').then((m) => m.Lista),
+      },
+      {
+        path: 'usuarios/invitar',
+        loadComponent: () => import('./features/admin/usuarios/invitar/invitar').then((m) => m.Invitar),
+      },
     ],
   },
   { path: '**', redirectTo: 'login' },

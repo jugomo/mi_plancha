@@ -51,7 +51,7 @@ Como camarero, quiero abrir una mesa nueva con el nombre de pila del cliente, pa
 ### CAM-02 — Ver mis mesas en tiempo real
 Como camarero, quiero ver un panel en vivo con todas las mesas (libres y ocupadas, con cliente y resumen de pedidos), para saber de un vistazo qué necesita mi atención sin tener que refrescar nada.
 - La lista se actualiza sola cuando cambia el estado de cualquier mesa o pedido (listener en tiempo real, no hace falta recargar).
-- Cada mesa ocupada muestra: nombre del cliente, tiempo que lleva abierta, y un resumen de sus pedidos (ej. "2 pedidos · 1 listo").
+- Cada mesa ocupada muestra: nombre del cliente, tiempo que lleva abierta, y un resumen del punto en que están sus pedidos — Esperando / En plancha / Pendiente entrega en mesa / Todo listo (el mismo vocabulario de línea que en CAM-04, resumido para toda la mesa) — para no tener que entrar a cada pedido a comprobarlo.
 
 ### CAM-03 — Crear un pedido para un cliente
 Como camarero, quiero crear un pedido eligiendo ingredientes y cantidades para la mesa de un cliente, para que la cocina empiece a prepararlo.

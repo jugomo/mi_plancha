@@ -76,7 +76,15 @@
     font-weight: 700;
     color: #56606f;
 
-    &.listo {
+    &.estado-en_plancha {
+      color: #2f5fa3;
+    }
+
+    &.estado-pendiente_entrega {
+      color: #b8791b;
+    }
+
+    &.estado-todo_listo {
       color: #2f8a5b;
     }
   }

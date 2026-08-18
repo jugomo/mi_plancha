@@ -21,7 +21,7 @@ export interface MesaLibre {
   numero: number;
 }
 
-export type EstadoPedidosMesa = 'sin_pedidos' | 'esperando' | 'todo_listo';
+export type EstadoPedidosMesa = 'sin_pedidos' | 'esperando' | 'en_plancha' | 'pendiente_entrega' | 'todo_listo';
 
 export interface MesaVista {
   id: string;
@@ -68,7 +68,11 @@ export class ClientesService {
 
   /**
    * Todas las mesas, con el nombre del cliente, desde cuándo está abierta, y
-   * si está esperando pedidos por servir o ya tiene todo listo (ver CAM-02).
+   * en qué punto están sus pedidos (ver CAM-02): esperando / en plancha /
+   * pendiente de entrega / todo listo — el mismo vocabulario de estado que ya
+   * se ve línea a línea en el detalle de pedido (CAM-04), resumido aquí para
+   * toda la sesión del cliente, para no tener que entrar a cada pedido para
+   * saber si hay algo que ir a buscar a la plancha.
    *
    * Las líneas no llevan clienteId denormalizado (ver DATA_MODEL.md), así que
    * para no contar líneas de un cliente anterior que usó la misma mesa, solo
@@ -110,7 +114,13 @@ export class ClientesService {
       (l) => l.mesaNumero === mesaNumero && l.pedidoCreadoEn.toMillis() >= abiertoEnMs,
     );
     if (lineasDeEstaSesion.length === 0) return 'sin_pedidos';
-    return lineasDeEstaSesion.every((l) => l.estado === 'listo') ? 'todo_listo' : 'esperando';
+    if (lineasDeEstaSesion.every((l) => l.estado === 'listo')) return 'todo_listo';
+    // Orden de prioridad: lo más "accionable" primero — si hay algo ya
+    // retirado de la plancha esperando que lo lleve a la mesa, eso manda
+    // sobre que además haya otras líneas todavía en cocción.
+    if (lineasDeEstaSesion.some((l) => l.estado === 'pendiente_entrega')) return 'pendiente_entrega';
+    if (lineasDeEstaSesion.some((l) => l.estado === 'en_plancha')) return 'en_plancha';
+    return 'esperando';
   }
 
   async obtenerCliente(id: string): Promise<Cliente | undefined> {

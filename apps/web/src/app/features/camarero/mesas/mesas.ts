@@ -39,6 +39,10 @@ export class Mesas {
     switch (mesa.estadoPedidos) {
       case 'todo_listo':
         return '✓ Todo listo';
+      case 'pendiente_entrega':
+        return '🍽 Pendiente entrega en mesa';
+      case 'en_plancha':
+        return '🔥 En plancha';
       case 'esperando':
         return '⏳ Esperando';
       default:

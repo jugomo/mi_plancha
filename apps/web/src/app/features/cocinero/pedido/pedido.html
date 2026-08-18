@@ -41,10 +41,6 @@
             <button type="button" (click)="retirarDePlancha(linea)" [disabled]="ocupada() === linea.id">
               {{ ocupada() === linea.id ? 'Retirando…' : 'Retirar de la plancha' }}
             </button>
-          } @else if (linea.estado === 'pendiente_entrega') {
-            <button type="button" class="confirmar-entrega" (click)="confirmarEntrega(linea)" [disabled]="ocupada() === linea.id">
-              {{ ocupada() === linea.id ? 'Confirmando…' : 'Confirmar entrega en mesa' }}
-            </button>
           }
         </div>
       }

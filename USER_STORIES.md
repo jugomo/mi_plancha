@@ -11,7 +11,7 @@ Las 21 historias son todas parte del alcance del MVP definido en `DOMAIN.md` —
 ### P0 — Núcleo operativo mínimo (sin esto no hay app)
 El ciclo completo pedido → plancha → entrega → cuenta, funcionando de la forma más simple posible (sin inteligencia todavía: el cocinero decide todo a ojo, como hace hoy sin la app).
 
-`GEN-01`, `ADM-01`, `ADM-02`, `ADM-06`, `ADM-07`, `CAM-01`, `CAM-02`, `CAM-03`, `CAM-04`, `CAM-06`, `COC-01`, `COC-03`, `COC-04`, `COC-05`, `COC-06`
+`GEN-01`, `ADM-01`, `ADM-02`, `ADM-06`, `ADM-07`, `CAM-01`, `CAM-02`, `CAM-03`, `CAM-04`, `CAM-06`, `CAM-07`, `COC-01`, `COC-03`, `COC-04`, `COC-05`, `COC-06`
 
 ### P1 — El diferenciador del producto (no recortar: es la razón de ser de "mi_plancha")
 Sin esto, lo construido en P0 es un comandero genérico más — la sugerencia activa es literalmente la idea original del proyecto ("optimizar y maximizar el uso de la plancha").
@@ -76,6 +76,12 @@ Como camarero, quiero generar la cuenta de un cliente con la suma de todos sus p
 - La cuenta generada queda guardada de forma permanente en el histórico (`cuentas/`), con los precios de ese momento — aunque el CMS cambie precios después, esta cuenta no se ve afectada.
 - Esta acción es solo informativa: no gestiona cobro ni pago real (fuera de alcance de este MVP).
 
+### CAM-07 — Confirmar la entrega de un ingrediente en mesa
+Como camarero, quiero confirmar cuándo he entregado en la mesa un ingrediente que el cocinero ya retiró de la plancha, para que quede constancia real de que el pedido ya llegó al cliente y no solo de que está preparado.
+- Solo veo el botón de confirmar cuando el cocinero ya lo marcó "pendiente de entrega" — antes de eso no hay nada que confirmar.
+- Al confirmar, la línea pasa a "listo" — es el estado final de la secuencia (ver `ARCHITECTURE.md`).
+- Solo puedo confirmar la entrega de pedidos de los que soy el camarero responsable.
+
 ## Cocinero (`COC-`)
 
 ### COC-01 — Ver los pedidos pendientes por prioridad
@@ -106,12 +112,11 @@ Como cocinero, quiero ver cuánta capacidad de la plancha está en uso ahora mis
 - Veo un temporizador por cada ingrediente en cocción, y aviso visual cuando está a punto de terminar.
 - Si hay overflow en uso (manual o automático), la barra de capacidad lo muestra extendido más allá del 100%.
 
-### COC-06 — Retirar un ingrediente y confirmar su entrega en mesa
-Como cocinero, quiero retirar un ingrediente de la plancha cuando decido que ya está listo, y confirmar por separado cuando lo he entregado en la mesa, para que quede constancia real de si el pedido ya llegó al cliente o solo está preparado.
+### COC-06 — Retirar un ingrediente de la plancha
+Como cocinero, quiero marcar un ingrediente como retirado cuando decido que ya está listo, para que el camarero sepa que ya puede pasar a recogerlo y llevarlo a la mesa.
 - El sistema me avisa cuando la cocción de un ingrediente ha terminado, pero soy yo quien decide y confirma el momento de retirarlo.
-- Al retirarlo, la línea pasa a "pendiente de entrega" — todavía no es "listo".
-- Cuando lo llevo a la mesa, pulso "Confirmar entrega en mesa" y ahí sí pasa a "listo".
-- Solo puedo retirar y confirmar la entrega de un ingrediente que yo mismo coloqué en plancha, de un pedido que tengo asignado.
+- Al retirarlo, la línea pasa a "pendiente de entrega" — todavía no es "listo"; la entrega en mesa la confirma el camarero (`CAM-07`), no yo.
+- Solo puedo retirar un ingrediente que yo mismo coloqué en plancha, de un pedido que tengo asignado.
 
 ### COC-07 — Activar/desactivar el overflow manualmente
 Como cocinero, quiero activar manualmente la capacidad extra de la plancha en momentos de mucha demanda, para poder apretar más ingredientes de lo habitual cuando lo considere necesario, y desactivarla cuando ya no la necesite.

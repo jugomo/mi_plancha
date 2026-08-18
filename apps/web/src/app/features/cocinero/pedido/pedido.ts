@@ -117,17 +117,4 @@ export class Pedido {
       this.ocupada.set(null);
     }
   }
-
-  async confirmarEntrega(linea: LineaVista): Promise<void> {
-    if (this.ocupada()) return;
-    this.error.set(null);
-    this.ocupada.set(linea.id);
-    try {
-      await this.pedidosService.confirmarEntrega(this.pedidoId, linea.id);
-    } catch {
-      this.error.set('No se pudo confirmar la entrega. Inténtalo de nuevo.');
-    } finally {
-      this.ocupada.set(null);
-    }
-  }
 }

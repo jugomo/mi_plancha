@@ -79,6 +79,12 @@
   font-weight: 600;
 }
 
+p.error {
+  margin: 0;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
 .lineas {
   display: flex;
   flex-direction: column;
@@ -98,5 +104,22 @@
 
   &.stock-bajo {
     border-color: #b8791b;
+  }
+
+  button {
+    border: none;
+    border-radius: 7px;
+    padding: 8px 13px;
+    background: #b8791b;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 }

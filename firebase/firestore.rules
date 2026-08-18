@@ -160,16 +160,23 @@ service cloud.firestore {
         && request.resource.data.cantidad
           <= get(/databases/$(database)/documents/ingredientes/$(request.resource.data.ingredienteId)).data.stock;
 
-      // Colocar en la plancha, retirarla (pendiente de entrega) o confirmar que
-      // se entregó en mesa: solo el cocinero asignado al pedido padre, y
-      // respetando la secuencia pendiente -> en_plancha -> pendiente_entrega -> listo.
+      // Colocar en la plancha o retirarla (pendiente de entrega): solo el
+      // cocinero asignado al pedido padre, respetando la secuencia
+      // pendiente -> en_plancha -> pendiente_entrega.
       allow update: if esRol('cocinero')
         && get(/databases/$(database)/documents/pedidos/$(pedidoId)).data.cocineroId == request.auth.uid
         && (
           (resource.data.estado == 'pendiente' && request.resource.data.estado == 'en_plancha')
           || (resource.data.estado == 'en_plancha' && request.resource.data.estado == 'pendiente_entrega')
-          || (resource.data.estado == 'pendiente_entrega' && request.resource.data.estado == 'listo')
         );
+
+      // Confirmar entrega en mesa: la hace el camarero responsable del pedido
+      // (es quien la lleva físicamente a la mesa), no el cocinero — único
+      // tramo de la secuencia que cambia de rol.
+      allow update: if esRol('camarero')
+        && get(/databases/$(database)/documents/pedidos/$(pedidoId)).data.camareroId == request.auth.uid
+        && resource.data.estado == 'pendiente_entrega'
+        && request.resource.data.estado == 'listo';
 
       // Mismo criterio que borrar el pedido padre: solo una vez facturado, y
       // solo el cocinero que lo llevó.

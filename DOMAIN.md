@@ -35,9 +35,9 @@ Sistema de gestión de cocina en tiempo real para optimizar el uso de una planch
 4. El cocinero ve los pedidos pendientes y una **sugerencia activa** de qué ingredientes cocinar juntos ahora mismo, maximizando el uso de la plancha (capacidad + tiempos de cocción + prioridad).
 5. El cocinero selecciona un pedido → queda asignado en exclusiva a él (solo él puede completarlo).
 6. El cocinero toca cada ingrediente que coloca físicamente en la plancha → el ítem pasa a "en plancha", se descuenta stock en ese momento y arranca su temporizador de cocción.
-7. El sistema avisa en tiempo real cuándo un ingrediente terminó su cocción; el cocinero decide visualmente cuándo retirarlo, y al hacerlo el ítem pasa a "pendiente de entrega" — todavía no es "listo". El cocinero lo lleva físicamente a la mesa y, al confirmarlo en la app, el ítem pasa a "listo" (ver [ARCHITECTURE.md](./ARCHITECTURE.md#máquina-de-estados-de-una-línea-de-pedido)).
+7. El sistema avisa en tiempo real cuándo un ingrediente terminó su cocción; el cocinero decide visualmente cuándo retirarlo, y al hacerlo el ítem pasa a "pendiente de entrega" — todavía no es "listo".
 8. Si el pedido supera el umbral de división configurado en el CMS, se puede preparar y entregar por subgrupos sin esperar a que esté completo.
-9. El camarero ve en tiempo real el estado de los pedidos de su cliente (faltan ingredientes / en cocción / pendiente de entrega / listo) — de cara al camarero es informativo, ya que en este flujo es el propio cocinero quien entrega y confirma en mesa.
+9. El camarero ve en tiempo real el estado de los pedidos de su cliente (faltan ingredientes / en cocción / pendiente de entrega / listo). Cuando ve un ítem "pendiente de entrega", lo lleva físicamente a la mesa y lo confirma en la app; ahí pasa a "listo" (ver [ARCHITECTURE.md](./ARCHITECTURE.md#máquina-de-estados-de-una-línea-de-pedido)).
 10. Cuando el cliente termina, el camarero **genera la cuenta**: un listado con la suma de cada uno de sus pedidos y el total. Al generarla, el cliente se elimina del sistema y su mesa vuelve a quedar libre para un nuevo cliente.
 
 ## Reglas de negocio clave

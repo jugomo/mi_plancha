@@ -189,7 +189,7 @@ export class PedidosService {
     await updateDoc(lineaRef, { estado: 'pendiente_entrega', retiradoEn: serverTimestamp() });
   }
 
-  /** COC-06b: el cocinero confirma que ya lo entregó en la mesa — aquí es cuando la línea pasa a "listo". */
+  /** CAM-07: el camarero confirma que ya entregó el ingrediente en la mesa — aquí es cuando la línea pasa a "listo". */
   async confirmarEntrega(pedidoId: string, lineaId: string): Promise<void> {
     const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
     await updateDoc(lineaRef, { estado: 'listo', listoEn: serverTimestamp() });

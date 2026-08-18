@@ -57,20 +57,18 @@ Matices importantes, porque Angular/SwiftUI/Compose no comparten toolchain (no h
 
 ## Máquina de estados de una línea de pedido
 
-Cada línea de pedido (`pedidos/{id}/lineas/{id}`, ver [DATA_MODEL.md](./DATA_MODEL.md)) recorre cuatro estados, en secuencia estricta, cada transición disparada por una acción explícita del cocinero:
+Cada línea de pedido (`pedidos/{id}/lineas/{id}`, ver [DATA_MODEL.md](./DATA_MODEL.md)) recorre cuatro estados, en secuencia estricta. Las dos primeras transiciones las dispara el cocinero; la última, el camarero — es el único tramo de la secuencia que cambia de rol:
 
 ```
-pendiente ──(poner en plancha)──> en_plancha ──(retirar de la plancha)──> pendiente_entrega ──(confirmar entrega en mesa)──> listo
+pendiente ──(cocinero: poner en plancha)──> en_plancha ──(cocinero: retirar de la plancha)──> pendiente_entrega ──(camarero: confirmar entrega en mesa)──> listo
 ```
 
 - **`pendiente`**: todavía no se ha colocado el ingrediente en la plancha.
 - **`en_plancha`**: colocado y cociéndose; arranca el temporizador de cocción (`colocadoEn` + `tiempoCoccionSeg` del ingrediente).
-- **`pendiente_entrega`**: el cocinero ya retiró el ingrediente de la plancha (decisión visual suya, no automática — ver `DOMAIN.md`), pero todavía no lo ha llevado físicamente a la mesa. Es un estado intermedio explícito para diferenciar "ya está cocinado" de "ya está en la mesa": antes de introducirlo, ambos hechos se confundían bajo un único `listo`, lo que no dejaba constancia de si el pedido ya había llegado al cliente o solo estaba preparado esperando a que alguien lo llevara.
-- **`listo`**: el cocinero confirmó en la app que lo entregó en la mesa. Es el estado final de la línea.
+- **`pendiente_entrega`**: el cocinero ya retiró el ingrediente de la plancha (decisión visual suya, no automática — ver `DOMAIN.md`), pero todavía no ha llegado a la mesa. Es un estado intermedio explícito para diferenciar "ya está cocinado" de "ya está en la mesa": antes de introducirlo, ambos hechos se confundían bajo un único `listo`, lo que no dejaba constancia de si el pedido ya había llegado al cliente o solo estaba preparado esperando a que el camarero lo recogiera.
+- **`listo`**: el camarero responsable del pedido confirmó en la app que lo entregó en la mesa (`CAM-07`). Es el estado final de la línea.
 
-Igual que el resto de transiciones de estado del sistema (ver "Estrategia de coste cero"), esta secuencia se valida **solo en el cliente y en las Firestore Security Rules** (`firebase/firestore.rules`, regla de `update` sobre `pedidos/{pedidoId}/lineas/{lineaId}`): cada paso exige que el `estado` actual del documento sea exactamente el anterior de la cadena y que quien escribe sea el cocinero asignado al pedido — no se puede saltar de `en_plancha` a `listo` directamente, ni retroceder.
-
-Nótese que, en este flujo, es el **cocinero** quien confirma la entrega en mesa, no el camarero — una particularidad de este negocio (plancha abierta, el propio cocinero lleva los platos) más que una regla general de "quién sirve"; el camarero conserva la vista en tiempo real de estos cuatro estados (CAM-04) a título informativo.
+Igual que el resto de transiciones de estado del sistema (ver "Estrategia de coste cero"), esta secuencia se valida **solo en el cliente y en las Firestore Security Rules** (`firebase/firestore.rules`, dos reglas de `update` distintas sobre `pedidos/{pedidoId}/lineas/{lineaId}`, una por rol): cada paso exige que el `estado` actual del documento sea exactamente el anterior de la cadena, y que quien escribe sea, según el paso, el cocinero asignado al pedido (`cocineroId`) o su camarero responsable (`camareroId`) — no se puede saltar de `en_plancha` a `listo` directamente, ni retroceder, ni que un rol haga el paso del otro.
 
 ## Decisiones abiertas para siguientes pasos
 

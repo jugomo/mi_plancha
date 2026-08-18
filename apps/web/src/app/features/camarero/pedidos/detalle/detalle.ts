@@ -29,6 +29,8 @@ export class Detalle {
   protected readonly cargandoPedido = signal(true);
   protected pedido: PedidoResumen | undefined;
   protected readonly error = signal<string | null>(null);
+  protected readonly confirmando = signal<string | null>(null); // id de línea con la confirmación en curso
+  protected readonly accionError = signal<string | null>(null);
 
   private readonly lineas = toSignal(this.pedidosService.lineasDePedido(this.pedidoId), {
     initialValue: [] as LineaPedido[],
@@ -84,5 +86,19 @@ export class Detalle {
       pendiente_entrega: 'Pendiente de entrega',
       listo: 'Entregado',
     }[estado];
+  }
+
+  /** CAM-07: confirmo que ya llevé el ingrediente a la mesa — ahí es cuando pasa a "listo". */
+  async confirmarEntrega(linea: LineaVista): Promise<void> {
+    if (this.confirmando()) return;
+    this.accionError.set(null);
+    this.confirmando.set(linea.id);
+    try {
+      await this.pedidosService.confirmarEntrega(this.pedidoId, linea.id);
+    } catch {
+      this.accionError.set('No se pudo confirmar la entrega. Inténtalo de nuevo.');
+    } finally {
+      this.confirmando.set(null);
+    }
   }
 }

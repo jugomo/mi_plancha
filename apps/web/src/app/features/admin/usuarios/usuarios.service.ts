@@ -11,6 +11,7 @@ import { Rol } from '../../../core/sesion';
 export interface UsuarioFila {
   id: string; // uid
   nombre: string;
+  email: string;
   rol: Rol;
   activo: boolean;
 }
@@ -40,6 +41,7 @@ export class UsuariosService {
     // administrador que tiene sesión ahí, no el usuario recién creado.
     await setDoc(doc(this.firestore, 'usuarios', credencial.user.uid), {
       nombre: datos.nombre,
+      email: datos.email,
       rol: datos.rol,
       activo: true,
       creadoEn: serverTimestamp(),

@@ -23,6 +23,7 @@ Para el dominio, ver [DOMAIN.md](./DOMAIN.md); para por qué Firestore y sin Clo
 ### `usuarios/{uid}`
 
 - `nombre: string`
+- `email: string` — denormalizado desde Firebase Auth en el momento de crear el usuario (ver ADM-07); no es la fuente de verdad (esa es Auth), solo evita tener que consultar Auth Admin desde el cliente para mostrarlo en el CMS.
 - `rol: "camarero" | "cocinero" | "administrador"`
 - `activo: boolean`
 - `creadoEn: timestamp`

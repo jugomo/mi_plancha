@@ -37,9 +37,12 @@ const INGREDIENTES = {
 async function seed() {
   const batch = db.batch();
 
-  // Primer administrador (bootstrap manual, ver ARCHITECTURE.md).
+  // Primer administrador (bootstrap manual, ver ARCHITECTURE.md). El email se
+  // resuelve desde Auth (no hace falta mantenerlo a mano aquí) — ver ADM-07.
+  const adminAuth = await admin.auth().getUser(ADMIN_UID);
   batch.set(db.doc(`usuarios/${ADMIN_UID}`), {
     nombre: ADMIN_NOMBRE,
+    email: adminAuth.email,
     rol: 'administrador',
     activo: true,
     creadoEn: FieldValue.serverTimestamp(),

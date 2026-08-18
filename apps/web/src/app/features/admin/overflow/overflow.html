@@ -1,0 +1,28 @@
+@if (cargando()) {
+  <p class="cargando">Cargando…</p>
+} @else {
+  <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
+    <h2>Overflow</h2>
+
+    <label>
+      Porcentaje de overflow
+      <input type="number" name="porcentaje" [(ngModel)]="porcentaje" required min="0" max="100" step="1" />
+      <span class="ayuda">
+        Capacidad extra temporal para momentos de alta demanda (el cocinero coloca los ingredientes más juntos). Se
+        puede activar manualmente desde la pantalla de la plancha, y el sistema también recurre a ella como último
+        recurso para pedidos urgentes que no caben.
+      </span>
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    @if (guardado()) {
+      <p class="ok" role="status">Guardado.</p>
+    }
+
+    <button type="submit" [disabled]="f.invalid || guardando()">
+      {{ guardando() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </form>
+}

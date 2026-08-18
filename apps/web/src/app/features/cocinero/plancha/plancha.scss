@@ -23,6 +23,17 @@
       font-variant-numeric: tabular-nums;
       color: #1c2530;
     }
+
+    .con-overflow {
+      font-weight: 500;
+      color: #b8791b;
+      font-size: 0.78rem;
+    }
+  }
+
+  .barra-wrap {
+    position: relative;
+    margin-bottom: 12px;
   }
 
   .barra {
@@ -48,6 +59,67 @@
       &:last-child {
         border-right: none;
       }
+
+      &.tramo-overflow {
+        background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 4px, transparent 4px 8px);
+      }
+    }
+  }
+
+  .marca-base {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #1c2530;
+    opacity: 0.5;
+
+    &::after {
+      content: attr(data-label);
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font: 700 0.6rem/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      color: #56606f;
+      white-space: nowrap;
+    }
+  }
+
+  .toggle-overflow {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d9e0e9;
+    background: #f6f8fb;
+    color: #56606f;
+    border-radius: 999px;
+    padding: 7px 13px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    .knob {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #aab6c6;
+    }
+
+    &.activo {
+      border-color: #b8791b;
+      color: #b8791b;
+      background: #faecd4;
+
+      .knob {
+        background: #b8791b;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 }

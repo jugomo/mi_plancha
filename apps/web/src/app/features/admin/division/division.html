@@ -1,0 +1,31 @@
+@if (cargando()) {
+  <p class="cargando">Cargando…</p>
+} @else {
+  <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
+    <h2>División de pedidos</h2>
+
+    <label>
+      Dividir a partir de
+      <input type="number" name="umbral" [(ngModel)]="umbral" required min="1" step="1" />
+    </label>
+
+    <label>
+      Tamaño de cada tanda
+      <input type="number" name="tamanoSubgrupo" [(ngModel)]="tamanoSubgrupo" required min="1" step="1" />
+      <span class="ayuda">
+        Pedidos por encima del umbral se podrán preparar y entregar por tandas, sin esperar a que esté completo.
+      </span>
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    @if (guardado()) {
+      <p class="ok" role="status">Guardado.</p>
+    }
+
+    <button type="submit" [disabled]="f.invalid || guardando()">
+      {{ guardando() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </form>
+}

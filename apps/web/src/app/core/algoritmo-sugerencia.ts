@@ -130,7 +130,9 @@ export function calcularSugerencia(entrada: EntradaAlgoritmo): SalidaAlgoritmo {
         // no estamos ya en modo manual (ahí `libreActual()` ya es la extendida).
         incluir(pedido.id, linea);
       } else if (forzado) {
-        alertas.push(`Pedido ${pedido.id} urgente no cabe en la plancha ni con capacidad extra.`);
+        // Solo el id del pedido — el mensaje legible (con mesa, etc.) se
+        // compone en la capa de presentación, que sí conoce ese contexto.
+        alertas.push(pedido.id);
       }
       // Si no es forzado y no cabe, se salta sin bloquear el resto de la cola.
     }

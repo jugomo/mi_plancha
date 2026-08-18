@@ -6,7 +6,7 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: implementación en curso. **P0 y P1 completos** (todo el núcleo operativo + el diferenciador del producto). Falta que el usuario confirme en el navegador las historias de cocinero y P1 (el resto ya está confirmado). Siguiente: P2 (anti-inanición, overflow, división de pedidos) o `apps/ios`/`apps/android`.
+**Fase**: implementación en curso. **Todas las historias de USER_STORIES.md están construidas** (P0, P1 y P2). Falta que el usuario confirme en el navegador todo lo de cocinero, CAM-05 y todo P2 (el resto ya está confirmado). Siguiente: esa confirmación, y luego `apps/ios`/`apps/android`, o el Firebase Emulator Suite para poder tener tests reales donde hoy hay `it.todo()`.
 
 ## En curso ahora mismo
 
@@ -45,11 +45,11 @@ _(vacío — nada a medias todavía)_
 
 ## P2 — Ajustes finos del algoritmo y del CMS
 
-- [ ] ADM-04 — Configurar el tiempo máximo de espera (anti-inanición)
-- [ ] ADM-05 — Configurar el porcentaje de overflow
-- [ ] ADM-03 — Configurar la división de pedidos grandes
-- [ ] COC-07 — Activar/desactivar el overflow manualmente
-- [ ] COC-08 — Recibir alerta cuando un pedido forzado no cabe
+- [x] ADM-04 — Configurar el tiempo máximo de espera (anti-inanición) — falta confirmación del usuario en el navegador
+- [x] ADM-05 — Configurar el porcentaje de overflow — falta confirmación del usuario en el navegador
+- [x] ADM-03 — Configurar la división de pedidos grandes (solo el CMS; el pedido en sí sigue yendo entero al subgrupo 1 al crearlo — CAM-03 no divide todavía, ver DOMAIN.md) — falta confirmación del usuario en el navegador
+- [x] COC-07 — Activar/desactivar el overflow manualmente (toggle compartido en la pantalla de la plancha; de paso, la barra de capacidad ya se extiende visualmente más allá del 100% — cerraba un pendiente de COC-05) — falta confirmación del usuario en el navegador
+- [x] COC-08 — Recibir alerta cuando un pedido forzado no cabe (ya salía como efecto colateral de COC-02; hoy la hice legible con la mesa en vez del id interno de Firestore) — falta confirmación del usuario en el navegador
 
 ## P3 — Conveniencia
 

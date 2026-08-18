@@ -1,0 +1,34 @@
+@if (cargando()) {
+  <p class="cargando">Cargando…</p>
+} @else {
+  <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
+    <h2>Anti-inanición</h2>
+
+    <label>
+      Tiempo máximo de espera
+      <input
+        type="number"
+        name="tiempoMaximoEsperaMin"
+        [(ngModel)]="tiempoMaximoEsperaMin"
+        required
+        min="1"
+        step="1"
+      />
+      <span class="ayuda">
+        Pasado este tiempo (en minutos), el pedido se prioriza aunque no sea el encaje óptimo de la plancha en ese
+        momento.
+      </span>
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    @if (guardado()) {
+      <p class="ok" role="status">Guardado.</p>
+    }
+
+    <button type="submit" [disabled]="f.invalid || guardando()">
+      {{ guardando() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </form>
+}

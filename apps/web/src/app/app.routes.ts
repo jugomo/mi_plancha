@@ -82,6 +82,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/mesas/mesas').then((m) => m.Mesas),
       },
       {
+        path: 'division',
+        loadComponent: () => import('./features/admin/division/division').then((m) => m.Division),
+      },
+      {
+        path: 'anti-inanicion',
+        loadComponent: () => import('./features/admin/anti-inanicion/anti-inanicion').then((m) => m.AntiInanicion),
+      },
+      {
+        path: 'overflow',
+        loadComponent: () => import('./features/admin/overflow/overflow').then((m) => m.Overflow),
+      },
+      {
         path: 'usuarios',
         loadComponent: () => import('./features/admin/usuarios/lista/lista').then((m) => m.Lista),
       },

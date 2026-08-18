@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Timestamp, collectionGroup, doc, orderBy, query, where } from 'firebase/firestore';
+import { Timestamp, collectionGroup, doc, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { Observable, map } from 'rxjs';
 
 import { FIRESTORE } from '../../core/firebase.providers';
@@ -11,6 +11,11 @@ export interface LineaEnPlancha {
   cantidad: number;
   mesaNumero: number;
   colocadoEn: Timestamp;
+}
+
+export interface EstadoPlancha {
+  overflowManualActivo: boolean;
+  activadoPor: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,5 +43,26 @@ export class PlanchaService {
     return docData$<{ capacidadTotal: number }>(doc(this.firestore, 'config', 'plancha')).pipe(
       map((datos) => datos?.capacidadTotal ?? 0),
     );
+  }
+
+  overflowPorcentaje(): Observable<number> {
+    return docData$<{ porcentaje: number }>(doc(this.firestore, 'config', 'overflow')).pipe(
+      map((datos) => datos?.porcentaje ?? 0),
+    );
+  }
+
+  /** COC-07: cualquier cocinero puede activar/desactivar el overflow manual — es un ajuste de la plancha compartida, no personal. */
+  estadoOverflow(): Observable<EstadoPlancha> {
+    return docData$<EstadoPlancha>(doc(this.firestore, 'plancha', 'estado')).pipe(
+      map((datos) => datos ?? { overflowManualActivo: false, activadoPor: null }),
+    );
+  }
+
+  alternarOverflowManual(activo: boolean, cocineroId: string): Promise<void> {
+    return setDoc(doc(this.firestore, 'plancha', 'estado'), {
+      overflowManualActivo: activo,
+      activadoPor: activo ? cocineroId : null,
+      activadoEn: activo ? serverTimestamp() : null,
+    });
   }
 }

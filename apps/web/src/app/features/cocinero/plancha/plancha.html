@@ -2,14 +2,37 @@
   <div class="capacidad">
     <div class="readout">
       <span>Capacidad usada</span>
-      <span class="num">{{ capacidadUsada() }} / {{ capacidadTotal() }}</span>
+      <span class="num">
+        {{ capacidadUsada() }} / {{ capacidadTotal() }}
+        @if (estadoOverflow().overflowManualActivo) {
+          <span class="con-overflow">(hasta {{ capacidadExtendida() }} con overflow)</span>
+        }
+      </span>
     </div>
-    <div class="barra">
-      @for (tipo of porTipo(); track tipo.nombre) {
-        <span [style.width.%]="porcentaje(tipo.capacidad)" [title]="tipo.nombre">{{ tipo.nombre }}</span>
-      }
+    <div class="barra-wrap">
+      <div class="barra">
+        @for (tipo of porTipo(); track tipo.nombre) {
+          <span
+            [style.width.%]="porcentaje(tipo.capacidad)"
+            [class.tramo-overflow]="capacidadUsada() > capacidadTotal()"
+            [title]="tipo.nombre"
+            >{{ tipo.nombre }}</span
+          >
+        }
+      </div>
+      <div class="marca-base" [style.left.%]="marcaCapacidadBase()" data-label="100%"></div>
     </div>
-    <!-- El overflow (+X% configurable) todavía no está construido — COC-07/ADM-05, P2. -->
+
+    <button
+      type="button"
+      class="toggle-overflow"
+      [class.activo]="estadoOverflow().overflowManualActivo"
+      (click)="alternarOverflow()"
+      [disabled]="cambiandoOverflow()"
+    >
+      <span class="knob"></span>
+      Overflow manual (+{{ overflowPorcentaje() }}%) — {{ estadoOverflow().overflowManualActivo ? 'Activado' : 'Desactivado' }}
+    </button>
   </div>
 
   <h3>En cocción ahora</h3>

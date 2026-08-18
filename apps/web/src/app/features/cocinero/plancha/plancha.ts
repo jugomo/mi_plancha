@@ -2,7 +2,8 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { Ingrediente, IngredientesService } from '../../admin/ingredientes/ingredientes.service';
-import { LineaEnPlancha, PlanchaService } from '../plancha.service';
+import { Sesion } from '../../../core/sesion';
+import { EstadoPlancha, LineaEnPlancha, PlanchaService } from '../plancha.service';
 
 interface ItemEnPlancha {
   id: string;
@@ -28,10 +29,26 @@ interface TipoEnCapacidad {
 export class Plancha {
   private readonly planchaService = inject(PlanchaService);
   private readonly ingredientesService = inject(IngredientesService);
+  private readonly sesion = inject(Sesion);
 
   private readonly enPlancha = toSignal(this.planchaService.enPlancha(), { initialValue: [] as LineaEnPlancha[] });
   private readonly ingredientes = toSignal(this.ingredientesService.listar(), { initialValue: [] as Ingrediente[] });
   protected readonly capacidadTotal = toSignal(this.planchaService.capacidadTotal(), { initialValue: 0 });
+  protected readonly overflowPorcentaje = toSignal(this.planchaService.overflowPorcentaje(), { initialValue: 0 });
+  protected readonly estadoOverflow = toSignal(this.planchaService.estadoOverflow(), {
+    initialValue: { overflowManualActivo: false, activadoPor: null } as EstadoPlancha,
+  });
+
+  protected readonly capacidadExtendida = computed(() => this.capacidadTotal() * (1 + this.overflowPorcentaje() / 100));
+  // Posición (en %) donde cae la capacidad base dentro de la barra, que se
+  // dibuja a escala de la capacidad extendida (COC-05: "la barra... lo
+  // muestra extendido más allá del 100%").
+  protected readonly marcaCapacidadBase = computed(() => {
+    const extendida = this.capacidadExtendida();
+    return extendida > 0 ? (this.capacidadTotal() / extendida) * 100 : 100;
+  });
+
+  protected readonly cambiandoOverflow = signal(false);
 
   private readonly reloj = signal(Date.now());
 
@@ -83,7 +100,18 @@ export class Plancha {
   }
 
   porcentaje(capacidad: number): number {
-    const total = this.capacidadTotal();
-    return total > 0 ? Math.min(100, (capacidad / total) * 100) : 0;
+    const extendida = this.capacidadExtendida();
+    return extendida > 0 ? Math.min(100, (capacidad / extendida) * 100) : 0;
+  }
+
+  async alternarOverflow(): Promise<void> {
+    const uid = this.sesion.usuario()?.uid;
+    if (!uid || this.cambiandoOverflow()) return;
+    this.cambiandoOverflow.set(true);
+    try {
+      await this.planchaService.alternarOverflowManual(!this.estadoOverflow().overflowManualActivo, uid);
+    } finally {
+      this.cambiandoOverflow.set(false);
+    }
   }
 }

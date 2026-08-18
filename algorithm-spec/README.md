@@ -37,7 +37,7 @@ El objetivo es que las tres implementaciones (Angular, SwiftUI, Jetpack Compose 
       { "pedidoId": "string", "lineaId": "string", "ingrediente": "<id>", "cantidad": "number", "usandoOverflow": "boolean" }
     ],
     "capacidadUsadaResultante": "number",
-    "alertas": ["string — ids/mensajes de pedidos forzados que no caben, vacío si no hay"]
+    "alertas": ["string — id del pedido forzado que no cabe (la capa de presentación compone el mensaje legible, con mesa/cliente), vacío si no hay"]
   }
 }
 ```

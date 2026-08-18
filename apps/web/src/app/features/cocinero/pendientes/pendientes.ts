@@ -64,7 +64,18 @@ export class Pendientes {
     ),
   );
 
-  protected readonly alertasSugerencia = computed(() => this.sugerenciaBruta().alertas);
+  // COC-08: alerta legible con la mesa, no el id interno del pedido. Al ser
+  // reactiva, deja de mostrarse sola en cuanto ese pedido consigue colocarse
+  // (ya no aparece en `alertas`) — sin lógica extra para "ocultarla".
+  protected readonly alertasSugerencia = computed(() => {
+    const mesaPorPedido = this.sugerenciaService.mesaPorPedido(this.lineasPendientesTodas());
+    return this.sugerenciaBruta().alertas.map((pedidoId) => {
+      const mesa = mesaPorPedido.get(pedidoId);
+      return mesa
+        ? `⚠ El pedido de la mesa ${mesa} lleva demasiado esperando y no cabe en la plancha ni con capacidad extra.`
+        : '⚠ Un pedido lleva demasiado esperando y no cabe en la plancha ni con capacidad extra.';
+    });
+  });
 
   protected readonly tomando = signal<string | null>(null);
   protected readonly aceptando = signal(false);

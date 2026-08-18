@@ -112,6 +112,15 @@ h3 {
     font-size: 0.8rem;
   }
 
+  &.listo {
+    background: #e1f3e9;
+    border-color: #2f8a5b;
+
+    .ver {
+      color: #2f8a5b;
+    }
+  }
+
   button {
     border: none;
     border-radius: 7px;
@@ -134,4 +143,23 @@ h3 {
   color: #56606f;
   text-align: center;
   padding: 14px;
+}
+
+.completados {
+  summary {
+    cursor: pointer;
+    font: 700 0.78rem/1.3 inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #56606f;
+    padding: 4px 0;
+
+    &::marker {
+      color: #2f8a5b;
+    }
+  }
+
+  .lista {
+    margin-top: 10px;
+  }
 }

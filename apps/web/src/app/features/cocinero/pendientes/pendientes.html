@@ -30,11 +30,11 @@
     <p class="error" role="alert">{{ alerta }}</p>
   }
 
-  @if (misPedidos().length > 0) {
+  @if (misPedidosEnCurso().length > 0) {
     <section>
       <h3>Mis pedidos en curso</h3>
       <div class="lista">
-        @for (pedido of misPedidos(); track pedido.id) {
+        @for (pedido of misPedidosEnCurso(); track pedido.id) {
           <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="pedido-card">
             <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
             <span class="ver">Continuar →</span>
@@ -42,6 +42,20 @@
         }
       </div>
     </section>
+  }
+
+  @if (misPedidosCompletados().length > 0) {
+    <details class="completados">
+      <summary>Pedidos completados ({{ misPedidosCompletados().length }})</summary>
+      <div class="lista">
+        @for (pedido of misPedidosCompletados(); track pedido.id) {
+          <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="pedido-card listo">
+            <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+            <span class="ver">✓ Listo</span>
+          </a>
+        }
+      </div>
+    </details>
   }
 
   <section>

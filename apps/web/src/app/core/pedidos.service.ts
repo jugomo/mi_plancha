@@ -2,8 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import {
   Timestamp,
   collection,
+  collectionGroup,
   doc,
   getDoc,
+  onSnapshot,
   orderBy,
   query,
   runTransaction,
@@ -120,6 +122,29 @@ export class PedidosService {
   /** Líneas de un pedido en tiempo real — el corazón de CAM-04 y del checklist de cocina. */
   lineasDePedido(pedidoId: string): Observable<LineaPedido[]> {
     return collectionData$<Omit<LineaPedido, 'id'>>(collection(this.firestore, 'pedidos', pedidoId, 'lineas'));
+  }
+
+  /**
+   * Estado de todas las líneas de todos los pedidos, con el id de su pedido
+   * (derivado de la ruta, igual que en SugerenciaService) — para saber, sin
+   * un listener por pedido, cuáles están completos (ver Pendientes, COC-01).
+   */
+  estadoDeTodasLasLineas(): Observable<{ pedidoId: string; estado: EstadoLinea }[]> {
+    return new Observable((subscriber) => {
+      const ref = collectionGroup(this.firestore, 'lineas');
+      return onSnapshot(
+        ref,
+        (snap) => {
+          subscriber.next(
+            snap.docs.map((d) => ({
+              pedidoId: d.ref.parent.parent!.id,
+              estado: (d.data()['estado'] as EstadoLinea) ?? 'pendiente',
+            })),
+          );
+        },
+        (err) => subscriber.error(err),
+      );
+    });
   }
 
   /** COC-03: exclusividad garantizada por la regla de seguridad, aquí solo damos un error legible si ya no está libre. */

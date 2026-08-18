@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
 import { ItemSugerencia, SalidaAlgoritmo } from '../../../core/algoritmo-sugerencia';
-import { PedidoResumen, PedidosService } from '../../../core/pedidos.service';
+import { EstadoLinea, PedidoResumen, PedidosService } from '../../../core/pedidos.service';
 import { Sesion } from '../../../core/sesion';
 import { Ingrediente, IngredientesService } from '../../admin/ingredientes/ingredientes.service';
 import { LineaPendienteConPedido, SugerenciaService } from '../sugerencia.service';
@@ -32,9 +32,33 @@ export class Pendientes {
 
   private readonly uid = computed(() => this.sesion.usuario()?.uid);
 
-  protected readonly misPedidos = toSignal(
+  private readonly misPedidosTodos = toSignal(
     this.pedidosService.misPedidos(this.sesion.usuario()?.uid ?? '__ninguno__'),
     { initialValue: [] as PedidoResumen[] },
+  );
+  private readonly estadoLineas = toSignal(this.pedidosService.estadoDeTodasLasLineas(), {
+    initialValue: [] as { pedidoId: string; estado: EstadoLinea }[],
+  });
+
+  private readonly completado = computed(() => {
+    const porPedido = new Map<string, EstadoLinea[]>();
+    for (const linea of this.estadoLineas()) {
+      const lista = porPedido.get(linea.pedidoId) ?? [];
+      lista.push(linea.estado);
+      porPedido.set(linea.pedidoId, lista);
+    }
+    const completados = new Set<string>();
+    for (const [pedidoId, estados] of porPedido) {
+      if (estados.length > 0 && estados.every((e) => e === 'listo')) completados.add(pedidoId);
+    }
+    return completados;
+  });
+
+  protected readonly misPedidosEnCurso = computed(() =>
+    this.misPedidosTodos().filter((p) => !this.completado().has(p.id)),
+  );
+  protected readonly misPedidosCompletados = computed(() =>
+    this.misPedidosTodos().filter((p) => this.completado().has(p.id)),
   );
 
   private readonly sugerenciaBruta = toSignal(this.sugerenciaService.sugerencia(), {

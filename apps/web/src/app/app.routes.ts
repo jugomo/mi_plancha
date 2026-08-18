@@ -12,6 +12,11 @@ export const routes: Routes = [
   {
     path: 'camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
+    loadComponent: () => import('./features/camarero/mesas/mesas').then((m) => m.Mesas),
+  },
+  {
+    path: 'camarero/abrir',
+    canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/abrir-mesa/abrir-mesa').then((m) => m.AbrirMesa),
   },
   {

@@ -1,0 +1,82 @@
+.mesas {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.live {
+  color: #c1443b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.btn {
+  background: #2f5fa3;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mesa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.mesa-card {
+  border: 1px solid #d9e0e9;
+  border-radius: 8px;
+  padding: 12px 13px;
+  background: #f6f8fb;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 84px;
+
+  &.libre {
+    opacity: 0.55;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .numero {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #56606f;
+    font-weight: 700;
+  }
+
+  .cliente {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .detalle {
+    font-size: 0.72rem;
+    color: #56606f;
+  }
+
+  .pendiente {
+    font-style: italic;
+  }
+}
+
+.vacio {
+  color: #56606f;
+  text-align: center;
+}

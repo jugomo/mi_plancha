@@ -1,0 +1,30 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="mesas">
+  <div class="cabecera">
+    <span class="live">● En vivo</span>
+    <a routerLink="abrir" class="btn">+ Abrir mesa</a>
+  </div>
+
+  <div class="mesa-grid">
+    @for (mesa of mesas(); track mesa.id) {
+      <div class="mesa-card" [class.libre]="mesa.estado === 'libre'">
+        <span class="numero">Mesa {{ mesa.numero }}</span>
+        @if (mesa.estado === 'ocupada') {
+          <span class="cliente">{{ mesa.clienteNombre }}</span>
+          <span class="detalle">{{ tiempoAbierta(mesa) }}</span>
+          <span class="detalle pendiente">Pedidos: próximamente (CAM-03/04)</span>
+        } @else {
+          <span class="detalle">Libre</span>
+        }
+      </div>
+    } @empty {
+      <p class="vacio">Todavía no hay mesas configuradas.</p>
+    }
+  </div>
+</main>

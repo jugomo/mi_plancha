@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 
 import { Sesion } from '../../../core/sesion';
 import { Topbar } from '../../../core/ui/topbar/topbar';
@@ -8,13 +9,14 @@ import { ClientesService, MesaLibre } from '../clientes.service';
 
 @Component({
   selector: 'mp-camarero-abrir-mesa',
-  imports: [FormsModule, Topbar],
+  imports: [FormsModule, RouterLink, Topbar],
   templateUrl: './abrir-mesa.html',
   styleUrl: './abrir-mesa.scss',
 })
 export class AbrirMesa {
   protected readonly sesion = inject(Sesion);
   private readonly clientes = inject(ClientesService);
+  private readonly router = inject(Router);
 
   protected readonly mesasLibres = toSignal(this.clientes.mesasLibres(), { initialValue: [] as MesaLibre[] });
 
@@ -23,7 +25,6 @@ export class AbrirMesa {
 
   protected readonly guardando = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly abierta = signal<{ mesa: string; nombre: string } | null>(null);
 
   cerrarSesion(): void {
     void this.sesion.cerrarSesion();
@@ -35,16 +36,11 @@ export class AbrirMesa {
 
     this.error.set(null);
     this.guardando.set(true);
-    const mesaAbierta = this.mesaId;
-    const nombreAbierto = this.nombre.trim();
     try {
-      await this.clientes.abrirMesa(mesaAbierta, nombreAbierto, uid);
-      this.abierta.set({ mesa: mesaAbierta, nombre: nombreAbierto });
-      this.mesaId = '';
-      this.nombre = '';
+      await this.clientes.abrirMesa(this.mesaId, this.nombre.trim(), uid);
+      await this.router.navigateByUrl('/camarero');
     } catch {
       this.error.set('No se pudo abrir la mesa — puede que ya no esté libre. Inténtalo de nuevo.');
-    } finally {
       this.guardando.set(false);
     }
   }

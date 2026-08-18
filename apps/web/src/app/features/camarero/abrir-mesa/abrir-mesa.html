@@ -31,16 +31,11 @@
       <p class="error" role="alert">{{ error() }}</p>
     }
 
-    <button type="submit" [disabled]="f.invalid || guardando()">
-      {{ guardando() ? 'Abriendo…' : 'Abrir mesa' }}
-    </button>
+    <div class="acciones">
+      <a routerLink="/camarero" class="btn secundario">Cancelar</a>
+      <button type="submit" [disabled]="f.invalid || guardando()">
+        {{ guardando() ? 'Abriendo…' : 'Abrir mesa' }}
+      </button>
+    </div>
   </form>
-
-  @if (abierta(); as a) {
-    <p class="confirmacion" role="status">Mesa {{ a.mesa }} abierta para {{ a.nombre }}.</p>
-  }
-
-  <p class="proximamente">
-    Próximamente: ver todas las mesas en vivo, crear pedidos, generar cuenta (CAM-02 a CAM-06).
-  </p>
 </main>

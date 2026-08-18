@@ -1,0 +1,34 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="detalle">
+  @if (cargandoPedido()) {
+    <p class="cargando">Cargando…</p>
+  } @else if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  } @else if (pedido) {
+    <a [routerLink]="['/camarero/clientes', pedido.clienteId]" class="volver">← Pedidos de {{ pedido.clienteNombre }}</a>
+
+    <div class="cabecera">
+      <h2>Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</h2>
+      <span class="chip estado-{{ estadoPedido() }}">{{ etiquetaEstado(estadoPedido()) }}</span>
+    </div>
+
+    @if (hayStockBajo()) {
+      <p class="alerta" role="alert">⚠ Algún ingrediente de este pedido tiene el stock bajo.</p>
+    }
+
+    <div class="lineas">
+      @for (linea of lineasVista(); track linea.id) {
+        <div class="linea" [class.stock-bajo]="linea.stockBajo">
+          <span class="nombre">{{ linea.cantidad }}× {{ linea.nombreIngrediente }}</span>
+          <span class="chip estado-{{ linea.estado }}">{{ etiquetaEstado(linea.estado) }}</span>
+        </div>
+      }
+    </div>
+  }
+</main>

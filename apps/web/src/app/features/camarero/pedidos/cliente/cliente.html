@@ -1,0 +1,35 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="cliente-pedidos">
+  @if (cargandoCliente()) {
+    <p class="cargando">Cargando…</p>
+  } @else {
+    <div class="cabecera">
+      <div>
+        <a routerLink="/camarero" class="volver">← Mesas</a>
+        <h2>Mesa {{ clienteMesaNumero }} · {{ clienteNombre }}</h2>
+      </div>
+      <a [routerLink]="['/camarero/clientes', clienteId, 'pedidos', 'nuevo']" class="btn">+ Nuevo pedido</a>
+    </div>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="pedidos">
+      @for (pedido of pedidos(); track pedido.id) {
+        <a [routerLink]="['/camarero/pedidos', pedido.id]" class="pedido-card">
+          <span class="hora">Pedido de las {{ horaCreacion(pedido) }}</span>
+          <span class="ver">Ver estado →</span>
+        </a>
+      } @empty {
+        <p class="vacio">Este cliente todavía no tiene pedidos.</p>
+      }
+    </div>
+  }
+</main>

@@ -30,7 +30,7 @@ _(vacío — nada a medias todavía)_
 - [x] CAM-01 — Abrir una mesa para un cliente (transacción mesa+cliente; falta confirmación del usuario en el navegador)
 - [x] CAM-02 — Ver mis mesas en tiempo real (resumen de pedidos pendiente de CAM-03/04; falta confirmación del usuario en el navegador)
 - [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
-- [ ] CAM-04 — Ver el estado en tiempo real de un pedido
+- [x] CAM-04 — Ver el estado en tiempo real de un pedido (pantalla de detalle + listado de pedidos por cliente, con alerta de stock bajo; falta confirmación del usuario en el navegador)
 - [ ] CAM-06 — Generar la cuenta de un cliente
 - [ ] COC-01 — Ver los pedidos pendientes por prioridad
 - [ ] COC-03 — Tomar un pedido

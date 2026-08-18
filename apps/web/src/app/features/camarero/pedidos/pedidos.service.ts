@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { Timestamp, collection, doc, getDoc, orderBy, query, serverTimestamp, where, writeBatch } from 'firebase/firestore';
+import { Observable } from 'rxjs';
 
 import { FIRESTORE } from '../../../core/firebase.providers';
+import { collectionData$ } from '../../../core/firestore-rx';
 
 export interface LineaNueva {
   ingredienteId: string;
@@ -12,6 +14,23 @@ export interface ClienteContexto {
   id: string;
   mesaNumero: number;
   nombre: string;
+}
+
+export interface PedidoResumen {
+  id: string;
+  clienteId: string;
+  mesaNumero: number;
+  clienteNombre: string;
+  creadoEn: Timestamp;
+}
+
+export type EstadoLinea = 'pendiente' | 'en_plancha' | 'listo';
+
+export interface LineaPedido {
+  id: string;
+  ingredienteId: string;
+  cantidad: number;
+  estado: EstadoLinea;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,5 +77,21 @@ export class PedidosService {
 
     await batch.commit();
     return pedidoRef.id;
+  }
+
+  /** Pedidos de un cliente, en orden de creación — solo cabecera, sin líneas (CAM-04 las carga aparte). */
+  pedidosDeCliente(clienteId: string): Observable<PedidoResumen[]> {
+    const ref = query(collection(this.firestore, 'pedidos'), where('clienteId', '==', clienteId), orderBy('creadoEn'));
+    return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
+  }
+
+  async obtenerPedido(pedidoId: string): Promise<PedidoResumen | undefined> {
+    const snap = await getDoc(doc(this.firestore, 'pedidos', pedidoId));
+    return snap.exists() ? { id: snap.id, ...(snap.data() as Omit<PedidoResumen, 'id'>) } : undefined;
+  }
+
+  /** Líneas de un pedido en tiempo real — el corazón de CAM-04. */
+  lineasDePedido(pedidoId: string): Observable<LineaPedido[]> {
+    return collectionData$<Omit<LineaPedido, 'id'>>(collection(this.firestore, 'pedidos', pedidoId, 'lineas'));
   }
 }

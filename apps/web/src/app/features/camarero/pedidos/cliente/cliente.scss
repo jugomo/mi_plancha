@@ -1,0 +1,82 @@
+.cliente-pedidos {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cargando {
+  text-align: center;
+  color: #56606f;
+  margin-top: 40px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .volver {
+    display: block;
+    font-size: 0.78rem;
+    color: #56606f;
+    text-decoration: none;
+    margin-bottom: 4px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+}
+
+.btn {
+  background: #2f5fa3;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.error {
+  color: #c1443b;
+  font-size: 0.85rem;
+}
+
+.pedidos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pedido-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #d9e0e9;
+  border-radius: 8px;
+  padding: 13px 15px;
+  background: #fff;
+  text-decoration: none;
+  color: #1c2530;
+  font-size: 0.88rem;
+
+  .ver {
+    color: #2f5fa3;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+}
+
+.vacio {
+  text-align: center;
+  color: #56606f;
+}

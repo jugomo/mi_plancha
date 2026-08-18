@@ -18,10 +18,7 @@
         @if (mesa.estado === 'ocupada') {
           <span class="cliente">{{ mesa.clienteNombre }}</span>
           <span class="detalle">{{ tiempoAbierta(mesa) }}</span>
-          <span class="detalle pendiente">Pedidos: próximamente (CAM-04)</span>
-          <a [routerLink]="['/camarero/clientes', mesa.clienteId, 'pedidos', 'nuevo']" class="btn-mini">
-            + Nuevo pedido
-          </a>
+          <a [routerLink]="['/camarero/clientes', mesa.clienteId]" class="btn-mini">Ver pedidos</a>
         } @else {
           <span class="detalle">Libre</span>
         }

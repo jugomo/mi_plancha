@@ -15,6 +15,14 @@
         { "fieldPath": "estado", "order": "ASCENDING" },
         { "fieldPath": "numero", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "pedidos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "clienteId", "order": "ASCENDING" },
+        { "fieldPath": "creadoEn", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

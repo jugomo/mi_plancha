@@ -3,7 +3,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
 import { ItemSugerencia, SalidaAlgoritmo } from '../../../core/algoritmo-sugerencia';
-import { EstadoLinea, PedidoResumen, PedidosService } from '../../../core/pedidos.service';
+import {
+  EstadoLinea,
+  EstadoPedidoVista,
+  PedidoResumen,
+  PedidosService,
+  calcularEstadoPedidoVista,
+  etiquetaEstadoPedidoVista,
+} from '../../../core/pedidos.service';
 import { Sesion } from '../../../core/sesion';
 import { Ingrediente, IngredientesService } from '../../admin/ingredientes/ingredientes.service';
 import { LineaPendienteConPedido, SugerenciaService } from '../sugerencia.service';
@@ -11,6 +18,10 @@ import { LineaPendienteConPedido, SugerenciaService } from '../sugerencia.servic
 interface ItemVista extends ItemSugerencia {
   nombreIngrediente: string;
   mesaNumero: number | undefined;
+}
+
+interface PedidoVista extends PedidoResumen {
+  estadoVista: EstadoPedidoVista;
 }
 
 @Component({
@@ -40,22 +51,31 @@ export class Pendientes {
     initialValue: [] as { pedidoId: string; estado: EstadoLinea }[],
   });
 
-  private readonly completado = computed(() => {
+  private readonly estadosPorPedido = computed(() => {
     const porPedido = new Map<string, EstadoLinea[]>();
     for (const linea of this.estadoLineas()) {
       const lista = porPedido.get(linea.pedidoId) ?? [];
       lista.push(linea.estado);
       porPedido.set(linea.pedidoId, lista);
     }
+    return porPedido;
+  });
+
+  private readonly completado = computed(() => {
     const completados = new Set<string>();
-    for (const [pedidoId, estados] of porPedido) {
+    for (const [pedidoId, estados] of this.estadosPorPedido()) {
       if (estados.length > 0 && estados.every((e) => e === 'listo')) completados.add(pedidoId);
     }
     return completados;
   });
 
-  protected readonly misPedidosEnCurso = computed(() =>
-    this.misPedidosTodos().filter((p) => !this.completado().has(p.id)),
+  protected readonly misPedidosEnCurso = computed<PedidoVista[]>(() =>
+    this.misPedidosTodos()
+      .filter((p) => !this.completado().has(p.id))
+      .map((p) => ({
+        ...p,
+        estadoVista: calcularEstadoPedidoVista(p.cocineroId, this.estadosPorPedido().get(p.id) ?? []),
+      })),
   );
   protected readonly misPedidosCompletados = computed(() =>
     this.misPedidosTodos().filter((p) => this.completado().has(p.id)),
@@ -105,6 +125,10 @@ export class Pendientes {
   protected readonly aceptando = signal(false);
   protected readonly borrando = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
+
+  etiquetaEstado(estado: EstadoPedidoVista): string {
+    return etiquetaEstadoPedidoVista(estado);
+  }
 
   esperandoDesde(pedido: PedidoResumen): string {
     const minutos = Math.max(0, Math.round((Date.now() - pedido.creadoEn.toMillis()) / 60000));

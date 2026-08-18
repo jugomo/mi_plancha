@@ -36,7 +36,10 @@
       <div class="lista">
         @for (pedido of misPedidosEnCurso(); track pedido.id) {
           <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="pedido-card">
-            <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+            <div>
+              <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+              <span class="chip estado-{{ pedido.estadoVista }}">{{ etiquetaEstado(pedido.estadoVista) }}</span>
+            </div>
             <span class="ver">Continuar →</span>
           </a>
         }

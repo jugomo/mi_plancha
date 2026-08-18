@@ -117,6 +117,29 @@ h3 {
     font-size: 0.8rem;
   }
 
+  .chip {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+
+    &.estado-cocinando {
+      background: #dde8f8;
+      color: #2f5fa3;
+    }
+
+    &.estado-pendiente_entrega {
+      background: #faecd4;
+      color: #b8791b;
+    }
+  }
+
   &.listo {
     background: #e1f3e9;
     border-color: #2f8a5b;

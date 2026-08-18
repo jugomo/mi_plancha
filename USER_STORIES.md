@@ -6,7 +6,7 @@ Convención de IDs: `CAM-` camarero, `COC-` cocinero, `ADM-` administrador, `GEN
 
 ## Priorización
 
-Las 21 historias son todas parte del alcance del MVP definido en `DOMAIN.md` — no hay ninguna que sobre. La priorización de abajo no es "qué se corta", sino **en qué orden se construye**, agrupando por qué se rompería si faltara:
+Las 22 historias son todas parte del alcance del MVP definido en `DOMAIN.md` — no hay ninguna que sobre. La priorización de abajo no es "qué se corta", sino **en qué orden se construye**, agrupando por qué se rompería si faltara:
 
 ### P0 — Núcleo operativo mínimo (sin esto no hay app)
 El ciclo completo pedido → plancha → entrega → cuenta, funcionando de la forma más simple posible (sin inteligencia todavía: el cocinero decide todo a ojo, como hace hoy sin la app).
@@ -26,7 +26,7 @@ Refinan la sugerencia de P1 para los casos límite (pedidos que llevan esperando
 ### P3 — Conveniencia, aplazable sin tensión
 No bloquea ninguna operación real del día a día.
 
-`GEN-02` (ver la app como otro rol en modo lectura)
+`GEN-02` (ver la app como otro rol en modo lectura) · `CAM-08` (pantalla de consulta, refleja datos que ya existen en otras pantallas)
 
 ## Transversal (`GEN-`)
 
@@ -84,6 +84,12 @@ Como camarero, quiero confirmar cuándo he entregado en la mesa un ingrediente q
 - Solo veo el botón de confirmar cuando el cocinero ya lo marcó "pendiente de entrega" — antes de eso no hay nada que confirmar.
 - Al confirmar, la línea pasa a "listo" — es el estado final de la secuencia (ver `ARCHITECTURE.md`).
 - Solo puedo confirmar la entrega de pedidos de los que soy el camarero responsable.
+
+### CAM-08 — Ver mis pedidos completados
+Como camarero, quiero consultar en una pantalla aparte los pedidos que ya he entregado del todo, para revisarlos sin que ocupen sitio en el panel de mesas en vivo.
+- Un botón "Completados", accesible desde el panel de mesas, lleva a esta pantalla.
+- Solo veo mis propios pedidos (de los que soy el camarero responsable) cuyas líneas están todas en "listo".
+- Es solo de consulta: el borrado del pedido operativo, una vez facturado, es cosa del cocinero (`COC-01`), no mía.
 
 ## Cocinero (`COC-`)
 

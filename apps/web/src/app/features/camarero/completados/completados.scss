@@ -1,0 +1,68 @@
+.completados {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.volver {
+  font-size: 0.78rem;
+  color: #56606f;
+  text-decoration: none;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pedido-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #d9e0e9;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #e1f3e9;
+  border-color: #2f8a5b;
+  text-decoration: none;
+  color: #1c2530;
+  font-size: 0.88rem;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .id {
+    font-weight: 600;
+  }
+
+  .hora {
+    font-size: 0.72rem;
+    color: #56606f;
+  }
+
+  .ver {
+    color: #2f8a5b;
+    font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}
+
+.vacio {
+  color: #56606f;
+  text-align: center;
+  padding: 14px;
+}

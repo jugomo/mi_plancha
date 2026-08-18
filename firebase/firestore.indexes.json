@@ -31,6 +31,14 @@
         { "fieldPath": "cocineroId", "order": "ASCENDING" },
         { "fieldPath": "creadoEn", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "pedidos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "camareroId", "order": "ASCENDING" },
+        { "fieldPath": "creadoEn", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

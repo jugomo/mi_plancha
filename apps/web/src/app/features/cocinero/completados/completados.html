@@ -1,0 +1,30 @@
+<main class="completados">
+  <h2>Pedidos completados</h2>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  <div class="lista">
+    @for (pedido of pedidos(); track pedido.id) {
+      <div class="pedido-card listo">
+        <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="info">
+          <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+          <span class="ver">✓ Listo</span>
+        </a>
+        @if (pedido.cuentaId) {
+          <button
+            type="button"
+            class="borrar"
+            (click)="borrarPedido(pedido)"
+            [disabled]="borrando() === pedido.id"
+          >
+            {{ borrando() === pedido.id ? 'Borrando…' : 'Borrar' }}
+          </button>
+        }
+      </div>
+    } @empty {
+      <p class="vacio">Todavía no tienes pedidos completados.</p>
+    }
+  </div>
+</main>

@@ -19,6 +19,11 @@
   letter-spacing: 0.04em;
 }
 
+.acciones {
+  display: flex;
+  gap: 8px;
+}
+
 .btn {
   background: #2f5fa3;
   color: #fff;
@@ -28,6 +33,12 @@
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
+
+  &.secundario {
+    background: #f6f8fb;
+    color: #1c2530;
+    border: 1px solid #d9e0e9;
+  }
 }
 
 .mesa-grid {

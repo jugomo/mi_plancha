@@ -36,6 +36,7 @@ export interface PedidoResumen {
   clienteId: string;
   mesaNumero: number;
   clienteNombre: string;
+  camareroId: string;
   cocineroId: string | null;
   creadoEn: Timestamp;
   cuentaId: string | null;
@@ -141,6 +142,12 @@ export class PedidosService {
   /** Pedidos que un cocinero concreto ha tomado (para volver a ellos tras navegar fuera). */
   misPedidos(cocineroId: string): Observable<PedidoResumen[]> {
     const ref = query(collection(this.firestore, 'pedidos'), where('cocineroId', '==', cocineroId), orderBy('creadoEn'));
+    return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
+  }
+
+  /** Todos los pedidos creados por un camarero concreto (para su pantalla de completados). */
+  pedidosDeCamarero(camareroId: string): Observable<PedidoResumen[]> {
+    const ref = query(collection(this.firestore, 'pedidos'), where('camareroId', '==', camareroId), orderBy('creadoEn'));
     return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
   }
 

@@ -77,9 +77,6 @@ export class Pendientes {
         estadoVista: calcularEstadoPedidoVista(p.cocineroId, this.estadosPorPedido().get(p.id) ?? []),
       })),
   );
-  protected readonly misPedidosCompletados = computed(() =>
-    this.misPedidosTodos().filter((p) => this.completado().has(p.id)),
-  );
 
   private readonly sugerenciaBruta = toSignal(this.sugerenciaService.sugerencia(), {
     initialValue: { sugerencia: [], capacidadUsadaResultante: 0, alertas: [] } as SalidaAlgoritmo,
@@ -123,7 +120,6 @@ export class Pendientes {
 
   protected readonly tomando = signal<string | null>(null);
   protected readonly aceptando = signal(false);
-  protected readonly borrando = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
   etiquetaEstado(estado: EstadoPedidoVista): string {
@@ -186,21 +182,5 @@ export class Pendientes {
       this.error.set(`${fallos} de ${items.length} líneas ya no estaban disponibles (te adelantaron o cambió el stock).`);
     }
     this.aceptando.set(false);
-  }
-
-  async borrarPedido(pedido: PedidoResumen): Promise<void> {
-    if (this.borrando()) return;
-    if (!confirm(`¿Borrar el pedido de la mesa ${pedido.mesaNumero} · ${pedido.clienteNombre}? Ya está facturado.`)) {
-      return;
-    }
-    this.error.set(null);
-    this.borrando.set(pedido.id);
-    try {
-      await this.pedidosService.borrarPedidoCompletado(pedido.id);
-    } catch {
-      this.error.set('No se pudo borrar el pedido. Inténtalo de nuevo.');
-    } finally {
-      this.borrando.set(null);
-    }
   }
 }

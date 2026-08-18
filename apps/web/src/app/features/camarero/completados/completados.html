@@ -1,0 +1,25 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="completados">
+  <a routerLink="/camarero" class="volver">← Mesas</a>
+  <h2>Pedidos completados</h2>
+
+  <div class="lista">
+    @for (pedido of pedidos(); track pedido.id) {
+      <a [routerLink]="['/camarero/pedidos', pedido.id]" class="pedido-card">
+        <div>
+          <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+          <span class="hora">Pedido de las {{ horaCreacion(pedido) }}</span>
+        </div>
+        <span class="ver">✓ Entregado</span>
+      </a>
+    } @empty {
+      <p class="vacio">Todavía no tienes pedidos completados.</p>
+    }
+  </div>
+</main>

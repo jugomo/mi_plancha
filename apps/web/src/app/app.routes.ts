@@ -40,12 +40,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/camarero/cuentas/generar/generar').then((m) => m.Generar),
   },
   {
+    path: 'camarero/completados',
+    canActivate: [authGuard, rolGuard(['camarero'])],
+    loadComponent: () => import('./features/camarero/completados/completados').then((m) => m.Completados),
+  },
+  {
     path: 'cocinero',
     canActivate: [authGuard, rolGuard(['cocinero'])],
     loadComponent: () => import('./features/cocinero/shell/shell').then((m) => m.CocineroShell),
     children: [
       { path: '', pathMatch: 'full', loadComponent: () => import('./features/cocinero/pendientes/pendientes').then((m) => m.Pendientes) },
       { path: 'plancha', loadComponent: () => import('./features/cocinero/plancha/plancha').then((m) => m.Plancha) },
+      { path: 'completados', loadComponent: () => import('./features/cocinero/completados/completados').then((m) => m.Completados) },
     ],
   },
   {

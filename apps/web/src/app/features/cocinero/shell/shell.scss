@@ -1,7 +1,8 @@
 .cocinero-nav {
   display: flex;
+  align-items: center;
   gap: 4px;
-  padding: 10px 20px 0;
+  padding: 10px 20px;
   background: #ffffff;
   border-bottom: 1px solid #d9e0e9;
 
@@ -17,6 +18,21 @@
     &.activo {
       background: #dde8f8;
       color: #2f5fa3;
+    }
+  }
+
+  // Botón, no pestaña: lleva a una pantalla aparte, no a un hermano del
+  // mismo nivel — por eso se distingue visualmente y se separa a la derecha.
+  .completados-btn {
+    margin-left: auto;
+    border: 1px solid #d9e0e9;
+    border-radius: 7px;
+    background: #f6f8fb;
+
+    &.activo {
+      background: #2f5fa3;
+      color: #fff;
+      border-color: #2f5fa3;
     }
   }
 }

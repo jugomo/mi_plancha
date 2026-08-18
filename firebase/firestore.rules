@@ -164,6 +164,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Firestore NO aplica la regla anidada de arriba a collectionGroup('lineas')
+    // — solo gobierna get()/list() sobre la subcolección de un pedido concreto
+    // (`collection(db,'pedidos',id,'lineas')`). Para las collection group
+    // queries (PlanchaService, SugerenciaService, AlertasStockService — ver
+    // DATA_MODEL.md/ALGORITHM.md) hace falta esta regla aparte, con comodín
+    // recursivo. Bug real encontrado en producción: las tres se rompían con
+    // "Missing or insufficient permissions" hasta añadir esto. Solo lectura:
+    // las escrituras a líneas siempre van por la subcolección concreta, nunca
+    // por collection group, así que no hace falta duplicar create/update aquí.
+    match /{path=**}/lineas/{lineaId} {
+      allow read: if autenticado();
+    }
+
     // ---------- ingredientes ----------
     match /ingredientes/{ingredienteId} {
       allow read: if autenticado();

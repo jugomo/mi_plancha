@@ -6,7 +6,7 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: implementación en curso. **Todas las historias de USER_STORIES.md están construidas** (P0, P1 y P2). Falta que el usuario confirme en el navegador todo lo de cocinero, CAM-05 y todo P2 (el resto ya está confirmado). Siguiente: esa confirmación, y luego `apps/ios`/`apps/android`, o el Firebase Emulator Suite para poder tener tests reales donde hoy hay `it.todo()`.
+**Fase**: implementación en curso. **Todas las historias de USER_STORIES.md están construidas** (P0, P1 y P2). El 18 ago se encontró y corrigió un bug real de reglas de Firestore con `collectionGroup` (ver más abajo) que rompía COC-02/COC-05/CAM-05/COC-08 en silencio — las verificaciones previas con Admin SDK no lo detectaban porque ese SDK ignora las Security Rules. Falta que el usuario reconfirme esas cuatro historias en el navegador, más el resto de cocinero y P2. Siguiente: esa confirmación, y luego `apps/ios`/`apps/android`, o el Firebase Emulator Suite para tener tests reales de reglas en vez de scripts manuales.
 
 ## En curso ahora mismo
 
@@ -35,13 +35,13 @@ _(vacío — nada a medias todavía)_
 - [x] COC-01 — Ver los pedidos pendientes por prioridad (FIFO simple por ahora — el forzado por anti-inanición es ADM-04/COC-08, P2; falta confirmación del usuario en el navegador)
 - [x] COC-03 — Tomar un pedido (exclusividad ya la garantizaban las reglas; falta confirmación del usuario en el navegador)
 - [x] COC-04 — Colocar un ingrediente en la plancha (descuenta stock atómicamente; falta confirmación del usuario en el navegador)
-- [x] COC-05 — Ver la plancha en tiempo real (capacidad por tipo + temporizadores; sin overflow todavía — COC-07/ADM-05, P2; falta confirmación del usuario en el navegador)
+- [x] COC-05 — Ver la plancha en tiempo real (capacidad por tipo + temporizadores; sin overflow todavía — COC-07/ADM-05, P2; **bug real encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
 - [x] COC-06 — Marcar un ingrediente como listo (en la misma pantalla del pedido asignado; falta confirmación del usuario en el navegador)
 
 ## P1 — El diferenciador del producto
 
-- [x] COC-02 — Ver la sugerencia activa de qué cocinar ahora (algoritmo puro en `core/algoritmo-sugerencia.ts`, verificado de verdad contra los 4 casos de `algorithm-spec/` — primeros tests reales del proyecto, no `it.todo()`; corregidos 2 fallos reales del propio pseudocódigo de ALGORITHM.md en el proceso; falta confirmación del usuario en el navegador)
-- [x] CAM-05 — Recibir alerta de stock bajo/agotado (tablero de mesas + detalle de pedido; umbral compartido `UMBRAL_STOCK_BAJO=5` reutilizado también en el CMS de ingredientes; verificado con datos reales — falta confirmación del usuario en el navegador)
+- [x] COC-02 — Ver la sugerencia activa de qué cocinar ahora (algoritmo puro en `core/algoritmo-sugerencia.ts`, verificado de verdad contra los 4 casos de `algorithm-spec/` — primeros tests reales del proyecto, no `it.todo()`; corregidos 2 fallos reales del propio pseudocódigo de ALGORITHM.md en el proceso; **bug real de reglas encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
+- [x] CAM-05 — Recibir alerta de stock bajo/agotado (tablero de mesas + detalle de pedido; umbral compartido `UMBRAL_STOCK_BAJO=5` reutilizado también en el CMS de ingredientes; **bug real de reglas encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
 
 ## P2 — Ajustes finos del algoritmo y del CMS
 
@@ -50,6 +50,25 @@ _(vacío — nada a medias todavía)_
 - [x] ADM-03 — Configurar la división de pedidos grandes (solo el CMS; el pedido en sí sigue yendo entero al subgrupo 1 al crearlo — CAM-03 no divide todavía, ver DOMAIN.md) — falta confirmación del usuario en el navegador
 - [x] COC-07 — Activar/desactivar el overflow manualmente (toggle compartido en la pantalla de la plancha; de paso, la barra de capacidad ya se extiende visualmente más allá del 100% — cerraba un pendiente de COC-05) — falta confirmación del usuario en el navegador
 - [x] COC-08 — Recibir alerta cuando un pedido forzado no cabe (ya salía como efecto colateral de COC-02; hoy la hice legible con la mesa en vez del id interno de Firestore) — falta confirmación del usuario en el navegador
+
+## Bug real encontrado y corregido (18 ago): collectionGroup + reglas anidadas
+
+El usuario reportó "Ver pedidos" sin reaccionar en el navegador. Las reglas anidadas
+`match /pedidos/{pedidoId}/lineas/{lineaId}` **no se aplican a `collectionGroup('lineas')`**
+— solo gobiernan lecturas sobre la subcolección de un pedido concreto. Rompía en
+silencio `PlanchaService.enPlancha()` (COC-05), `SugerenciaService.lineasPendientes()`
+(COC-02/COC-08) y `AlertasStockService.mesasConAlerta()` (CAM-05) — las tres usan
+collection group queries. Arreglado añadiendo `match /{path=**}/lineas/{lineaId}` en
+`firebase/firestore.rules`.
+
+**Por qué no se detectó en las verificaciones anteriores**: todas las comprobaciones
+de esas historias se hicieron con el **Admin SDK** (`firebase/service-account.json`),
+que **ignora las Security Rules por completo**. Validaba forma de los datos e índices,
+pero no permisos reales. Para probar permisos de verdad hace falta el SDK de cliente
+autenticado como un usuario real — aquí se hizo con `admin.auth().createCustomToken()`
++ `signInWithCustomToken()` en un script puntual (no se guarda, ver más abajo). El
+Firebase Emulator Suite (pendiente, ver Infraestructura) automatizaría esto en vez de
+depender de scripts manuales cada vez.
 
 ## P3 — Conveniencia
 

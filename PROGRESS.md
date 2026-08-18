@@ -41,7 +41,7 @@ _(vacío — nada a medias todavía)_
 ## P1 — El diferenciador del producto
 
 - [ ] COC-02 — Ver la sugerencia activa de qué cocinar ahora
-- [ ] CAM-05 — Recibir alerta de stock bajo/agotado
+- [x] CAM-05 — Recibir alerta de stock bajo/agotado (tablero de mesas + detalle de pedido; umbral compartido `UMBRAL_STOCK_BAJO=5` reutilizado también en el CMS de ingredientes; verificado con datos reales — falta confirmación del usuario en el navegador)
 
 ## P2 — Ajustes finos del algoritmo y del CMS
 

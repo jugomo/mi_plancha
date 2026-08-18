@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
+import { UMBRAL_STOCK_BAJO } from '../../../../core/alertas-stock.service';
 import { Ingrediente, IngredientesService } from '../ingredientes.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { Ingrediente, IngredientesService } from '../ingredientes.service';
 export class Lista {
   private readonly servicio = inject(IngredientesService);
 
+  protected readonly umbralStockBajo = UMBRAL_STOCK_BAJO;
   protected readonly ingredientes = toSignal(this.servicio.listar(), { initialValue: [] as Ingrediente[] });
   protected readonly borrando = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);

@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Ingrediente, IngredientesService } from '../../../admin/ingredientes/ingredientes.service';
+import { UMBRAL_STOCK_BAJO } from '../../../../core/alertas-stock.service';
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
 import { EstadoLinea, LineaPedido, PedidoResumen, PedidosService } from '../../../../core/pedidos.service';
@@ -11,8 +12,6 @@ interface LineaVista extends LineaPedido {
   nombreIngrediente: string;
   stockBajo: boolean;
 }
-
-const STOCK_BAJO_UMBRAL = 5; // mismo umbral visual que la lista de ingredientes del CMS
 
 @Component({
   selector: 'mp-camarero-pedido-detalle',
@@ -45,7 +44,7 @@ export class Detalle {
       return {
         ...linea,
         nombreIngrediente: ingrediente?.nombre ?? linea.ingredienteId,
-        stockBajo: (ingrediente?.stock ?? Infinity) <= STOCK_BAJO_UMBRAL,
+        stockBajo: (ingrediente?.stock ?? Infinity) <= UMBRAL_STOCK_BAJO,
       };
     });
   });

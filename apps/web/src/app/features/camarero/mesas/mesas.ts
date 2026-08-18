@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
+import { AlertasStockService } from '../../../core/alertas-stock.service';
 import { Sesion } from '../../../core/sesion';
 import { Topbar } from '../../../core/ui/topbar/topbar';
 import { ClientesService, MesaVista } from '../clientes.service';
@@ -15,8 +16,10 @@ import { ClientesService, MesaVista } from '../clientes.service';
 export class Mesas {
   protected readonly sesion = inject(Sesion);
   private readonly clientes = inject(ClientesService);
+  private readonly alertasStock = inject(AlertasStockService);
 
   protected readonly mesas = toSignal(this.clientes.mesasEnVivo(), { initialValue: [] as MesaVista[] });
+  protected readonly mesasConAlerta = toSignal(this.alertasStock.mesasConAlerta(), { initialValue: new Set<number>() });
 
   cerrarSesion(): void {
     void this.sesion.cerrarSesion();

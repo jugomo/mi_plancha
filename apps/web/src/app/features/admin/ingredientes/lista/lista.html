@@ -21,7 +21,7 @@
     </thead>
     <tbody>
       @for (ingrediente of ingredientes(); track ingrediente.id) {
-        <tr [class.stock-bajo]="ingrediente.stock <= 5">
+        <tr [class.stock-bajo]="ingrediente.stock <= umbralStockBajo">
           <td>{{ ingrediente.nombre }}</td>
           <td>{{ ingrediente.capacidadUnidad }}</td>
           <td>{{ ingrediente.tiempoCoccionSeg }} s</td>

@@ -18,6 +18,9 @@
         @if (mesa.estado === 'ocupada') {
           <span class="cliente">{{ mesa.clienteNombre }}</span>
           <span class="detalle">{{ tiempoAbierta(mesa) }}</span>
+          @if (mesasConAlerta().has(mesa.numero)) {
+            <span class="alerta">⚠ Stock bajo</span>
+          }
           <a [routerLink]="['/camarero/clientes', mesa.clienteId]" class="btn-mini">Ver pedidos</a>
         } @else {
           <span class="detalle">Libre</span>

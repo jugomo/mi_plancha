@@ -14,7 +14,10 @@
         <a routerLink="/camarero" class="volver">← Mesas</a>
         <h2>Mesa {{ clienteMesaNumero }} · {{ clienteNombre }}</h2>
       </div>
-      <a [routerLink]="['/camarero/clientes', clienteId, 'pedidos', 'nuevo']" class="btn">+ Nuevo pedido</a>
+      <div class="acciones">
+        <a [routerLink]="['/camarero/clientes', clienteId, 'cuenta']" class="btn secundario">Generar cuenta</a>
+        <a [routerLink]="['/camarero/clientes', clienteId, 'pedidos', 'nuevo']" class="btn">+ Nuevo pedido</a>
+      </div>
     </div>
 
     @if (error()) {

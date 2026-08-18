@@ -35,6 +35,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/camarero/pedidos/detalle/detalle').then((m) => m.Detalle),
   },
   {
+    path: 'camarero/clientes/:clienteId/cuenta',
+    canActivate: [authGuard, rolGuard(['camarero'])],
+    loadComponent: () => import('./features/camarero/cuentas/generar/generar').then((m) => m.Generar),
+  },
+  {
     path: 'cocinero',
     canActivate: [authGuard, rolGuard(['cocinero'])],
     loadComponent: () => import('./features/cocinero/home/home').then((m) => m.CocineroHome),

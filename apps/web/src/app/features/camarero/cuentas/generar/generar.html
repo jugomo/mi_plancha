@@ -1,0 +1,48 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="cuenta">
+  @if (cargando()) {
+    <p class="cargando">Cargando…</p>
+  } @else if (error(); as mensaje) {
+    <p class="error" role="alert">{{ mensaje }}</p>
+  } @else {
+    <a [routerLink]="['/camarero/clientes', clienteId]" class="volver">← Pedidos de {{ clienteNombre }}</a>
+    <h2>Cuenta · Mesa {{ clienteMesaNumero }} · {{ clienteNombre }}</h2>
+
+    <div class="bill">
+      @for (pedido of pedidos; track pedido.pedidoId) {
+        <div class="bill-row">
+          <div>
+            <div>Pedido</div>
+            <div class="lineas">
+              @for (linea of pedido.lineas; track linea.ingredienteNombre) {
+                <span>{{ linea.cantidad }}× {{ linea.ingredienteNombre }}</span>
+              }
+            </div>
+          </div>
+          <span class="num">{{ pedido.subtotal.toFixed(2) }} €</span>
+        </div>
+      } @empty {
+        <p class="vacio">Este cliente no tiene pedidos que facturar.</p>
+      }
+      <div class="bill-row total">
+        <div>Total</div>
+        <span class="num">{{ total.toFixed(2) }} €</span>
+      </div>
+    </div>
+
+    <p class="ayuda">
+      Al confirmar, la mesa {{ clienteMesaNumero }} queda libre y el cliente se elimina del sistema. Esto es solo un
+      listado — no gestiona el cobro.
+    </p>
+
+    <button type="button" (click)="confirmar()" [disabled]="confirmando() || pedidos.length === 0">
+      {{ confirmando() ? 'Confirmando…' : 'Confirmar y cerrar mesa' }}
+    </button>
+  }
+</main>

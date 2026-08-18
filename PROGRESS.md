@@ -6,7 +6,7 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: especificación completa → **implementación en curso**, infraestructura Firebase lista. Siguiente: inicializar `apps/web` (Angular) y empezar las historias P0.
+**Fase**: implementación en curso. P0 de administrador y camarero completos (`ADM-01/02/06/07`, `CAM-01/02/03/04/06`) — falta confirmación del usuario en el navegador para varias. Siguiente: P0 de cocinero (`COC-01/03/04/05/06`), el único rol que queda sin construir del núcleo mínimo.
 
 ## En curso ahora mismo
 
@@ -31,7 +31,7 @@ _(vacío — nada a medias todavía)_
 - [x] CAM-02 — Ver mis mesas en tiempo real (resumen de pedidos pendiente de CAM-03/04; falta confirmación del usuario en el navegador)
 - [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
 - [x] CAM-04 — Ver el estado en tiempo real de un pedido (pantalla de detalle + listado de pedidos por cliente, con alerta de stock bajo; falta confirmación del usuario en el navegador)
-- [ ] CAM-06 — Generar la cuenta de un cliente
+- [x] CAM-06 — Generar la cuenta de un cliente (con snapshot de precios; verificado con transacción real end-to-end en un escenario aislado; falta confirmación del usuario en el navegador)
 - [ ] COC-01 — Ver los pedidos pendientes por prioridad
 - [ ] COC-03 — Tomar un pedido
 - [ ] COC-04 — Colocar un ingrediente en la plancha

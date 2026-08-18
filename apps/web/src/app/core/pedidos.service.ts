@@ -57,6 +57,28 @@ export interface LineaPedido {
   listoEn: Timestamp | null;
 }
 
+// Estado agregado de un pedido tal como lo ve el camarero (overview de mesa,
+// CAM-02; detalle de pedido, CAM-04; listado de pedidos de un cliente) —
+// vocabulario propio, distinto del EstadoLinea de cada línea individual (ver
+// ARCHITECTURE.md, "Máquina de estados de una línea de pedido").
+export type EstadoPedidoVista = 'esperando' | 'cocinando' | 'pendiente_entrega' | 'listo';
+
+export function calcularEstadoPedidoVista(cocineroId: string | null, estadosLineas: EstadoLinea[]): EstadoPedidoVista {
+  if (cocineroId === null) return 'esperando';
+  if (estadosLineas.length > 0 && estadosLineas.every((e) => e === 'listo')) return 'listo';
+  if (estadosLineas.some((e) => e === 'pendiente_entrega' || e === 'listo')) return 'pendiente_entrega';
+  return 'cocinando';
+}
+
+export function etiquetaEstadoPedidoVista(estado: EstadoPedidoVista): string {
+  return {
+    esperando: 'Esperando',
+    cocinando: 'Cocinando',
+    pendiente_entrega: 'Pendiente entrega en mesa',
+    listo: 'Entregado',
+  }[estado];
+}
+
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
   private readonly firestore = inject(FIRESTORE);

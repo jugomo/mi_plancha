@@ -72,6 +72,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   border: 1px solid #d9e0e9;
   border-radius: 8px;
   padding: 13px 15px;
@@ -80,10 +81,50 @@
   color: #1c2530;
   font-size: 0.88rem;
 
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .ver {
     color: #2f5fa3;
     font-weight: 600;
     font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    &.estado-esperando {
+      background: #f6f8fb;
+      color: #56606f;
+      border: 1px solid #d9e0e9;
+    }
+
+    &.estado-cocinando {
+      background: #dde8f8;
+      color: #2f5fa3;
+    }
+
+    &.estado-pendiente_entrega {
+      background: #faecd4;
+      color: #b8791b;
+    }
+
+    &.estado-listo {
+      background: #e1f3e9;
+      color: #2f8a5b;
+    }
   }
 }
 

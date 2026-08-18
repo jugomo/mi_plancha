@@ -27,7 +27,10 @@
     <div class="pedidos">
       @for (pedido of pedidos(); track pedido.id) {
         <a [routerLink]="['/camarero/pedidos', pedido.id]" class="pedido-card">
-          <span class="hora">Pedido de las {{ horaCreacion(pedido) }}</span>
+          <div class="info">
+            <span class="hora">Pedido de las {{ horaCreacion(pedido) }}</span>
+            <span class="chip estado-{{ pedido.estadoVista }}">{{ etiquetaEstado(pedido.estadoVista) }}</span>
+          </div>
           <span class="ver">Ver estado →</span>
         </a>
       } @empty {

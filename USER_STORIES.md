@@ -62,6 +62,7 @@ Como camarero, quiero crear un pedido eligiendo ingredientes y cantidades para l
 ### CAM-04 — Ver el estado en tiempo real de un pedido
 Como camarero, quiero ver de un vistazo en qué punto está un pedido completo, y el detalle de cada línea, a medida que cambia, para saber qué hacer sin tener que preguntar en cocina.
 - El estado general del pedido es uno de: **Esperando** (todavía nadie en cocina lo ha tomado), **Cocinando** (un cocinero lo tiene asignado y lo está preparando), **Pendiente entrega en mesa** (al menos un ingrediente ya está retirado de la plancha y a falta de llevarlo a la mesa) o **Entregado** (todo confirmado en mesa).
+- Ya veo este mismo estado general, uno por pedido, en el listado de pedidos de un cliente (antes de entrar al detalle) — no hace falta abrir cada uno para saber en qué punto está.
 - Cada línea, por separado, muestra su propio estado (pendiente / en plancha / pendiente de entrega / listo).
 - Si el pedido está dividido en tandas (ver `config/division`), veo claramente qué tanda está en curso.
 - Si algún ingrediente del pedido tiene alerta de stock, la veo destacada en esta pantalla.

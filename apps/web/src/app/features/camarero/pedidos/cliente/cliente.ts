@@ -1,11 +1,22 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
 import { ClientesService } from '../../clientes.service';
-import { PedidoResumen, PedidosService } from '../../../../core/pedidos.service';
+import {
+  EstadoLinea,
+  EstadoPedidoVista,
+  PedidoResumen,
+  PedidosService,
+  calcularEstadoPedidoVista,
+  etiquetaEstadoPedidoVista,
+} from '../../../../core/pedidos.service';
+
+interface PedidoVista extends PedidoResumen {
+  estadoVista: EstadoPedidoVista;
+}
 
 @Component({
   selector: 'mp-camarero-cliente-pedidos',
@@ -25,8 +36,24 @@ export class ClientePedidos {
   protected clienteMesaNumero = 0;
   protected readonly error = signal<string | null>(null);
 
-  protected readonly pedidos = toSignal(this.pedidosService.pedidosDeCliente(this.clienteId), {
+  private readonly pedidosCabecera = toSignal(this.pedidosService.pedidosDeCliente(this.clienteId), {
     initialValue: [] as PedidoResumen[],
+  });
+  private readonly estadoLineas = toSignal(this.pedidosService.estadoDeTodasLasLineas(), {
+    initialValue: [] as { pedidoId: string; estado: EstadoLinea }[],
+  });
+
+  protected readonly pedidos = computed<PedidoVista[]>(() => {
+    const estadosPorPedido = new Map<string, EstadoLinea[]>();
+    for (const linea of this.estadoLineas()) {
+      const lista = estadosPorPedido.get(linea.pedidoId) ?? [];
+      lista.push(linea.estado);
+      estadosPorPedido.set(linea.pedidoId, lista);
+    }
+    return this.pedidosCabecera().map((pedido) => ({
+      ...pedido,
+      estadoVista: calcularEstadoPedidoVista(pedido.cocineroId, estadosPorPedido.get(pedido.id) ?? []),
+    }));
   });
 
   constructor() {
@@ -50,5 +77,9 @@ export class ClientePedidos {
 
   horaCreacion(pedido: PedidoResumen): string {
     return pedido.creadoEn?.toDate().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) ?? '';
+  }
+
+  etiquetaEstado(estado: EstadoPedidoVista): string {
+    return etiquetaEstadoPedidoVista(estado);
   }
 }

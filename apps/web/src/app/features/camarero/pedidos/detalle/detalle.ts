@@ -6,16 +6,20 @@ import { Ingrediente, IngredientesService } from '../../../admin/ingredientes/in
 import { UMBRAL_STOCK_BAJO } from '../../../../core/alertas-stock.service';
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
-import { EstadoLinea, LineaPedido, PedidoResumen, PedidosService } from '../../../../core/pedidos.service';
+import {
+  EstadoLinea,
+  EstadoPedidoVista,
+  LineaPedido,
+  PedidoResumen,
+  PedidosService,
+  calcularEstadoPedidoVista,
+  etiquetaEstadoPedidoVista,
+} from '../../../../core/pedidos.service';
 
 interface LineaVista extends LineaPedido {
   nombreIngrediente: string;
   stockBajo: boolean;
 }
-
-// Estado agregado del pedido tal como lo ve el camarero en el overview — vocabulario
-// propio, distinto del EstadoLinea de cada línea individual (ver ARCHITECTURE.md).
-type EstadoPedidoVista = 'esperando' | 'cocinando' | 'pendiente_entrega' | 'listo';
 
 @Component({
   selector: 'mp-camarero-pedido-detalle',
@@ -64,11 +68,10 @@ export class Detalle {
 
   protected readonly estadoPedido = computed<EstadoPedidoVista>(() => {
     const cocineroId = this.pedidoEnVivo()?.cocineroId ?? this.pedido?.cocineroId ?? null;
-    if (cocineroId === null) return 'esperando';
-    const lineas = this.lineas();
-    if (lineas.length > 0 && lineas.every((l) => l.estado === 'listo')) return 'listo';
-    if (lineas.some((l) => l.estado === 'pendiente_entrega' || l.estado === 'listo')) return 'pendiente_entrega';
-    return 'cocinando';
+    return calcularEstadoPedidoVista(
+      cocineroId,
+      this.lineas().map((l) => l.estado),
+    );
   });
 
   constructor() {
@@ -99,12 +102,7 @@ export class Detalle {
   }
 
   etiquetaEstadoPedido(estado: EstadoPedidoVista): string {
-    return {
-      esperando: 'Esperando',
-      cocinando: 'Cocinando',
-      pendiente_entrega: 'Pendiente entrega en mesa',
-      listo: 'Entregado',
-    }[estado];
+    return etiquetaEstadoPedidoVista(estado);
   }
 
   /** CAM-07: confirmo que ya llevé el ingrediente a la mesa — ahí es cuando pasa a "listo". */

@@ -29,7 +29,7 @@ _(vacío — nada a medias todavía)_
 - [x] ADM-07 — Gestionar usuarios y roles (alta vía app Firebase secundaria para no robar la sesión del admin; cambiar rol/activo inline; autobloqueo de auto-desactivarse/auto-cambiarse el rol — falta confirmación del usuario en el navegador)
 - [x] CAM-01 — Abrir una mesa para un cliente (transacción mesa+cliente; falta confirmación del usuario en el navegador)
 - [x] CAM-02 — Ver mis mesas en tiempo real (resumen de pedidos pendiente de CAM-03/04; falta confirmación del usuario en el navegador)
-- [ ] CAM-03 — Crear un pedido para un cliente
+- [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
 - [ ] CAM-04 — Ver el estado en tiempo real de un pedido
 - [ ] CAM-06 — Generar la cuenta de un cliente
 - [ ] COC-01 — Ver los pedidos pendientes por prioridad

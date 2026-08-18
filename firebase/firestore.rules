@@ -144,9 +144,13 @@ service cloud.firestore {
     match /pedidos/{pedidoId}/lineas/{lineaId} {
       allow read: if autenticado();
 
+      // La cantidad no puede superar el stock actual del ingrediente
+      // (criterio de aceptación de CAM-03).
       allow create: if esRol('camarero')
         && request.resource.data.estado == 'pendiente'
-        && request.resource.data.cantidad > 0;
+        && request.resource.data.cantidad > 0
+        && request.resource.data.cantidad
+          <= get(/databases/$(database)/documents/ingredientes/$(request.resource.data.ingredienteId)).data.stock;
 
       // Colocar en la plancha o marcar lista: solo el cocinero asignado al pedido
       // padre, y respetando la secuencia pendiente -> en_plancha -> listo.

@@ -74,6 +74,18 @@
   .pendiente {
     font-style: italic;
   }
+
+  .btn-mini {
+    margin-top: 4px;
+    align-self: flex-start;
+    background: #2f5fa3;
+    color: #fff;
+    border-radius: 6px;
+    padding: 5px 9px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
 }
 
 .vacio {

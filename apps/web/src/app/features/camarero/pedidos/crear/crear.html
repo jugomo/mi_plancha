@@ -1,0 +1,50 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Camarero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="crear-pedido">
+  @if (cargandoCliente()) {
+    <p class="cargando">Cargando…</p>
+  } @else {
+    <h2>Nuevo pedido @if (clienteNombre) { · Mesa {{ clienteMesaNumero }} · {{ clienteNombre }} }</h2>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="ingredientes">
+      @for (ingrediente of ingredientes(); track ingrediente.id) {
+        <div class="fila" [class.sin-stock]="ingrediente.stock === 0">
+          <div>
+            <div class="nombre">{{ ingrediente.nombre }}</div>
+            <div class="stock">{{ ingrediente.stock }} uds disponibles</div>
+          </div>
+          <div class="stepper">
+            <button type="button" (click)="decrementar(ingrediente.id)" [disabled]="cantidad(ingrediente.id) === 0">
+              −
+            </button>
+            <span class="cantidad">{{ cantidad(ingrediente.id) }}</span>
+            <button
+              type="button"
+              (click)="incrementar(ingrediente)"
+              [disabled]="cantidad(ingrediente.id) >= ingrediente.stock"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="pie">
+      <a routerLink="/camarero" class="btn secundario">Cancelar</a>
+      <span class="resumen">{{ totalSeleccionado() }} ingredientes seleccionados</span>
+      <button type="button" (click)="confirmar()" [disabled]="totalSeleccionado() === 0 || guardando()">
+        {{ guardando() ? 'Confirmando…' : 'Confirmar pedido' }}
+      </button>
+    </div>
+  }
+</main>

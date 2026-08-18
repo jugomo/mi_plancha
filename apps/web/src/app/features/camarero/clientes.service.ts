@@ -3,6 +3,7 @@ import {
   Timestamp,
   collection,
   doc,
+  getDoc,
   orderBy,
   query,
   runTransaction,
@@ -23,8 +24,16 @@ export interface MesaVista {
   id: string;
   numero: number;
   estado: 'libre' | 'ocupada';
+  clienteId?: string;
   clienteNombre?: string;
   abiertoEn?: Timestamp;
+}
+
+export interface Cliente {
+  id: string;
+  mesaId: string;
+  nombre: string;
+  camareroId: string;
 }
 
 interface MesaDoc {
@@ -51,7 +60,7 @@ export class ClientesService {
    * Todas las mesas, con el nombre del cliente y desde cuándo está abierta si
    * está ocupada — combina en el cliente los listeners de `mesas` y `clientes`
    * (ver CAM-02). Todavía no incluye el resumen de pedidos por mesa: depende
-   * de CAM-03/CAM-04, que aún no existen.
+   * de CAM-04, que aún no existe.
    */
   mesasEnVivo(): Observable<MesaVista[]> {
     const mesas$ = collectionData$<MesaDoc>(query(collection(this.firestore, 'mesas'), orderBy('numero')));
@@ -66,12 +75,18 @@ export class ClientesService {
             id: mesa.id,
             numero: mesa.numero,
             estado: mesa.estado,
+            clienteId: mesa.clienteId ?? undefined,
             clienteNombre: cliente?.nombre,
             abiertoEn: cliente?.abiertoEn,
           };
         });
       }),
     );
+  }
+
+  async obtenerCliente(id: string): Promise<Cliente | undefined> {
+    const snap = await getDoc(doc(this.firestore, 'clientes', id));
+    return snap.exists() ? { id: snap.id, ...(snap.data() as Omit<Cliente, 'id'>) } : undefined;
   }
 
   /** Transacción "Abrir mesa" de DATA_MODEL.md: crea el cliente y ocupa la mesa a la vez. */

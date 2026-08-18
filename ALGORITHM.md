@@ -40,10 +40,12 @@ Para un pedido cuyo nº total de ingredientes supera `umbral_división`, solo se
 
 ```
 capacidad_extendida = capacidad_total × (1 + porcentaje_overflow)
+uso_acumulado = capacidad_usada_actual   # una sola cifra: no hay dos "reservas"
+                                          # independientes, es la misma plancha física
 
-libre_base       = capacidad_total      - capacidad_usada_actual
-libre_extendida  = capacidad_extendida  - capacidad_usada_actual
-libre = overflow_activo_manual ? libre_extendida : libre_base
+libre_base()      = max(0, capacidad_total     - uso_acumulado)
+libre_extendida()  = max(0, capacidad_extendida - uso_acumulado)
+libre_actual()     = overflow_activo_manual ? libre_extendida() : libre_base()
 
 sugerencia = []
 
@@ -51,21 +53,26 @@ para cada pedido en la cola (orden del Paso 2):
   para cada línea pendiente del pedido (agrupada por ingrediente):
     necesaria = cantidad × capacidad_unidad(ingrediente)
 
-    si necesaria ≤ libre:
-        sugerencia.añadir(línea)
-        libre -= necesaria
+    si necesaria ≤ libre_actual():
+        uso_acumulado += necesaria
+        sugerencia.añadir(línea, usando_overflow = uso_acumulado > capacidad_total)
     si no cabe, el pedido es forzado, y NO se usó ya overflow manual,
-       pero necesaria ≤ libre_extendida - (capacidad_extendida - libre):
+       pero necesaria ≤ libre_extendida():
         # último recurso automático, solo para pedidos forzados
+        uso_acumulado += necesaria
         sugerencia.añadir(línea, usando_overflow = true)
-        libre_extendida -= necesaria
     si tampoco cabe así:
         emitir alerta "pedido #N urgente no cabe en la plancha ni con capacidad extra"
 ```
 
 El recorrido nunca se detiene en el primer pedido que no cabe: sigue con el siguiente de la cola. Esto es lo que permite adelantar pedidos más pequeños llegados después cuando uno más antiguo y más grande no cabe — sin necesidad de una regla aparte.
 
-El overflow automático **solo se aplica a líneas de pedidos forzados** y únicamente cuando ni siquiera así superan `capacidad_extendida`; para todo lo demás, la capacidad tope sigue siendo `capacidad_total` salvo que el cocinero haya activado el overflow manual, en cuyo caso `libre` parte directamente de `capacidad_extendida` para toda la cola (no solo para los forzados).
+El overflow automático **solo se aplica a líneas de pedidos forzados** y únicamente cuando ni siquiera así superan `capacidad_extendida`; para todo lo demás, la capacidad tope sigue siendo `capacidad_total` salvo que el cocinero haya activado el overflow manual, en cuyo caso `libre_actual()` es directamente `libre_extendida()` para toda la cola (no solo para los forzados).
+
+**Dos puntos que no son obvios del pseudocódigo** y que costó una implementación real (y sus casos de prueba) detectar:
+
+1. `libre_base()` y `libre_extendida()` se **recalculan siempre** a partir del mismo `uso_acumulado` — no son dos contadores que cada rama decrementa por su cuenta. Si una línea entra por la vía de overflow automático, el hueco "base" que ve el siguiente pedido de la cola también baja (aunque ese pedido no sea forzado y nunca toque `libre_extendida()` directamente) — porque físicamente ya no queda ese hueco. Tratarlas como reservas separadas deja colarse a pedidos no forzados por una base que ya estaba agotada.
+2. `usando_overflow` se marca igual en las dos vías: es `true` si, tras colocar la línea, `uso_acumulado` supera `capacidad_total` — no solo en la rama de "último recurso automático". Con overflow manual activo, una línea puede entrar por la rama normal (`necesaria ≤ libre_actual()`) y aun así estar usando espacio por encima de la capacidad base.
 
 ## Paso 4 — Bonus de agrupación por tipo de ingrediente
 

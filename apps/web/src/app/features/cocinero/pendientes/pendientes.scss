@@ -13,6 +13,57 @@
   font-size: 0.85rem;
 }
 
+.sugerencia {
+  border: 1.5px solid #2f5fa3;
+  background: #dde8f8;
+  border-radius: 9px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .etiqueta {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #2f5fa3;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .overflow-tag {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #b8791b;
+    background: #faecd4;
+    border-radius: 999px;
+    padding: 1px 6px;
+    margin-left: 2px;
+  }
+
+  button {
+    align-self: flex-start;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 15px;
+    background: #2f5fa3;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
 h3 {
   margin: 0 0 10px;
   font-size: 0.78rem;

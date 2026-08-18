@@ -2,8 +2,16 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
+import { ItemSugerencia, SalidaAlgoritmo } from '../../../core/algoritmo-sugerencia';
 import { PedidoResumen, PedidosService } from '../../../core/pedidos.service';
 import { Sesion } from '../../../core/sesion';
+import { Ingrediente, IngredientesService } from '../../admin/ingredientes/ingredientes.service';
+import { LineaPendienteConPedido, SugerenciaService } from '../sugerencia.service';
+
+interface ItemVista extends ItemSugerencia {
+  nombreIngrediente: string;
+  mesaNumero: number | undefined;
+}
 
 @Component({
   selector: 'mp-cocinero-pendientes',
@@ -14,6 +22,8 @@ import { Sesion } from '../../../core/sesion';
 export class Pendientes {
   private readonly sesion = inject(Sesion);
   private readonly pedidosService = inject(PedidosService);
+  private readonly sugerenciaService = inject(SugerenciaService);
+  private readonly ingredientesService = inject(IngredientesService);
   private readonly router = inject(Router);
 
   protected readonly pendientes = toSignal(this.pedidosService.pendientesSinAsignar(), {
@@ -27,7 +37,37 @@ export class Pendientes {
     { initialValue: [] as PedidoResumen[] },
   );
 
+  private readonly sugerenciaBruta = toSignal(this.sugerenciaService.sugerencia(), {
+    initialValue: { sugerencia: [], capacidadUsadaResultante: 0, alertas: [] } as SalidaAlgoritmo,
+  });
+  private readonly lineasPendientesTodas = toSignal(this.sugerenciaService.lineasPendientes(), {
+    initialValue: [] as LineaPendienteConPedido[],
+  });
+  private readonly ingredientes = toSignal(this.ingredientesService.listar(), {
+    initialValue: [] as Ingrediente[],
+  });
+
+  protected readonly sugerenciaItems = computed<ItemVista[]>(() => {
+    const ingredientePorId = new Map(this.ingredientes().map((i) => [i.id, i]));
+    const mesaPorPedido = this.sugerenciaService.mesaPorPedido(this.lineasPendientesTodas());
+    return this.sugerenciaBruta().sugerencia.map((item) => ({
+      ...item,
+      nombreIngrediente: ingredientePorId.get(item.ingrediente)?.nombre ?? item.ingrediente,
+      mesaNumero: mesaPorPedido.get(item.pedidoId),
+    }));
+  });
+
+  protected readonly capacidadQueUsaria = computed(() =>
+    this.sugerenciaItems().reduce(
+      (suma, item) => suma + (this.ingredientes().find((i) => i.id === item.ingrediente)?.capacidadUnidad ?? 0) * item.cantidad,
+      0,
+    ),
+  );
+
+  protected readonly alertasSugerencia = computed(() => this.sugerenciaBruta().alertas);
+
   protected readonly tomando = signal<string | null>(null);
+  protected readonly aceptando = signal(false);
   protected readonly error = signal<string | null>(null);
 
   esperandoDesde(pedido: PedidoResumen): string {
@@ -49,5 +89,42 @@ export class Pendientes {
       this.error.set('Ese pedido ya lo ha tomado otro cocinero. Elige otro.');
       this.tomando.set(null);
     }
+  }
+
+  /**
+   * Toma (si hace falta) y coloca en la plancha cada línea de la sugerencia.
+   * Es orientativa: si algo cambió entre que se calculó y que se confirma
+   * (otro cocinero se adelantó, el stock bajó), se salta esa línea en vez de
+   * abortar el resto — ver criterio de aceptación de COC-02/03.
+   */
+  async aceptarSugerencia(): Promise<void> {
+    const uid = this.uid();
+    const items = this.sugerenciaItems();
+    if (!uid || this.aceptando() || items.length === 0) return;
+
+    this.error.set(null);
+    this.aceptando.set(true);
+    let fallos = 0;
+
+    for (const item of items) {
+      try {
+        const pedido = await this.pedidosService.obtenerPedido(item.pedidoId);
+        if (!pedido) continue;
+        if (pedido.cocineroId === null) {
+          await this.pedidosService.tomarPedido(item.pedidoId, uid);
+        } else if (pedido.cocineroId !== uid) {
+          fallos++;
+          continue; // otro cocinero se adelantó a tomarlo
+        }
+        await this.pedidosService.colocarEnPlancha(item.pedidoId, item.lineaId, item.ingrediente, item.cantidad);
+      } catch {
+        fallos++;
+      }
+    }
+
+    if (fallos > 0) {
+      this.error.set(`${fallos} de ${items.length} líneas ya no estaban disponibles (te adelantaron o cambió el stock).`);
+    }
+    this.aceptando.set(false);
   }
 }

@@ -3,6 +3,33 @@
     <p class="error" role="alert">{{ error() }}</p>
   }
 
+  @if (sugerenciaItems().length > 0) {
+    <div class="sugerencia">
+      <span class="etiqueta">Sugerencia</span>
+      <p>
+        Cocinar ahora:
+        @for (item of sugerenciaItems(); track item.lineaId; let last = $last) {
+          <strong>{{ item.cantidad }}× {{ item.nombreIngrediente }}</strong>
+          @if (item.mesaNumero) {
+            (Mesa {{ item.mesaNumero }})
+          }
+          @if (item.usandoOverflow) {
+            <span class="overflow-tag">overflow</span>
+          }
+          {{ last ? '' : ' + ' }}
+        }
+        — usa {{ capacidadQueUsaria() }}
+      </p>
+      <button type="button" (click)="aceptarSugerencia()" [disabled]="aceptando()">
+        {{ aceptando() ? 'Colocando…' : 'Aceptar y poner en plancha' }}
+      </button>
+    </div>
+  }
+
+  @for (alerta of alertasSugerencia(); track alerta) {
+    <p class="error" role="alert">{{ alerta }}</p>
+  }
+
   @if (misPedidos().length > 0) {
     <section>
       <h3>Mis pedidos en curso</h3>

@@ -6,7 +6,7 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: implementación en curso. **Todo el P0 (núcleo operativo mínimo) está construido** — administrador, camarero y cocinero. Falta que el usuario confirme en el navegador las historias de cocinero (el resto ya está confirmado). Siguiente: P1 (`COC-02` sugerencia activa, `CAM-05` alerta de stock) o completar `apps/ios`/`apps/android`.
+**Fase**: implementación en curso. **P0 y P1 completos** (todo el núcleo operativo + el diferenciador del producto). Falta que el usuario confirme en el navegador las historias de cocinero y P1 (el resto ya está confirmado). Siguiente: P2 (anti-inanición, overflow, división de pedidos) o `apps/ios`/`apps/android`.
 
 ## En curso ahora mismo
 
@@ -40,7 +40,7 @@ _(vacío — nada a medias todavía)_
 
 ## P1 — El diferenciador del producto
 
-- [ ] COC-02 — Ver la sugerencia activa de qué cocinar ahora
+- [x] COC-02 — Ver la sugerencia activa de qué cocinar ahora (algoritmo puro en `core/algoritmo-sugerencia.ts`, verificado de verdad contra los 4 casos de `algorithm-spec/` — primeros tests reales del proyecto, no `it.todo()`; corregidos 2 fallos reales del propio pseudocódigo de ALGORITHM.md en el proceso; falta confirmación del usuario en el navegador)
 - [x] CAM-05 — Recibir alerta de stock bajo/agotado (tablero de mesas + detalle de pedido; umbral compartido `UMBRAL_STOCK_BAJO=5` reutilizado también en el CMS de ingredientes; verificado con datos reales — falta confirmación del usuario en el navegador)
 
 ## P2 — Ajustes finos del algoritmo y del CMS

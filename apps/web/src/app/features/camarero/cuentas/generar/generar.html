@@ -14,35 +14,43 @@
     <a [routerLink]="['/camarero/clientes', clienteId]" class="volver">← Pedidos de {{ clienteNombre }}</a>
     <h2>Cuenta · Mesa {{ clienteMesaNumero }} · {{ clienteNombre }}</h2>
 
-    <div class="bill">
-      @for (pedido of pedidos; track pedido.pedidoId) {
-        <div class="bill-row">
-          <div>
-            <div>Pedido</div>
-            <div class="lineas">
-              @for (linea of pedido.lineas; track linea.ingredienteNombre) {
-                <span>{{ linea.cantidad }}× {{ linea.ingredienteNombre }}</span>
-              }
+    @if (pedidos.length > 0) {
+      <div class="bill">
+        @for (pedido of pedidos; track pedido.pedidoId) {
+          <div class="bill-row">
+            <div>
+              <div>Pedido</div>
+              <div class="lineas">
+                @for (linea of pedido.lineas; track linea.ingredienteNombre) {
+                  <span>{{ linea.cantidad }}× {{ linea.ingredienteNombre }}</span>
+                }
+              </div>
             </div>
+            <span class="num">{{ pedido.subtotal.toFixed(2) }} €</span>
           </div>
-          <span class="num">{{ pedido.subtotal.toFixed(2) }} €</span>
+        }
+        <div class="bill-row total">
+          <div>Total</div>
+          <span class="num">{{ total.toFixed(2) }} €</span>
         </div>
-      } @empty {
-        <p class="vacio">Este cliente no tiene pedidos que facturar.</p>
-      }
-      <div class="bill-row total">
-        <div>Total</div>
-        <span class="num">{{ total.toFixed(2) }} €</span>
       </div>
-    </div>
 
-    <p class="ayuda">
-      Al confirmar, la mesa {{ clienteMesaNumero }} queda libre y el cliente se elimina del sistema. Esto es solo un
-      listado — no gestiona el cobro.
-    </p>
+      <p class="ayuda">
+        Al confirmar, la mesa {{ clienteMesaNumero }} queda libre y el cliente se elimina del sistema. Esto es solo un
+        listado — no gestiona el cobro.
+      </p>
 
-    <button type="button" (click)="confirmar()" [disabled]="confirmando() || pedidos.length === 0">
-      {{ confirmando() ? 'Confirmando…' : 'Confirmar y cerrar mesa' }}
-    </button>
+      <button type="button" (click)="confirmar()" [disabled]="confirmando()">
+        {{ confirmando() ? 'Confirmando…' : 'Confirmar y cerrar mesa' }}
+      </button>
+    } @else {
+      <p class="vacio">Este cliente no ha hecho ningún pedido — no hay nada que facturar.</p>
+
+      <p class="ayuda">Al cerrar, la mesa {{ clienteMesaNumero }} queda libre y el cliente se elimina del sistema.</p>
+
+      <button type="button" (click)="cerrarSinPedidos()" [disabled]="cerrando()">
+        {{ cerrando() ? 'Cerrando…' : 'Cerrar mesa' }}
+      </button>
+    }
   }
 </main>

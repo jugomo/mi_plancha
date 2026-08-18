@@ -100,4 +100,23 @@ export class CuentasService {
       return cuentaRef.id;
     });
   }
+
+  /**
+   * Cierra la mesa de un cliente que nunca llegó a pedir nada — no tiene
+   * sentido generar una cuenta (nada que listar, nada que sumar), así que
+   * esto libera la mesa directamente sin crear un documento en `cuentas/`.
+   * Mismo criterio de "Generar cuenta" para el resto: borra el cliente y
+   * libera la mesa en la misma transacción.
+   */
+  async cerrarMesaSinPedidos(cliente: ClienteContexto): Promise<void> {
+    await runTransaction(this.firestore, async (tx) => {
+      const clienteRef = doc(this.firestore, 'clientes', cliente.id);
+      const clienteSnap = await tx.get(clienteRef);
+      if (!clienteSnap.exists()) {
+        throw new Error('cliente-ya-cerrado');
+      }
+      tx.delete(clienteRef);
+      tx.update(doc(this.firestore, 'mesas', cliente.mesaId), { estado: 'libre', clienteId: null });
+    });
+  }
 }

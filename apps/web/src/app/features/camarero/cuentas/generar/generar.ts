@@ -37,6 +37,7 @@ export class Generar {
   private pedidoIds: string[] = [];
 
   protected readonly confirmando = signal(false);
+  protected readonly cerrando = signal(false);
 
   constructor() {
     Promise.all([this.clientesService.obtenerCliente(this.clienteId), this.cuentasService.previsualizarCuenta(this.clienteId)])
@@ -96,6 +97,21 @@ export class Generar {
     } catch {
       this.error.set('No se pudo generar la cuenta. Inténtalo de nuevo.');
       this.confirmando.set(false);
+    }
+  }
+
+  /** Cliente que abrió mesa pero no llegó a pedir nada: no hay cuenta que generar, solo liberar la mesa. */
+  async cerrarSinPedidos(): Promise<void> {
+    if (this.cerrando()) return;
+
+    this.error.set(null);
+    this.cerrando.set(true);
+    try {
+      await this.cuentasService.cerrarMesaSinPedidos({ id: this.clienteId, mesaId: this.mesaId, nombre: this.clienteNombre });
+      await this.router.navigateByUrl('/camarero');
+    } catch {
+      this.error.set('No se pudo cerrar la mesa. Inténtalo de nuevo.');
+      this.cerrando.set(false);
     }
   }
 }

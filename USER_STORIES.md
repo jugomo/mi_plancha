@@ -78,6 +78,7 @@ Como camarero, quiero generar la cuenta de un cliente con la suma de todos sus p
 - Al confirmar, el cliente se elimina del sistema y su mesa vuelve a `libre` (transacción "Generar cuenta" en `DATA_MODEL.md`).
 - La cuenta generada queda guardada de forma permanente en el histórico (`cuentas/`), con los precios de ese momento — aunque el CMS cambie precios después, esta cuenta no se ve afectada.
 - Esta acción es solo informativa: no gestiona cobro ni pago real (fuera de alcance de este MVP).
+- Si el cliente abrió mesa pero no llegó a hacer ningún pedido, no hay nada que facturar — en su lugar veo un botón "Cerrar mesa" que libera la mesa y borra el cliente sin crear ningún registro en `cuentas/` (no tendría sentido un histórico de un importe de 0€).
 
 ### CAM-07 — Confirmar la entrega de un ingrediente en mesa
 Como camarero, quiero confirmar cuándo he entregado en la mesa un ingrediente que el cocinero ya retiró de la plancha, para que quede constancia real de que el pedido ya llegó al cliente y no solo de que está preparado.

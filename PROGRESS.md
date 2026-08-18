@@ -28,7 +28,7 @@ _(vacío — nada a medias todavía)_
 - [x] ADM-06 — Configurar el número de mesas (crea/borra mesas/ en batch atómico; bloquea reducir si alguna mesa sobrante está ocupada — falta confirmación del usuario en el navegador)
 - [x] ADM-07 — Gestionar usuarios y roles (alta vía app Firebase secundaria para no robar la sesión del admin; cambiar rol/activo inline; autobloqueo de auto-desactivarse/auto-cambiarse el rol; email visible en la tabla, denormalizado desde Auth — falta confirmación del usuario en el navegador)
 - [x] CAM-01 — Abrir una mesa para un cliente (transacción mesa+cliente; falta confirmación del usuario en el navegador)
-- [x] CAM-02 — Ver mis mesas en tiempo real (resumen de pedidos pendiente de CAM-03/04; falta confirmación del usuario en el navegador)
+- [x] CAM-02 — Ver mis mesas en tiempo real (resumen de pedidos: "⏳ Esperando" / "✓ Todo listo" por mesa, añadido tras confirmar el resto — falta confirmación del usuario en el navegador)
 - [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
 - [x] CAM-04 — Ver el estado en tiempo real de un pedido (pantalla de detalle + listado de pedidos por cliente, con alerta de stock bajo; falta confirmación del usuario en el navegador)
 - [x] CAM-06 — Generar la cuenta de un cliente (con snapshot de precios; verificado con transacción real end-to-end en un escenario aislado; falta confirmación del usuario en el navegador)

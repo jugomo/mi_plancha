@@ -34,4 +34,15 @@ export class Mesas {
     if (minutos < 1) return 'hace un momento';
     return minutos === 1 ? 'hace 1 min' : `hace ${minutos} min`;
   }
+
+  etiquetaEstadoPedidos(mesa: MesaVista): string {
+    switch (mesa.estadoPedidos) {
+      case 'todo_listo':
+        return '✓ Todo listo';
+      case 'esperando':
+        return '⏳ Esperando';
+      default:
+        return '';
+    }
+  }
 }

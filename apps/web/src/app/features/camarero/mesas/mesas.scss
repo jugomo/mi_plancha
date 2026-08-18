@@ -71,6 +71,16 @@
     color: #56606f;
   }
 
+  .estado-pedidos {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #56606f;
+
+    &.listo {
+      color: #2f8a5b;
+    }
+  }
+
   .alerta {
     font-size: 0.68rem;
     font-weight: 700;

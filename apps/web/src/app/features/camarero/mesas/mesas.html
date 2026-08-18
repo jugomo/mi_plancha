@@ -18,6 +18,11 @@
         @if (mesa.estado === 'ocupada') {
           <span class="cliente">{{ mesa.clienteNombre }}</span>
           <span class="detalle">{{ tiempoAbierta(mesa) }}</span>
+          @if (mesa.estadoPedidos && mesa.estadoPedidos !== 'sin_pedidos') {
+            <span class="estado-pedidos" [class.listo]="mesa.estadoPedidos === 'todo_listo'">
+              {{ etiquetaEstadoPedidos(mesa) }}
+            </span>
+          }
           @if (mesasConAlerta().has(mesa.numero)) {
             <span class="alerta">⚠ Stock bajo</span>
           }

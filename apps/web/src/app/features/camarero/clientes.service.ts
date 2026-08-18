@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import {
   Timestamp,
   collection,
+  collectionGroup,
   doc,
   getDoc,
   orderBy,
@@ -20,6 +21,8 @@ export interface MesaLibre {
   numero: number;
 }
 
+export type EstadoPedidosMesa = 'sin_pedidos' | 'esperando' | 'todo_listo';
+
 export interface MesaVista {
   id: string;
   numero: number;
@@ -27,6 +30,7 @@ export interface MesaVista {
   clienteId?: string;
   clienteNombre?: string;
   abiertoEn?: Timestamp;
+  estadoPedidos?: EstadoPedidosMesa;
 }
 
 export interface Cliente {
@@ -47,6 +51,12 @@ interface ClienteDoc {
   abiertoEn: Timestamp;
 }
 
+interface LineaConMesaYFecha {
+  estado: string;
+  mesaNumero: number;
+  pedidoCreadoEn: Timestamp;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
   private readonly firestore = inject(FIRESTORE);
@@ -57,17 +67,22 @@ export class ClientesService {
   }
 
   /**
-   * Todas las mesas, con el nombre del cliente y desde cuándo está abierta si
-   * está ocupada — combina en el cliente los listeners de `mesas` y `clientes`
-   * (ver CAM-02). Todavía no incluye el resumen de pedidos por mesa: depende
-   * de CAM-04, que aún no existe.
+   * Todas las mesas, con el nombre del cliente, desde cuándo está abierta, y
+   * si está esperando pedidos por servir o ya tiene todo listo (ver CAM-02).
+   *
+   * Las líneas no llevan clienteId denormalizado (ver DATA_MODEL.md), así que
+   * para no contar líneas de un cliente anterior que usó la misma mesa, solo
+   * se cuentan las creadas desde que se abrió el cliente actual
+   * (`pedidoCreadoEn >= cliente.abiertoEn`) — siempre es así, porque la mesa
+   * no se puede reabrir para otro cliente hasta generar la cuenta del anterior.
    */
   mesasEnVivo(): Observable<MesaVista[]> {
     const mesas$ = collectionData$<MesaDoc>(query(collection(this.firestore, 'mesas'), orderBy('numero')));
     const clientes$ = collectionData$<ClienteDoc>(collection(this.firestore, 'clientes'));
+    const lineas$ = collectionData$<LineaConMesaYFecha>(collectionGroup(this.firestore, 'lineas'));
 
-    return combineLatest([mesas$, clientes$]).pipe(
-      map(([mesas, clientes]) => {
+    return combineLatest([mesas$, clientes$, lineas$]).pipe(
+      map(([mesas, clientes, lineas]) => {
         const clientePorId = new Map(clientes.map((c) => [c.id, c]));
         return mesas.map((mesa) => {
           const cliente = mesa.clienteId ? clientePorId.get(mesa.clienteId) : undefined;
@@ -78,10 +93,24 @@ export class ClientesService {
             clienteId: mesa.clienteId ?? undefined,
             clienteNombre: cliente?.nombre,
             abiertoEn: cliente?.abiertoEn,
+            estadoPedidos: cliente ? this.calcularEstadoPedidos(mesa.numero, cliente, lineas) : undefined,
           };
         });
       }),
     );
+  }
+
+  private calcularEstadoPedidos(
+    mesaNumero: number,
+    cliente: ClienteDoc,
+    lineas: LineaConMesaYFecha[],
+  ): EstadoPedidosMesa {
+    const abiertoEnMs = cliente.abiertoEn.toMillis();
+    const lineasDeEstaSesion = lineas.filter(
+      (l) => l.mesaNumero === mesaNumero && l.pedidoCreadoEn.toMillis() >= abiertoEnMs,
+    );
+    if (lineasDeEstaSesion.length === 0) return 'sin_pedidos';
+    return lineasDeEstaSesion.every((l) => l.estado === 'listo') ? 'todo_listo' : 'esperando';
   }
 
   async obtenerCliente(id: string): Promise<Cliente | undefined> {

@@ -33,6 +33,11 @@
 
   .barra-wrap {
     position: relative;
+    // La etiqueta "100%" de .marca-base flota por encima de la barra (ver
+    // más abajo) — este margen le hace sitio para que no se solape con el
+    // readout de arriba (ocurría siempre que la marca caía cerca del borde
+    // derecho, ej. con capacidadTotal en 0 mientras carga, o overflow al 0%).
+    margin-top: 18px;
     margin-bottom: 12px;
   }
 

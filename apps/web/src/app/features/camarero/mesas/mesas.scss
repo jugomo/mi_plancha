@@ -46,11 +46,28 @@
   gap: 4px;
   min-height: 84px;
 
-  &.libre {
+  &.estado-libre {
     opacity: 0.55;
     align-items: center;
     justify-content: center;
     text-align: center;
+  }
+
+  // El fondo de la tarjeta ocupada sigue el mismo estado agregado que ya se
+  // ve en el chip de texto — de un vistazo, sin tener que leer la etiqueta.
+  &.estado-en_plancha {
+    background: #dde8f8;
+    border-color: #2f5fa3;
+  }
+
+  &.estado-pendiente_entrega {
+    background: #faecd4;
+    border-color: #b8791b;
+  }
+
+  &.estado-todo_listo {
+    background: #e1f3e9;
+    border-color: #2f8a5b;
   }
 
   .numero {

@@ -35,6 +35,13 @@ export class Mesas {
     return minutos === 1 ? 'hace 1 min' : `hace ${minutos} min`;
   }
 
+  // Clase de color de la tarjeta entera — "libre" manda; si está ocupada, el
+  // color sigue el mismo estado agregado que ya se ve en el chip de texto.
+  estadoTarjeta(mesa: MesaVista): string {
+    if (mesa.estado === 'libre') return 'libre';
+    return mesa.estadoPedidos ?? 'sin_pedidos';
+  }
+
   etiquetaEstadoPedidos(mesa: MesaVista): string {
     switch (mesa.estadoPedidos) {
       case 'todo_listo':

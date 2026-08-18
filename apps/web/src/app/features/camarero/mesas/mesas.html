@@ -13,7 +13,7 @@
 
   <div class="mesa-grid">
     @for (mesa of mesas(); track mesa.id) {
-      <div class="mesa-card" [class.libre]="mesa.estado === 'libre'">
+      <div class="mesa-card" [class]="'estado-' + estadoTarjeta(mesa)">
         <span class="numero">Mesa {{ mesa.numero }}</span>
         @if (mesa.estado === 'ocupada') {
           <span class="cliente">{{ mesa.clienteNombre }}</span>

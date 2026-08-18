@@ -138,7 +138,15 @@ service cloud.firestore {
         && request.resource.data.cuentaId != null
         && soloCambianCampos(['cuentaId']);
 
-      allow delete: if false; // se conserva como historial operativo
+      // Un pedido ya facturado (cuentaId asignado) se puede borrar para
+      // limpiar la lista de completados del cocinero que lo llevó — la
+      // cuenta ya lo tiene todo (nombres, precios, total) en cuentas/, así
+      // que el pedido operativo deja de hacer falta. Antes de facturar, no
+      // se puede borrar (se conserva como historial operativo, ver
+      // DATA_MODEL.md).
+      allow delete: if esRol('cocinero')
+        && resource.data.cocineroId == request.auth.uid
+        && resource.data.cuentaId != null;
     }
 
     match /pedidos/{pedidoId}/lineas/{lineaId} {
@@ -161,7 +169,11 @@ service cloud.firestore {
           || (resource.data.estado == 'en_plancha' && request.resource.data.estado == 'listo')
         );
 
-      allow delete: if false;
+      // Mismo criterio que borrar el pedido padre: solo una vez facturado, y
+      // solo el cocinero que lo llevó.
+      allow delete: if esRol('cocinero')
+        && get(/databases/$(database)/documents/pedidos/$(pedidoId)).data.cocineroId == request.auth.uid
+        && get(/databases/$(database)/documents/pedidos/$(pedidoId)).data.cuentaId != null;
     }
 
     // Firestore NO aplica la regla anidada de arriba a collectionGroup('lineas')

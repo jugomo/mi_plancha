@@ -44,22 +44,8 @@
     </section>
   }
 
-  @if (misPedidosCompletados().length > 0) {
-    <details class="completados">
-      <summary>Pedidos completados ({{ misPedidosCompletados().length }})</summary>
-      <div class="lista">
-        @for (pedido of misPedidosCompletados(); track pedido.id) {
-          <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="pedido-card listo">
-            <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
-            <span class="ver">✓ Listo</span>
-          </a>
-        }
-      </div>
-    </details>
-  }
-
-  <section>
-    <h3>Pedidos pendientes ({{ pendientes().length }})</h3>
+  <details class="pendientes-sec" [open]="pendientes().length <= 5">
+    <summary>Pedidos pendientes ({{ pendientes().length }})</summary>
     <div class="lista">
       @for (pedido of pendientes(); track pedido.id) {
         <div class="pedido-card">
@@ -75,5 +61,31 @@
         <p class="vacio">No hay pedidos pendientes ahora mismo.</p>
       }
     </div>
-  </section>
+  </details>
+
+  @if (misPedidosCompletados().length > 0) {
+    <details class="completados">
+      <summary>Pedidos completados ({{ misPedidosCompletados().length }})</summary>
+      <div class="lista">
+        @for (pedido of misPedidosCompletados(); track pedido.id) {
+          <div class="pedido-card listo">
+            <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="info">
+              <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+              <span class="ver">✓ Listo</span>
+            </a>
+            @if (pedido.cuentaId) {
+              <button
+                type="button"
+                class="borrar"
+                (click)="borrarPedido(pedido)"
+                [disabled]="borrando() === pedido.id"
+              >
+                {{ borrando() === pedido.id ? 'Borrando…' : 'Borrar' }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </details>
+  }
 </main>

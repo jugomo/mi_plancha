@@ -5,6 +5,7 @@ import {
   collectionGroup,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -37,6 +38,7 @@ export interface PedidoResumen {
   clienteNombre: string;
   cocineroId: string | null;
   creadoEn: Timestamp;
+  cuentaId: string | null;
 }
 
 export type EstadoLinea = 'pendiente' | 'en_plancha' | 'listo';
@@ -179,5 +181,22 @@ export class PedidosService {
   async marcarListo(pedidoId: string, lineaId: string): Promise<void> {
     const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
     await updateDoc(lineaRef, { estado: 'listo', listoEn: serverTimestamp() });
+  }
+
+  /**
+   * Borra un pedido ya facturado (cuentaId != null) para limpiar la lista de
+   * completados del cocinero — la cuenta ya conserva todo lo necesario como
+   * historial (ver DATA_MODEL.md). Las reglas de seguridad rechazan el borrado
+   * si todavía no se generó la cuenta, así que esto es solo limpieza, no una
+   * vía para perder datos operativos en curso.
+   */
+  async borrarPedidoCompletado(pedidoId: string): Promise<void> {
+    const lineasSnap = await getDocs(collection(this.firestore, 'pedidos', pedidoId, 'lineas'));
+    const batch = writeBatch(this.firestore);
+    for (const lineaDoc of lineasSnap.docs) {
+      batch.delete(lineaDoc.ref);
+    }
+    batch.delete(doc(this.firestore, 'pedidos', pedidoId));
+    await batch.commit();
   }
 }

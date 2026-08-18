@@ -91,10 +91,15 @@ h3 {
   color: #1c2530;
   text-decoration: none;
 
-  > div {
+  > div,
+  > a.info {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
   }
 
   .id {
@@ -136,6 +141,12 @@ h3 {
       opacity: 0.6;
       cursor: not-allowed;
     }
+
+    &.borrar {
+      background: #fff;
+      color: #c1443b;
+      border: 1.5px solid #c1443b;
+    }
   }
 }
 
@@ -145,6 +156,7 @@ h3 {
   padding: 14px;
 }
 
+.pendientes-sec,
 .completados {
   summary {
     cursor: pointer;
@@ -155,11 +167,15 @@ h3 {
     padding: 4px 0;
 
     &::marker {
-      color: #2f8a5b;
+      color: #2f5fa3;
     }
   }
 
   .lista {
     margin-top: 10px;
   }
+}
+
+.completados summary::marker {
+  color: #2f8a5b;
 }

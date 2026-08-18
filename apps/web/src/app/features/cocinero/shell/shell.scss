@@ -22,7 +22,10 @@
   }
 
   // Botón, no pestaña: lleva a una pantalla aparte, no a un hermano del
-  // mismo nivel — por eso se distingue visualmente y se separa a la derecha.
+  // mismo nivel — por eso se separa a la derecha y lleva su propio borde en
+  // reposo. Pero seleccionado, usa el mismo estilo que Pendientes/Plancha
+  // (la regla `a.activo` de arriba) — un mismo criterio visual de "estás
+  // aquí" para los tres, en vez de que cada uno invente el suyo.
   .completados-btn {
     margin-left: auto;
     border: 1px solid #d9e0e9;
@@ -30,9 +33,7 @@
     background: #f6f8fb;
 
     &.activo {
-      background: #2f5fa3;
-      color: #fff;
-      border-color: #2f5fa3;
+      border-color: #dde8f8;
     }
   }
 }

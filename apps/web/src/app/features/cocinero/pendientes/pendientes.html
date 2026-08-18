@@ -1,0 +1,38 @@
+<main class="pendientes">
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  @if (misPedidos().length > 0) {
+    <section>
+      <h3>Mis pedidos en curso</h3>
+      <div class="lista">
+        @for (pedido of misPedidos(); track pedido.id) {
+          <a [routerLink]="['/cocinero/pedidos', pedido.id]" class="pedido-card">
+            <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+            <span class="ver">Continuar →</span>
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  <section>
+    <h3>Pedidos pendientes ({{ pendientes().length }})</h3>
+    <div class="lista">
+      @for (pedido of pendientes(); track pedido.id) {
+        <div class="pedido-card">
+          <div>
+            <span class="id">Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</span>
+            <span class="edad">esperando desde {{ esperandoDesde(pedido) }}</span>
+          </div>
+          <button type="button" (click)="tomar(pedido)" [disabled]="tomando() === pedido.id">
+            {{ tomando() === pedido.id ? 'Tomando…' : 'Tomar pedido' }}
+          </button>
+        </div>
+      } @empty {
+        <p class="vacio">No hay pedidos pendientes ahora mismo.</p>
+      }
+    </div>
+  </section>
+</main>

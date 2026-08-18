@@ -1,0 +1,8 @@
+// Requiere `PlanchaService`/`IngredientesService` (Firestore real, collection
+// group query) o el Firebase Emulator Suite, todavía no configurado en este
+// proyecto.
+import { describe, it } from 'vitest';
+
+describe('Plancha', () => {
+  it.todo('cubrir con Firebase Emulator Suite (Firestore)');
+});

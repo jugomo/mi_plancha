@@ -6,7 +6,7 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: implementación en curso. P0 de administrador y camarero completos (`ADM-01/02/06/07`, `CAM-01/02/03/04/06`) — falta confirmación del usuario en el navegador para varias. Siguiente: P0 de cocinero (`COC-01/03/04/05/06`), el único rol que queda sin construir del núcleo mínimo.
+**Fase**: implementación en curso. **Todo el P0 (núcleo operativo mínimo) está construido** — administrador, camarero y cocinero. Falta que el usuario confirme en el navegador las historias de cocinero (el resto ya está confirmado). Siguiente: P1 (`COC-02` sugerencia activa, `CAM-05` alerta de stock) o completar `apps/ios`/`apps/android`.
 
 ## En curso ahora mismo
 
@@ -32,11 +32,11 @@ _(vacío — nada a medias todavía)_
 - [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
 - [x] CAM-04 — Ver el estado en tiempo real de un pedido (pantalla de detalle + listado de pedidos por cliente, con alerta de stock bajo; falta confirmación del usuario en el navegador)
 - [x] CAM-06 — Generar la cuenta de un cliente (con snapshot de precios; verificado con transacción real end-to-end en un escenario aislado; falta confirmación del usuario en el navegador)
-- [ ] COC-01 — Ver los pedidos pendientes por prioridad
-- [ ] COC-03 — Tomar un pedido
-- [ ] COC-04 — Colocar un ingrediente en la plancha
-- [ ] COC-05 — Ver la plancha en tiempo real
-- [ ] COC-06 — Marcar un ingrediente como listo
+- [x] COC-01 — Ver los pedidos pendientes por prioridad (FIFO simple por ahora — el forzado por anti-inanición es ADM-04/COC-08, P2; falta confirmación del usuario en el navegador)
+- [x] COC-03 — Tomar un pedido (exclusividad ya la garantizaban las reglas; falta confirmación del usuario en el navegador)
+- [x] COC-04 — Colocar un ingrediente en la plancha (descuenta stock atómicamente; falta confirmación del usuario en el navegador)
+- [x] COC-05 — Ver la plancha en tiempo real (capacidad por tipo + temporizadores; sin overflow todavía — COC-07/ADM-05, P2; falta confirmación del usuario en el navegador)
+- [x] COC-06 — Marcar un ingrediente como listo (en la misma pantalla del pedido asignado; falta confirmación del usuario en el navegador)
 
 ## P1 — El diferenciador del producto
 

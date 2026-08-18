@@ -6,7 +6,7 @@ import { Ingrediente, IngredientesService } from '../../../admin/ingredientes/in
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
 import { ClientesService } from '../../clientes.service';
-import { PedidosService } from '../pedidos.service';
+import { PedidosService } from '../../../../core/pedidos.service';
 
 @Component({
   selector: 'mp-camarero-pedido-crear',

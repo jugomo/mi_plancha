@@ -1,9 +1,21 @@
 import { Injectable, inject } from '@angular/core';
-import { Timestamp, collection, doc, getDoc, orderBy, query, serverTimestamp, where, writeBatch } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  doc,
+  getDoc,
+  orderBy,
+  query,
+  runTransaction,
+  serverTimestamp,
+  updateDoc,
+  where,
+  writeBatch,
+} from 'firebase/firestore';
 import { Observable } from 'rxjs';
 
-import { FIRESTORE } from '../../../core/firebase.providers';
-import { collectionData$ } from '../../../core/firestore-rx';
+import { FIRESTORE } from './firebase.providers';
+import { collectionData$ } from './firestore-rx';
 
 export interface LineaNueva {
   ingredienteId: string;
@@ -21,6 +33,7 @@ export interface PedidoResumen {
   clienteId: string;
   mesaNumero: number;
   clienteNombre: string;
+  cocineroId: string | null;
   creadoEn: Timestamp;
 }
 
@@ -31,6 +44,8 @@ export interface LineaPedido {
   ingredienteId: string;
   cantidad: number;
   estado: EstadoLinea;
+  colocadoEn: Timestamp | null;
+  listoEn: Timestamp | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -85,13 +100,59 @@ export class PedidosService {
     return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
   }
 
+  /** Pedidos sin cocinero asignado todavía — la cola de COC-01. */
+  pendientesSinAsignar(): Observable<PedidoResumen[]> {
+    const ref = query(collection(this.firestore, 'pedidos'), where('cocineroId', '==', null), orderBy('creadoEn'));
+    return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
+  }
+
+  /** Pedidos que un cocinero concreto ha tomado (para volver a ellos tras navegar fuera). */
+  misPedidos(cocineroId: string): Observable<PedidoResumen[]> {
+    const ref = query(collection(this.firestore, 'pedidos'), where('cocineroId', '==', cocineroId), orderBy('creadoEn'));
+    return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
+  }
+
   async obtenerPedido(pedidoId: string): Promise<PedidoResumen | undefined> {
     const snap = await getDoc(doc(this.firestore, 'pedidos', pedidoId));
     return snap.exists() ? { id: snap.id, ...(snap.data() as Omit<PedidoResumen, 'id'>) } : undefined;
   }
 
-  /** Líneas de un pedido en tiempo real — el corazón de CAM-04. */
+  /** Líneas de un pedido en tiempo real — el corazón de CAM-04 y del checklist de cocina. */
   lineasDePedido(pedidoId: string): Observable<LineaPedido[]> {
     return collectionData$<Omit<LineaPedido, 'id'>>(collection(this.firestore, 'pedidos', pedidoId, 'lineas'));
+  }
+
+  /** COC-03: exclusividad garantizada por la regla de seguridad, aquí solo damos un error legible si ya no está libre. */
+  async tomarPedido(pedidoId: string, cocineroId: string): Promise<void> {
+    await runTransaction(this.firestore, async (tx) => {
+      const ref = doc(this.firestore, 'pedidos', pedidoId);
+      const snap = await tx.get(ref);
+      if (!snap.exists() || snap.data()['cocineroId'] !== null) {
+        throw new Error('pedido-ya-tomado');
+      }
+      tx.update(ref, { cocineroId });
+    });
+  }
+
+  /** COC-04: coloca el ingrediente en la plancha y descuenta stock a la vez. */
+  async colocarEnPlancha(pedidoId: string, lineaId: string, ingredienteId: string, cantidad: number): Promise<void> {
+    await runTransaction(this.firestore, async (tx) => {
+      const ingredienteRef = doc(this.firestore, 'ingredientes', ingredienteId);
+      const ingredienteSnap = await tx.get(ingredienteRef);
+      const stockActual = (ingredienteSnap.data()?.['stock'] as number | undefined) ?? 0;
+      if (stockActual < cantidad) {
+        throw new Error('stock-insuficiente');
+      }
+
+      const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
+      tx.update(lineaRef, { estado: 'en_plancha', colocadoEn: serverTimestamp() });
+      tx.update(ingredienteRef, { stock: stockActual - cantidad });
+    });
+  }
+
+  /** COC-06: el cocinero decide y confirma cuándo retira el ingrediente de la plancha. */
+  async marcarListo(pedidoId: string, lineaId: string): Promise<void> {
+    const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
+    await updateDoc(lineaRef, { estado: 'listo', listoEn: serverTimestamp() });
   }
 }

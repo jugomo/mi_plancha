@@ -42,7 +42,16 @@ export const routes: Routes = [
   {
     path: 'cocinero',
     canActivate: [authGuard, rolGuard(['cocinero'])],
-    loadComponent: () => import('./features/cocinero/home/home').then((m) => m.CocineroHome),
+    loadComponent: () => import('./features/cocinero/shell/shell').then((m) => m.CocineroShell),
+    children: [
+      { path: '', pathMatch: 'full', loadComponent: () => import('./features/cocinero/pendientes/pendientes').then((m) => m.Pendientes) },
+      { path: 'plancha', loadComponent: () => import('./features/cocinero/plancha/plancha').then((m) => m.Plancha) },
+    ],
+  },
+  {
+    path: 'cocinero/pedidos/:pedidoId',
+    canActivate: [authGuard, rolGuard(['cocinero'])],
+    loadComponent: () => import('./features/cocinero/pedido/pedido').then((m) => m.Pedido),
   },
   {
     path: 'admin',

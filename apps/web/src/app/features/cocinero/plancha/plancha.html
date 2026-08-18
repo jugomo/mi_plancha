@@ -1,0 +1,27 @@
+<main class="plancha">
+  <div class="capacidad">
+    <div class="readout">
+      <span>Capacidad usada</span>
+      <span class="num">{{ capacidadUsada() }} / {{ capacidadTotal() }}</span>
+    </div>
+    <div class="barra">
+      @for (tipo of porTipo(); track tipo.nombre) {
+        <span [style.width.%]="porcentaje(tipo.capacidad)" [title]="tipo.nombre">{{ tipo.nombre }}</span>
+      }
+    </div>
+    <!-- El overflow (+X% configurable) todavía no está construido — COC-07/ADM-05, P2. -->
+  </div>
+
+  <h3>En cocción ahora</h3>
+  <div class="items">
+    @for (item of items(); track item.id) {
+      <div class="item" [class.casi-listo]="item.restanteSeg <= 15">
+        <span class="nombre">{{ item.cantidad }}× {{ item.nombreIngrediente }}</span>
+        <span class="mesa">Mesa {{ item.mesaNumero }}</span>
+        <span class="timer">{{ item.restanteSeg === 0 ? '¡Listo!' : formatoRestante(item.restanteSeg) }}</span>
+      </div>
+    } @empty {
+      <p class="vacio">No hay nada en la plancha ahora mismo.</p>
+    }
+  </div>
+</main>

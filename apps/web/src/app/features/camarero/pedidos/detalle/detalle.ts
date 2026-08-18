@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Ingrediente, IngredientesService } from '../../../admin/ingredientes/ingredientes.service';
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
-import { EstadoLinea, LineaPedido, PedidoResumen, PedidosService } from '../pedidos.service';
+import { EstadoLinea, LineaPedido, PedidoResumen, PedidosService } from '../../../../core/pedidos.service';
 
 interface LineaVista extends LineaPedido {
   nombreIngrediente: string;

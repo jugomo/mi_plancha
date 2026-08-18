@@ -1,0 +1,11 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Cocinero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+<nav class="cocinero-nav">
+  <a routerLink="" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">Pendientes</a>
+  <a routerLink="plancha" routerLinkActive="activo">Plancha</a>
+</nav>
+<router-outlet />

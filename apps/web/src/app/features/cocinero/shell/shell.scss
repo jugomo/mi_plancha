@@ -1,0 +1,22 @@
+.cocinero-nav {
+  display: flex;
+  gap: 4px;
+  padding: 10px 20px 0;
+  background: #ffffff;
+  border-bottom: 1px solid #d9e0e9;
+
+  a {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 7px 7px 0 0;
+    color: #56606f;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    &.activo {
+      background: #dde8f8;
+      color: #2f5fa3;
+    }
+  }
+}

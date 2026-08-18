@@ -1,0 +1,46 @@
+<mp-topbar
+  titulo="mi_plancha"
+  [nombre]="sesion.usuario()?.nombre ?? ''"
+  rolLabel="Cocinero"
+  (cerrarSesion)="cerrarSesion()"
+/>
+
+<main class="pedido">
+  @if (cargandoPedido()) {
+    <p class="cargando">Cargando…</p>
+  } @else if (error(); as mensaje) {
+    <p class="error" role="alert">{{ mensaje }}</p>
+    <a routerLink="/cocinero" class="volver">← Volver a pendientes</a>
+  } @else if (pedido) {
+    <a routerLink="/cocinero" class="volver">← Pendientes</a>
+    <h2>Mesa {{ pedido.mesaNumero }} · {{ pedido.clienteNombre }}</h2>
+
+    <div class="checklist">
+      @for (linea of lineasVista(); track linea.id) {
+        <div class="linea">
+          <div class="info">
+            <span class="nombre">{{ linea.cantidad }}× {{ linea.nombreIngrediente }}</span>
+            @if (linea.estado === 'en_plancha' && linea.restanteSeg !== null) {
+              <span class="timer" [class.casi-listo]="linea.restanteSeg <= 15">
+                {{ linea.restanteSeg === 0 ? 'Cocción terminada' : formatoRestante(linea.restanteSeg) + ' restante' }}
+              </span>
+            }
+            @if (linea.estado === 'listo') {
+              <span class="timer listo-texto">Listo</span>
+            }
+          </div>
+
+          @if (linea.estado === 'pendiente') {
+            <button type="button" (click)="ponerEnPlancha(linea)" [disabled]="ocupada() === linea.id">
+              {{ ocupada() === linea.id ? 'Colocando…' : 'Poner en plancha' }}
+            </button>
+          } @else if (linea.estado === 'en_plancha') {
+            <button type="button" (click)="marcarListo(linea)" [disabled]="ocupada() === linea.id">
+              {{ ocupada() === linea.id ? 'Marcando…' : 'Retirar y marcar listo' }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</main>

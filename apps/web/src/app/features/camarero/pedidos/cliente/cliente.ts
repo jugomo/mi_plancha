@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
 import { ClientesService } from '../../clientes.service';
-import { PedidoResumen, PedidosService } from '../pedidos.service';
+import { PedidoResumen, PedidosService } from '../../../../core/pedidos.service';
 
 @Component({
   selector: 'mp-camarero-cliente-pedidos',

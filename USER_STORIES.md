@@ -36,7 +36,7 @@ No bloquea ninguna operación real del día a día.
 Como usuario del sistema, quiero iniciar sesión con las credenciales de mi rol, para acceder a la interfaz correspondiente.
 - El sistema determina la interfaz a mostrar según `usuarios/{uid}.rol` (camarero / cocinero / administrador / superadmin).
 - Superadmin y administrador inician sesión con email real + contraseña, en la pestaña "Administración".
-- Camarero y cocinero inician sesión con código de empresa + usuario + contraseña, en la pestaña "Empresa" (por defecto) — ver `DATA_MODEL.md`, "Login de camarero/cocinero".
+- Camarero y cocinero inician sesión con código de empresa + usuario + contraseña, en la pestaña "Trabajador" (por defecto) — ver `DATA_MODEL.md`, "Login de camarero/cocinero".
 - Si las credenciales son incorrectas, se muestra un error claro sin revelar cuál de los datos falló (ni email/contraseña, ni empresa/usuario/contraseña).
 - Si mi empresa está desactivada (ver `SA-02`), no puedo iniciar sesión, ni seguir usando una sesión ya abierta.
 

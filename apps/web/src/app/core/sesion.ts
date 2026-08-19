@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Auth, User, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Firestore, Unsubscribe, doc, onSnapshot } from 'firebase/firestore';
 
@@ -33,6 +34,7 @@ export interface Usuario {
 export class Sesion {
   private readonly auth = inject(AUTH);
   private readonly firestore = inject(FIRESTORE);
+  private readonly router = inject(Router);
 
   readonly usuario = signal<Usuario | null | undefined>(undefined);
 
@@ -51,6 +53,12 @@ export class Sesion {
 
     if (!user) {
       this.usuario.set(null);
+      // Los guards (authGuard/rolGuard) solo se evalúan al navegar — si la
+      // sesión se invalida estando ya en una pantalla (logout explícito, o
+      // el forzado de cerrarPorSesionInvalida()), nadie vuelve a evaluarlos
+      // por sí solo. Sin este redirect explícito, la pantalla se queda tal
+      // cual hasta que el usuario navega o refresca a mano.
+      void this.router.navigateByUrl('/login');
       return;
     }
 

@@ -24,8 +24,9 @@ export class Login {
   // dentro de enviar(), donde toObservable() ya no tendría contexto propio.
   private readonly usuarioResuelto$ = toObservable(this.sesion.usuario);
 
-  // Camarero/cocinero (empresa+usuario) es la pestaña por defecto: es el
-  // login del día a día. Administrador/superadmin siguen con email real.
+  // Camarero/cocinero (pestaña "Trabajador": empresa+usuario) es la pestaña
+  // por defecto: es el login del día a día. Administrador/superadmin siguen
+  // con email real, en "Administración".
   protected pestana = signal<Pestana>('empresa');
 
   protected codigoEmpresa = '';

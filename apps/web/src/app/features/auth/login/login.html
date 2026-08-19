@@ -3,10 +3,36 @@
     <h1>mi_plancha</h1>
     <p class="subtitulo">Inicia sesión</p>
 
-    <label>
-      Email
-      <input type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
-    </label>
+    <div class="pestanas" role="tablist">
+      <button type="button" role="tab" [class.activa]="pestana() === 'empresa'" (click)="cambiarPestana('empresa')">
+        Empresa
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.activa]="pestana() === 'administracion'"
+        (click)="cambiarPestana('administracion')"
+      >
+        Administración
+      </button>
+    </div>
+
+    @if (pestana() === 'empresa') {
+      <label>
+        Empresa
+        <input type="text" name="codigoEmpresa" [(ngModel)]="codigoEmpresa" required autocomplete="off" />
+      </label>
+
+      <label>
+        Usuario
+        <input type="text" name="username" [(ngModel)]="username" required autocomplete="username" />
+      </label>
+    } @else {
+      <label>
+        Email
+        <input type="email" name="email" [(ngModel)]="email" required autocomplete="username" />
+      </label>
+    }
 
     <label>
       Contraseña
@@ -17,7 +43,7 @@
       <p class="error" role="alert">{{ error() }}</p>
     }
 
-    <button type="submit" [disabled]="f.invalid || enviando()">
+    <button type="submit" class="btn-enviar" [disabled]="f.invalid || enviando()">
       {{ enviando() ? 'Entrando…' : 'Entrar' }}
     </button>
   </form>

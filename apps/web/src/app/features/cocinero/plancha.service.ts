@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 
 import { FIRESTORE } from '../../core/firebase.providers';
 import { collectionData$, docData$ } from '../../core/firestore-rx';
+import { Sesion } from '../../core/sesion';
 
 export interface LineaEnPlancha {
   id: string;
@@ -21,18 +22,29 @@ export interface EstadoPlancha {
 @Injectable({ providedIn: 'root' })
 export class PlanchaService {
   private readonly firestore = inject(FIRESTORE);
+  private readonly sesion = inject(Sesion);
+
+  private empresaId(): string {
+    const id = this.sesion.usuario()?.empresaId;
+    if (!id) throw new Error('sin-empresa');
+    return id;
+  }
+
+  private empresaDoc(...pathSegments: string[]) {
+    return doc(this.firestore, 'empresas', this.empresaId(), ...pathSegments);
+  }
 
   /**
-   * Todas las líneas en cocción ahora mismo, de cualquier pedido, las más
+   * Todas las líneas en cocción ahora mismo, de esta empresa, las más
    * antiguas primero. El `orderBy` no es solo cosmético: hace falta para que
    * la consulta encaje con el índice de collection group ya existente
-   * (estado + pedidoCreadoEn, ver DATA_MODEL.md/ALGORITHM.md) — sin él,
-   * Firestore pide un índice de un solo campo aparte para `estado` en
-   * collection group.
+   * (empresaId + estado + pedidoCreadoEn, ver DATA_MODEL.md/ALGORITHM.md) —
+   * sin él, Firestore pide un índice aparte.
    */
   enPlancha(): Observable<LineaEnPlancha[]> {
     const ref = query(
       collectionGroup(this.firestore, 'lineas'),
+      where('empresaId', '==', this.empresaId()),
       where('estado', '==', 'en_plancha'),
       orderBy('pedidoCreadoEn'),
     );
@@ -40,26 +52,26 @@ export class PlanchaService {
   }
 
   capacidadTotal(): Observable<number> {
-    return docData$<{ capacidadTotal: number }>(doc(this.firestore, 'config', 'plancha')).pipe(
+    return docData$<{ capacidadTotal: number }>(this.empresaDoc('config', 'plancha')).pipe(
       map((datos) => datos?.capacidadTotal ?? 0),
     );
   }
 
   overflowPorcentaje(): Observable<number> {
-    return docData$<{ porcentaje: number }>(doc(this.firestore, 'config', 'overflow')).pipe(
+    return docData$<{ porcentaje: number }>(this.empresaDoc('config', 'overflow')).pipe(
       map((datos) => datos?.porcentaje ?? 0),
     );
   }
 
   /** COC-07: cualquier cocinero puede activar/desactivar el overflow manual — es un ajuste de la plancha compartida, no personal. */
   estadoOverflow(): Observable<EstadoPlancha> {
-    return docData$<EstadoPlancha>(doc(this.firestore, 'plancha', 'estado')).pipe(
+    return docData$<EstadoPlancha>(this.empresaDoc('plancha', 'estado')).pipe(
       map((datos) => datos ?? { overflowManualActivo: false, activadoPor: null }),
     );
   }
 
   alternarOverflowManual(activo: boolean, cocineroId: string): Promise<void> {
-    return setDoc(doc(this.firestore, 'plancha', 'estado'), {
+    return setDoc(this.empresaDoc('plancha', 'estado'), {
       overflowManualActivo: activo,
       activadoPor: activo ? cocineroId : null,
       activadoEn: activo ? serverTimestamp() : null,

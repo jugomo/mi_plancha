@@ -2,7 +2,7 @@
 
 Para el detalle de dominio, algoritmo y datos que respaldan los criterios de aceptación, ver [DOMAIN.md](./DOMAIN.md), [ALGORITHM.md](./ALGORITHM.md) y [DATA_MODEL.md](./DATA_MODEL.md). Para las pantallas, ver el wireframe navegable enlazado desde la conversación de diseño.
 
-Convención de IDs: `CAM-` camarero, `COC-` cocinero, `ADM-` administrador, `GEN-` transversal (cualquier rol).
+Convención de IDs: `CAM-` camarero, `COC-` cocinero, `ADM-` administrador, `SA-` superadmin, `GEN-` transversal (cualquier rol).
 
 ## Priorización
 
@@ -11,7 +11,9 @@ Las 22 historias son todas parte del alcance del MVP definido en `DOMAIN.md` —
 ### P0 — Núcleo operativo mínimo (sin esto no hay app)
 El ciclo completo pedido → plancha → entrega → cuenta, funcionando de la forma más simple posible (sin inteligencia todavía: el cocinero decide todo a ojo, como hace hoy sin la app).
 
-`GEN-01`, `ADM-01`, `ADM-02`, `ADM-06`, `ADM-07`, `CAM-01`, `CAM-02`, `CAM-03`, `CAM-04`, `CAM-06`, `CAM-07`, `COC-01`, `COC-03`, `COC-04`, `COC-05`, `COC-06`
+`GEN-01`, `SA-01`, `SA-02`, `SA-03`, `SA-04`, `ADM-01`, `ADM-02`, `ADM-06`, `ADM-07`, `CAM-01`, `CAM-02`, `CAM-03`, `CAM-04`, `CAM-06`, `CAM-07`, `COC-01`, `COC-03`, `COC-04`, `COC-05`, `COC-06`
+
+`SA-*` va antes que `ADM-07`: sin una empresa creada por el superadmin no existe ningún administrador con quien empezar — es el primer eslabón de toda la cadena de altas (superadmin → administrador de una empresa → camarero/cocinero de esa empresa).
 
 ### P1 — El diferenciador del producto (no recortar: es la razón de ser de "mi_plancha")
 Sin esto, lo construido en P0 es un comandero genérico más — la sugerencia activa es literalmente la idea original del proyecto ("optimizar y maximizar el uso de la plancha").
@@ -31,14 +33,39 @@ No bloquea ninguna operación real del día a día.
 ## Transversal (`GEN-`)
 
 ### GEN-01 — Iniciar sesión
-Como usuario del sistema, quiero iniciar sesión con mi email y contraseña, para acceder a la interfaz correspondiente a mi rol.
-- El sistema determina la interfaz a mostrar según `usuarios/{uid}.rol` (camarero / cocinero / administrador).
-- Si las credenciales son incorrectas, se muestra un error claro sin revelar si el fallo es el email o la contraseña.
+Como usuario del sistema, quiero iniciar sesión con las credenciales de mi rol, para acceder a la interfaz correspondiente.
+- El sistema determina la interfaz a mostrar según `usuarios/{uid}.rol` (camarero / cocinero / administrador / superadmin).
+- Superadmin y administrador inician sesión con email real + contraseña, en la pestaña "Administración".
+- Camarero y cocinero inician sesión con código de empresa + usuario + contraseña, en la pestaña "Empresa" (por defecto) — ver `DATA_MODEL.md`, "Login de camarero/cocinero".
+- Si las credenciales son incorrectas, se muestra un error claro sin revelar cuál de los datos falló (ni email/contraseña, ni empresa/usuario/contraseña).
+- Si mi empresa está desactivada (ver `SA-02`), no puedo iniciar sesión, ni seguir usando una sesión ya abierta.
 
 ### GEN-02 — Ver la app como otro rol (solo lectura)
 Como usuario autenticado, quiero cambiar temporalmente a la vista de otro rol en modo solo lectura, para comprobar el estado del sistema desde su perspectiva sin poder actuar como él.
 - Todas las pantallas del rol visualizado se muestran normalmente, pero cualquier acción de escritura queda bloqueada (las Security Rules ya lo garantizan: mis permisos reales, no los del rol que estoy visualizando, son los que aplican).
 - Es evidente en la interfaz que estoy en modo "ver como", y puedo volver a mi rol real en un toque/clic.
+
+## Superadmin (`SA-`)
+
+### SA-01 — Crear una empresa con su administrador
+Como superadmin, quiero dar de alta una empresa nueva junto con su administrador dedicado, para poner en marcha un restaurante independiente en el sistema.
+- Se genera automáticamente un código único de empresa (1 letra mayúscula + 3 dígitos, ver `DATA_MODEL.md`), que necesitará después todo el personal de esa empresa para iniciar sesión.
+- El administrador creado tiene, dentro de su empresa, los mismos privilegios que tenía el único administrador de la versión anterior (CMS completo + gestión de camarero/cocinero).
+- Al terminar, veo el código de la empresa recién creada para compartirlo.
+
+### SA-02 — Activar/desactivar una empresa
+Como superadmin, quiero poder desactivar una empresa, para bloquear su acceso sin perder ninguno de sus datos.
+- Desactivar (`activa: false`) impide iniciar sesión a todo su personal (administrador, camarero, cocinero) y cierra las sesiones ya abiertas.
+- No es un borrado: todos sus datos (mesas, productos, pedidos, cuentas históricas) se conservan intactos, igual que `cuentas/` nunca se borra.
+- Puedo reactivarla en cualquier momento y todo sigue donde estaba.
+
+### SA-03 — Gestionar el administrador de cualquier empresa
+Como superadmin, quiero poder editar o desactivar la cuenta de administrador de cualquier empresa, para poder recuperar el acceso si ese administrador pierde su contraseña (no hay recuperación por email en este sistema).
+
+### SA-04 — Gestionar camarero/cocinero de cualquier empresa
+Como superadmin, quiero poder añadir, editar y eliminar camareros y cocineros de cualquier empresa, con la misma capacidad que tiene el administrador de esa empresa sobre su propio personal.
+- Al invitar, elijo primero a qué empresa pertenece el nuevo usuario.
+- El listado muestra el personal de todas las empresas, con una columna que indica a cuál pertenece cada uno.
 
 ## Camarero (`CAM-`)
 
@@ -160,10 +187,12 @@ Como administrador, quiero definir qué porcentaje de capacidad extra se puede u
 ### ADM-06 — Configurar el número de mesas
 Como administrador, quiero definir cuántas mesas tiene el local, para que los camareros solo puedan abrir mesas que existen realmente.
 
-### ADM-07 — Gestionar usuarios y roles
-Como administrador, quiero dar de alta, editar y desactivar cuentas de personal asignándoles un rol (camarero/cocinero/administrador), para controlar quién puede hacer qué en el sistema.
-- El primer administrador se crea manualmente fuera de la app (ver `ARCHITECTURE.md`); a partir de ahí, todo se gestiona desde aquí.
-- Desactivar un usuario (`activo: false`) le impide operar sin borrar su historial de acciones pasadas.
+### ADM-07 — Gestionar camarero/cocinero de mi empresa
+Como administrador, quiero dar de alta, editar, desactivar y eliminar cuentas de camarero/cocinero **de mi propia empresa**, para controlar quién puede hacer qué en mi restaurante.
+- Solo puedo gestionar camarero/cocinero — no puedo crear otro administrador (eso lo hace el superadmin al crear una empresa, `SA-01`) ni tocar personal de otra empresa.
+- Al invitar, elijo un usuario y contraseña (no un email) — es lo que ese camarero/cocinero teclea para entrar, junto al código de mi empresa (ver `DATA_MODEL.md`).
+- Desactivar un usuario (`activo: false`) le impide operar sin borrar su historial de acciones pasadas; eliminarlo le impide volver a iniciar sesión (el historial de pedidos/cuentas que ya generó no se ve afectado, esos quedan igual con su `uid` como autor).
+- Mi propia cuenta de administrador no aparece en este listado — la gestiona el superadmin (`SA-03`).
 
 ## Fuera de alcance de esta versión (no hay historia todavía)
 

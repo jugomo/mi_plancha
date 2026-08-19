@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 
 import { FIRESTORE } from '../../../core/firebase.providers';
+import { Sesion } from '../../../core/sesion';
 import { ConfigService } from '../config/config.service';
 
 interface ConfigMesas {
@@ -17,7 +18,14 @@ interface ConfigMesas {
 })
 export class Mesas {
   private readonly firestore = inject(FIRESTORE);
+  private readonly sesion = inject(Sesion);
   private readonly config = inject(ConfigService);
+
+  private empresaId(): string {
+    const id = this.sesion.usuario()?.empresaId;
+    if (!id) throw new Error('sin-empresa');
+    return id;
+  }
 
   protected numeroDeMesas = 12;
 
@@ -48,7 +56,9 @@ export class Mesas {
     this.guardando.set(true);
 
     try {
-      const actuales = await getDocs(collection(this.firestore, 'mesas'));
+      const empresaId = this.empresaId();
+      const mesasRef = collection(this.firestore, 'empresas', empresaId, 'mesas');
+      const actuales = await getDocs(mesasRef);
       const maximoActual = actuales.docs.reduce((max, d) => Math.max(max, Number(d.id)), 0);
       const nuevo = this.numeroDeMesas;
 
@@ -56,7 +66,7 @@ export class Mesas {
 
       if (nuevo > maximoActual) {
         for (let n = maximoActual + 1; n <= nuevo; n++) {
-          batch.set(doc(this.firestore, 'mesas', String(n)), { numero: n, estado: 'libre', clienteId: null });
+          batch.set(doc(mesasRef, String(n)), { numero: n, estado: 'libre', clienteId: null });
         }
       } else if (nuevo < maximoActual) {
         const aBorrar = actuales.docs.filter((d) => Number(d.id) > nuevo);
@@ -68,7 +78,7 @@ export class Mesas {
         for (const d of aBorrar) batch.delete(d.ref);
       }
 
-      batch.set(doc(this.firestore, 'config', 'mesas'), { numeroDeMesas: nuevo });
+      batch.set(doc(this.firestore, 'empresas', empresaId, 'config', 'mesas'), { numeroDeMesas: nuevo });
       await batch.commit();
       this.guardado.set(true);
     } catch {

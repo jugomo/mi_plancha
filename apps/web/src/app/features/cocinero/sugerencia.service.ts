@@ -11,6 +11,7 @@ import {
 } from '../../core/algoritmo-sugerencia';
 import { FIRESTORE } from '../../core/firebase.providers';
 import { docData$ } from '../../core/firestore-rx';
+import { Sesion } from '../../core/sesion';
 import { Producto, ProductosService } from '../admin/productos/productos.service';
 import { PlanchaService } from './plancha.service';
 
@@ -31,20 +32,28 @@ export interface LineaPendienteConPedido extends LineaPendienteDoc {
 @Injectable({ providedIn: 'root' })
 export class SugerenciaService {
   private readonly firestore = inject(FIRESTORE);
+  private readonly sesion = inject(Sesion);
   private readonly productosService = inject(ProductosService);
   private readonly planchaService = inject(PlanchaService);
 
+  private empresaId(): string {
+    const id = this.sesion.usuario()?.empresaId;
+    if (!id) throw new Error('sin-empresa');
+    return id;
+  }
+
   /**
-   * Todas las líneas pendientes de cualquier pedido, con el id de su pedido
+   * Todas las líneas pendientes de esta empresa, con el id de su pedido
    * (derivado de la ruta del documento, no denormalizado). Es la cola de
    * candidatos del algoritmo — ver ALGORITHM.md y DATA_MODEL.md. El orderBy
    * es necesario para que la consulta encaje con el índice de collection
-   * group ya existente (estado + pedidoCreadoEn) — ver PlanchaService.
+   * group ya existente (empresaId + estado + pedidoCreadoEn) — ver PlanchaService.
    */
   lineasPendientes(): Observable<LineaPendienteConPedido[]> {
     return new Observable((subscriber) => {
       const ref = query(
         collectionGroup(this.firestore, 'lineas'),
+        where('empresaId', '==', this.empresaId()),
         where('estado', '==', 'pendiente'),
         orderBy('pedidoCreadoEn'),
       );
@@ -77,9 +86,9 @@ export class SugerenciaService {
       this.productosService.listar(),
       this.planchaService.enPlancha(),
       this.planchaService.capacidadTotal(),
-      docData$<{ tiempoMaximoEsperaMin: number }>(doc(this.firestore, 'config', 'antiInanicion')),
-      docData$<{ porcentaje: number }>(doc(this.firestore, 'config', 'overflow')),
-      docData$<{ overflowManualActivo: boolean }>(doc(this.firestore, 'plancha', 'estado')),
+      docData$<{ tiempoMaximoEsperaMin: number }>(doc(this.firestore, 'empresas', this.empresaId(), 'config', 'antiInanicion')),
+      docData$<{ porcentaje: number }>(doc(this.firestore, 'empresas', this.empresaId(), 'config', 'overflow')),
+      docData$<{ overflowManualActivo: boolean }>(doc(this.firestore, 'empresas', this.empresaId(), 'plancha', 'estado')),
     ]).pipe(
       map(([lineasPendientes, productos, enPlancha, capacidadTotal, antiInanicion, overflow, estadoPlancha]) => {
         const productosMap: Record<string, ProductoAlgoritmo> = {};

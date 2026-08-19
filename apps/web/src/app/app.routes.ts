@@ -124,5 +124,36 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'superadmin',
+    title: 'mi_plancha - Superadmin',
+    canActivate: [authGuard, rolGuard(['superadmin'])],
+    loadComponent: () => import('./features/superadmin/shell/shell').then((m) => m.SuperadminShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'empresas' },
+      {
+        path: 'empresas',
+        loadComponent: () => import('./features/superadmin/empresas/lista/lista').then((m) => m.Lista),
+      },
+      {
+        path: 'empresas/nueva',
+        loadComponent: () =>
+          import('./features/superadmin/empresas/formulario/formulario').then((m) => m.Formulario),
+      },
+      {
+        path: 'empresas/:codigo',
+        loadComponent: () =>
+          import('./features/superadmin/empresas/formulario/formulario').then((m) => m.Formulario),
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/superadmin/usuarios/lista/lista').then((m) => m.Lista),
+      },
+      {
+        path: 'usuarios/invitar',
+        loadComponent: () => import('./features/superadmin/usuarios/invitar/invitar').then((m) => m.Invitar),
+      },
+    ],
+  },
   { path: '**', redirectTo: 'login' },
 ];

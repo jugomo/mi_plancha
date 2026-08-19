@@ -1,6 +1,6 @@
 :host {
   display: block;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 24px 20px;
 }
@@ -71,9 +71,20 @@ tr:last-child td {
   color: #56606f;
 }
 
+.tu {
+  color: #56606f;
+  font-size: 0.78rem;
+  margin-left: 4px;
+}
+
 .email {
   color: #56606f;
   font-size: 0.82rem;
+}
+
+.rol-fijo {
+  color: #56606f;
+  font-size: 0.85rem;
 }
 
 select {

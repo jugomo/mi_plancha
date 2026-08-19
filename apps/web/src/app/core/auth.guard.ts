@@ -9,6 +9,7 @@ export const HOME_POR_ROL: Record<Rol, string> = {
   camarero: '/camarero',
   cocinero: '/cocinero',
   administrador: '/admin',
+  superadmin: '/superadmin',
 };
 
 /** Espera a que la sesión inicial termine de resolverse (undefined -> null | Usuario). */

@@ -6,7 +6,16 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 ## Estado actual
 
-**Fase**: implementación en curso. **Todas las historias de USER_STORIES.md están construidas** (P0, P1 y P2). El 18 ago se encontró y corrigió un bug real de reglas de Firestore con `collectionGroup` (ver más abajo) que rompía COC-02/COC-05/CAM-05/COC-08 en silencio — las verificaciones previas con Admin SDK no lo detectaban porque ese SDK ignora las Security Rules. Falta que el usuario reconfirme esas cuatro historias en el navegador, más el resto de cocinero y P2. Siguiente: esa confirmación, y luego `apps/ios`/`apps/android`, o el Firebase Emulator Suite para tener tests reales de reglas en vez de scripts manuales.
+**Fase**: implementación en curso. El 19 ago se hizo el retrofit **multi-empresa**
+(`empresas/{codigo}` por encima de todo, rol `superadmin` sobre el `administrador` ahora
+acotado a una empresa, login de camarero/cocinero por código+usuario — ver DOMAIN.md /
+DATA_MODEL.md / USER_STORIES.md `SA-*`). Código y reglas escritos y compilando; **falta**:
+desplegar `firestore:rules,firestore:indexes`, ejecutar el script de migración que
+elimina los datos de prueba viejos (single-tenant) y convierte la cuenta de Julio a
+superadmin, y confirmar el flujo completo en el navegador contra Firestore real (no
+Admin SDK — ver la lección del bug de collectionGroup más abajo). Antes de este cambio,
+todas las historias de P0/P1/P2 ya estaban construidas (varias con confirmación
+pendiente del usuario en el navegador, como se detalla fila por fila más abajo).
 
 ## En curso ahora mismo
 
@@ -16,17 +25,27 @@ _(vacío — nada a medias todavía)_
 
 - Project ID: `mi-plancha` (plan Spark, región Firestore `eur3`)
 - Apps registradas: Web, iOS (`com.jugomo.miplancha`), Android (`com.jugomo.miplancha`)
-- Primer administrador: ya sembrado en `usuarios/` (UID y nombre en las notas locales, no en el repo)
-- `firebase/service-account.json` existe en local (no versionado) — necesario para volver a ejecutar `firebase/seed.js`
+- Primer superadmin: la cuenta de Julio (antes único administrador) — **pendiente** el script
+  de migración que la convierte (`rol: 'superadmin'`, `empresaId: null`) y borra los datos
+  de prueba del modelo single-tenant viejo (mesas/clientes/pedidos/cuentas/productos/config
+  en la raíz, y los 4 usuarios camarero/cocinero de prueba con sus cuentas de Auth) — se
+  elimina en vez de migrarse, por decisión explícita del usuario.
+- `firebase/service-account.json` existe en local (no versionado) — usado para el script de
+  migración de arriba (`firebase/seed.js` queda obsoleto para el modelo actual, ver
+  `firebase/README.md`)
 - Dos apps huérfanas con bundle/package antiguo (`com.miplancha.app`) pendientes de borrar manualmente desde la consola cuando convenga (no bloquean nada)
 
 ## P0 — Núcleo operativo mínimo
 
-- [x] GEN-01 — Iniciar sesión (pendiente de que el usuario confirme login manual en `ng serve` — solo él tiene la contraseña del admin)
+- [x] GEN-01 — Iniciar sesión (dos pestañas: "Empresa" código+usuario+contraseña para camarero/cocinero, "Administración" email+contraseña para administrador/superadmin — falta confirmación del usuario en el navegador tras el retrofit multi-empresa)
+- [x] SA-01 — Crear una empresa con su administrador (código único autogenerado `[A-Z][0-9]{3}`, alta combinada empresa+admin en un formulario, reutiliza el patrón de app Firebase secundaria de ADM-07 — falta confirmación en el navegador)
+- [x] SA-02 — Activar/desactivar una empresa (`Sesion` escucha `empresas/{id}.activa` en tiempo real y cierra sesión si pasa a `false`, igual que ya hacía con `usuarios/{uid}.activo` — falta confirmación en el navegador)
+- [x] SA-03 — Gestionar el administrador de cualquier empresa (listado cross-empresa, activar/desactivar; sin borrado de administradores, solo de camarero/cocinero — falta confirmación en el navegador)
+- [x] SA-04 — Gestionar camarero/cocinero de cualquier empresa (mismo listado, con selector de empresa al invitar y columna de empresa en la tabla — falta confirmación en el navegador)
 - [x] ADM-01 — Gestionar productos (listado + alta + edición + baja; falta que el usuario confirme la UI en el navegador)
 - [x] ADM-02 — Configurar la capacidad de la plancha (falta confirmación del usuario en el navegador)
 - [x] ADM-06 — Configurar el número de mesas (crea/borra mesas/ en batch atómico; bloquea reducir si alguna mesa sobrante está ocupada — falta confirmación del usuario en el navegador)
-- [x] ADM-07 — Gestionar usuarios y roles (alta vía app Firebase secundaria para no robar la sesión del admin; cambiar rol/activo inline; autobloqueo de auto-desactivarse/auto-cambiarse el rol; email visible en la tabla, denormalizado desde Auth — falta confirmación del usuario en el navegador)
+- [x] ADM-07 — Gestionar camarero/cocinero de mi empresa (reescrita para multi-empresa: ya no puede crear otro administrador, alta por usuario/contraseña en vez de email, nuevo borrado además de activar/desactivar; la fila del propio admin ya no aparece en su lista — no hace falta protección de "no te toques a ti mismo" aquí, sí sigue en la lista cross-empresa del superadmin — falta confirmación del usuario en el navegador)
 - [x] CAM-01 — Abrir una mesa para un cliente (transacción mesa+cliente; falta confirmación del usuario en el navegador)
 - [x] CAM-02 — Ver mis mesas en tiempo real (resumen de pedidos por mesa: "⏳ Esperando" / "🔥 En plancha" / "🍽 Pendiente entrega en mesa" / "✓ Todo listo" — antes solo distinguía esperando/todo listo, ampliado porque en el dashboard no se veía el estado "En plancha" que sí se ve en el detalle de pedido; el fondo de cada tarjeta de mesa ahora también cambia de color según ese mismo estado, no solo el texto del chip; falta confirmación del usuario en el navegador)
 - [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
@@ -79,11 +98,16 @@ depender de scripts manuales cada vez.
 ## Infraestructura (no son historias de usuario, pero bloquean las de arriba)
 
 - [x] Proyecto Firebase creado (plan Spark) — `mi-plancha`
-- [x] Firestore creado (región `eur3`), reglas e índices desplegados
-- [x] Authentication activado (email/contraseña)
+- [x] Firestore creado (región `eur3`)
+- [ ] Reglas e índices del modelo multi-empresa desplegados (reescritos en esta sesión —
+      `firebase deploy --only firestore:rules,firestore:indexes`, pendiente de ejecutar)
+- [x] Authentication activado (email/contraseña; camarero/cocinero usan un email sintético
+      por debajo, ver DATA_MODEL.md — sigue siendo email/contraseña de cara a Firebase Auth)
 - [x] Apps Web/iOS/Android registradas y configs descargadas a `apps/*`
-- [x] Primer administrador dado de alta (Auth + `usuarios/{uid}`)
-- [x] Config CMS, mesas y productos de referencia sembrados (`firebase/seed.js`)
+- [x] Primer administrador dado de alta (Auth + `usuarios/{uid}`) — pendiente migrarlo a superadmin
+- [ ] Config CMS, mesas y productos de referencia sembrados para al menos una empresa
+      real (el `seed.js` viejo ya no aplica, ver `firebase/README.md`; se hace desde el
+      propio CMS de cada administrador, no por seed)
 - [x] `apps/web` inicializado (Angular CLI 22.1.4 — standalone, zone.js, Vitest, SCSS, sin SSR, prefijo `mp`)
 - [ ] `apps/ios` inicializado (proyecto Xcode)
 - [ ] `apps/android` inicializado (proyecto Gradle)

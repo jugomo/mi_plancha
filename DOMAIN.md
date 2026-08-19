@@ -2,30 +2,34 @@
 
 ## Visión del producto
 
-Sistema de gestión de cocina en tiempo real para optimizar el uso de una plancha de carne compartida: maximizar su uso mientras se sirven los pedidos respetando (con flexibilidad) el orden de llegada. Arquitectura híbrida: web app + apps móviles (misma funcionalidad, distinta tecnología) sobre una API común.
+Sistema de gestión de cocina en tiempo real para optimizar el uso de una plancha de carne compartida: maximizar su uso mientras se sirven los pedidos respetando (con flexibilidad) el orden de llegada. Arquitectura híbrida: web app + apps móviles (misma funcionalidad, distinta tecnología) sobre una API común. **Multi-empresa**: la misma instalación sirve a varios restaurantes independientes (`Empresa`, ver más abajo), cada uno con sus propios datos, personal y configuración, completamente aislados entre sí.
 
 ## Roles y autenticación
 
-- **Camarero**: crea pedidos, ve su estado en tiempo real, es responsable único de sus pedidos.
-- **Cocinero**: ve pedidos pendientes, selecciona uno (queda asignado en exclusiva), coloca productos en la plancha, marca ítems cocinados.
-- **Administrador**: gestiona configuración vía CMS.
-- Sistema de autenticación con rol por usuario, que determina la interfaz mostrada.
-- Un usuario puede cambiar a otro rol **en modo solo lectura** para consultar estados.
+- **Superadmin**: gestiona de alta nivel — crea/edita/desactiva empresas, y tiene capacidad total sobre el administrador, camarero y cocinero de **cualquier** empresa. No pertenece a ninguna empresa y no toca su operativa del día a día (productos, mesas, pedidos).
+- **Administrador**: gestiona configuración vía CMS, acotado a **una única empresa** — la que creó el superadmin al darlo de alta como su administrador dedicado. Da de alta/edita/desactiva/borra camareros y cocineros de esa empresa.
+- **Camarero**: crea pedidos, ve su estado en tiempo real, es responsable único de sus pedidos. Pertenece a una empresa.
+- **Cocinero**: ve pedidos pendientes, selecciona uno (queda asignado en exclusiva), coloca productos en la plancha, marca ítems cocinados. Pertenece a una empresa.
+- Sistema de autenticación con rol por usuario, que determina la interfaz mostrada. Superadmin/administrador inician sesión con email real; camarero/cocinero, con **código de empresa + usuario + contraseña** (ver `DATA_MODEL.md`, "Login de camarero/cocinero").
+- Un usuario puede cambiar a otro rol **en modo solo lectura** para consultar estados (dentro de su propia empresa).
 
 ## Entidades del dominio
 
 | Entidad | Campos clave | Definido en |
 |---|---|---|
+| **Empresa** | código autogenerado (identificador), nombre, estado activa/inactiva | CMS (superadmin) |
 | **Mesa** | número de mesa | CMS (administrador) |
 | **Cliente** | mesa ocupada, nombre de pila, timestamp de apertura, pedidos asociados | Camarero |
 | **Producto** | nombre, capacidad consumida (unidades), tiempo de cocción, stock actual, precio | CMS (administrador) |
 | **Pedido** | cliente asociado, camarero responsable, timestamp de creación, líneas de productos, prioridad, estado derivado | Camarero |
 | **Cuenta** | cliente y mesa de origen (conservados aunque el cliente se borre), listado de pedidos con su suma, total, timestamp de generación | Camarero (al generar cuenta) |
 | **Línea de pedido** | producto, cantidad, estado (pendiente / en plancha / pendiente de entrega / listo), cocinero asignado | — |
-| **Plancha** | capacidad total (ej. 100 unidades), capacidad usada en tiempo real | CMS (única, capacidad configurable) |
+| **Plancha** | capacidad total (ej. 100 unidades), capacidad usada en tiempo real | CMS (única por empresa, capacidad configurable) |
 | **Config. de división** | umbral de tamaño de pedido, tamaño de subgrupo | CMS |
 | **Config. anti-inanición** | tiempo máximo de espera por pedido | CMS |
 | **Config. de overflow** | porcentaje de capacidad extra temporal (ej. +10%) | CMS |
+
+Todas las entidades salvo **Empresa** existen **una vez por empresa** — un mismo mi_plancha aloja tantos juegos independientes de mesas/productos/pedidos/etc. como empresas dadas de alta (ver `DATA_MODEL.md`).
 
 ## Flujo funcional principal
 
@@ -58,5 +62,5 @@ Sistema de gestión de cocina en tiempo real para optimizar el uso de una planch
 
 ## Alcance de la primera versión (MVP)
 
-- **Incluye**: flujo operativo completo (cliente → pedido → plancha → listo → entrega → cuenta), control de stock, autenticación por rol, CMS básico de configuración (incluye alta de mesas), conservación del histórico de cuentas generadas.
+- **Incluye**: flujo operativo completo (cliente → pedido → plancha → listo → entrega → cuenta), control de stock, autenticación por rol, CMS básico de configuración (incluye alta de mesas), conservación del histórico de cuentas generadas, multi-empresa (superadmin gestiona empresas, cada una con su administrador y personal aislados).
 - **Excluye** (fases futuras): cobro/pago real de la cuenta, analítica/reportes sobre el histórico, múltiples planchas.

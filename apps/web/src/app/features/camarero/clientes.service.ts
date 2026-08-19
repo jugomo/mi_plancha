@@ -15,6 +15,7 @@ import { Observable, combineLatest, map } from 'rxjs';
 
 import { FIRESTORE } from '../../core/firebase.providers';
 import { collectionData$ } from '../../core/firestore-rx';
+import { Sesion } from '../../core/sesion';
 
 export interface MesaLibre {
   id: string; // = número de mesa, como string (ver DATA_MODEL.md)
@@ -60,9 +61,25 @@ interface LineaConMesaYFecha {
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
   private readonly firestore = inject(FIRESTORE);
+  private readonly sesion = inject(Sesion);
+
+  // Ver DATA_MODEL.md: mesas/clientes viven anidados bajo empresas/{empresaId}/...
+  private empresaId(): string {
+    const id = this.sesion.usuario()?.empresaId;
+    if (!id) throw new Error('sin-empresa');
+    return id;
+  }
+
+  private mesasRef() {
+    return collection(this.firestore, 'empresas', this.empresaId(), 'mesas');
+  }
+
+  private clientesRef() {
+    return collection(this.firestore, 'empresas', this.empresaId(), 'clientes');
+  }
 
   mesasLibres(): Observable<MesaLibre[]> {
-    const ref = query(collection(this.firestore, 'mesas'), where('estado', '==', 'libre'), orderBy('numero'));
+    const ref = query(this.mesasRef(), where('estado', '==', 'libre'), orderBy('numero'));
     return collectionData$<{ numero: number }>(ref);
   }
 
@@ -81,9 +98,11 @@ export class ClientesService {
    * no se puede reabrir para otro cliente hasta generar la cuenta del anterior.
    */
   mesasEnVivo(): Observable<MesaVista[]> {
-    const mesas$ = collectionData$<MesaDoc>(query(collection(this.firestore, 'mesas'), orderBy('numero')));
-    const clientes$ = collectionData$<ClienteDoc>(collection(this.firestore, 'clientes'));
-    const lineas$ = collectionData$<LineaConMesaYFecha>(collectionGroup(this.firestore, 'lineas'));
+    const mesas$ = collectionData$<MesaDoc>(query(this.mesasRef(), orderBy('numero')));
+    const clientes$ = collectionData$<ClienteDoc>(this.clientesRef());
+    const lineas$ = collectionData$<LineaConMesaYFecha>(
+      query(collectionGroup(this.firestore, 'lineas'), where('empresaId', '==', this.empresaId())),
+    );
 
     return combineLatest([mesas$, clientes$, lineas$]).pipe(
       map(([mesas, clientes, lineas]) => {
@@ -124,20 +143,20 @@ export class ClientesService {
   }
 
   async obtenerCliente(id: string): Promise<Cliente | undefined> {
-    const snap = await getDoc(doc(this.firestore, 'clientes', id));
+    const snap = await getDoc(doc(this.clientesRef(), id));
     return snap.exists() ? { id: snap.id, ...(snap.data() as Omit<Cliente, 'id'>) } : undefined;
   }
 
   /** Transacción "Abrir mesa" de DATA_MODEL.md: crea el cliente y ocupa la mesa a la vez. */
   async abrirMesa(mesaId: string, nombreCliente: string, camareroId: string): Promise<string> {
     return runTransaction(this.firestore, async (tx) => {
-      const mesaRef = doc(this.firestore, 'mesas', mesaId);
+      const mesaRef = doc(this.mesasRef(), mesaId);
       const mesaSnap = await tx.get(mesaRef);
       if (!mesaSnap.exists() || mesaSnap.data()['estado'] !== 'libre') {
         throw new Error('mesa-no-libre');
       }
 
-      const clienteRef = doc(collection(this.firestore, 'clientes'));
+      const clienteRef = doc(this.clientesRef());
       tx.set(clienteRef, {
         mesaId,
         nombre: nombreCliente,

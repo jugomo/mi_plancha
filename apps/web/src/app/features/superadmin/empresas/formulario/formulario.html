@@ -1,0 +1,57 @@
+@if (cargando()) {
+  <p class="cargando">Cargando…</p>
+} @else if (codigoCreado()) {
+  <div class="form-card">
+    <h2>Empresa creada</h2>
+    <p>
+      Código de empresa: <strong class="codigo">{{ codigoCreado() }}</strong>
+    </p>
+    <p class="ayuda">
+      Su administrador ya puede iniciar sesión con el email y la contraseña que le diste. Este código lo
+      necesitará también todo su personal (camareros/cocineros) para entrar.
+    </p>
+    <div class="acciones">
+      <a routerLink="/superadmin/empresas" class="btn secundario">Volver a empresas</a>
+    </div>
+  </div>
+} @else {
+  <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
+    <h2>{{ esEdicion ? 'Editar empresa' : 'Nueva empresa' }}</h2>
+
+    <label>
+      Nombre de la empresa
+      <input type="text" name="nombreEmpresa" [(ngModel)]="nombreEmpresa" required />
+    </label>
+
+    @if (!esEdicion) {
+      <p class="separador">Administrador de esta empresa</p>
+
+      <label>
+        Nombre
+        <input type="text" name="adminNombre" [(ngModel)]="adminNombre" required />
+      </label>
+
+      <label>
+        Email
+        <input type="email" name="adminEmail" [(ngModel)]="adminEmail" required autocomplete="off" />
+      </label>
+
+      <label>
+        Contraseña inicial
+        <input type="text" name="adminPassword" [(ngModel)]="adminPassword" required minlength="6" autocomplete="off" />
+        <span class="ayuda">Compártesela tú directamente — todavía no hay forma de que la cambie él mismo.</span>
+      </label>
+    }
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <div class="acciones">
+      <a routerLink="/superadmin/empresas" class="btn secundario">Cancelar</a>
+      <button type="submit" [disabled]="f.invalid || guardando()">
+        {{ guardando() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+}

@@ -19,6 +19,7 @@ import { Observable } from 'rxjs';
 
 import { FIRESTORE } from './firebase.providers';
 import { collectionData$, docData$ } from './firestore-rx';
+import { Sesion } from './sesion';
 
 export interface LineaNueva {
   productoId: string;
@@ -83,6 +84,19 @@ export function etiquetaEstadoPedidoVista(estado: EstadoPedidoVista): string {
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
   private readonly firestore = inject(FIRESTORE);
+  private readonly sesion = inject(Sesion);
+
+  // pedidos/{id}/lineas vive anidado bajo empresas/{empresaId}/... (ver
+  // DATA_MODEL.md); cada método resuelve la empresa del usuario actual.
+  private empresaId(): string {
+    const id = this.sesion.usuario()?.empresaId;
+    if (!id) throw new Error('sin-empresa');
+    return id;
+  }
+
+  private pedidosRef() {
+    return collection(this.firestore, 'empresas', this.empresaId(), 'pedidos');
+  }
 
   /**
    * Crea el pedido y todas sus líneas en un único batch. Todo el pedido entra
@@ -91,7 +105,8 @@ export class PedidosService {
    */
   async crearPedido(cliente: ClienteContexto, camareroId: string, lineas: LineaNueva[]): Promise<string> {
     const batch = writeBatch(this.firestore);
-    const pedidoRef = doc(collection(this.firestore, 'pedidos'));
+    const empresaId = this.empresaId();
+    const pedidoRef = doc(this.pedidosRef());
 
     batch.set(pedidoRef, {
       clienteId: cliente.id,
@@ -105,7 +120,7 @@ export class PedidosService {
     });
 
     for (const linea of lineas) {
-      const lineaRef = doc(collection(this.firestore, 'pedidos', pedidoRef.id, 'lineas'));
+      const lineaRef = doc(collection(pedidoRef, 'lineas'));
       batch.set(lineaRef, {
         productoId: linea.productoId,
         cantidad: linea.cantidad,
@@ -116,10 +131,13 @@ export class PedidosService {
         listoEn: null,
         usandoOverflow: false,
         // Denormalizado para las collection group queries del algoritmo de
-        // sugerencia (ver DATA_MODEL.md / ALGORITHM.md).
+        // sugerencia (ver DATA_MODEL.md / ALGORITHM.md). empresaId en
+        // particular es imprescindible: collectionGroup('lineas') no puede
+        // acotarse por ruta, solo por este campo (ver firestore.rules).
         pedidoCreadoEn: serverTimestamp(),
         cocineroId: null,
         mesaNumero: cliente.mesaNumero,
+        empresaId,
       });
     }
 
@@ -129,41 +147,41 @@ export class PedidosService {
 
   /** Pedidos de un cliente, en orden de creación — solo cabecera, sin líneas (CAM-04 las carga aparte). */
   pedidosDeCliente(clienteId: string): Observable<PedidoResumen[]> {
-    const ref = query(collection(this.firestore, 'pedidos'), where('clienteId', '==', clienteId), orderBy('creadoEn'));
+    const ref = query(this.pedidosRef(), where('clienteId', '==', clienteId), orderBy('creadoEn'));
     return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
   }
 
   /** Pedidos sin cocinero asignado todavía — la cola de COC-01. */
   pendientesSinAsignar(): Observable<PedidoResumen[]> {
-    const ref = query(collection(this.firestore, 'pedidos'), where('cocineroId', '==', null), orderBy('creadoEn'));
+    const ref = query(this.pedidosRef(), where('cocineroId', '==', null), orderBy('creadoEn'));
     return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
   }
 
   /** Pedidos que un cocinero concreto ha tomado (para volver a ellos tras navegar fuera). */
   misPedidos(cocineroId: string): Observable<PedidoResumen[]> {
-    const ref = query(collection(this.firestore, 'pedidos'), where('cocineroId', '==', cocineroId), orderBy('creadoEn'));
+    const ref = query(this.pedidosRef(), where('cocineroId', '==', cocineroId), orderBy('creadoEn'));
     return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
   }
 
   /** Todos los pedidos creados por un camarero concreto (para su pantalla de completados). */
   pedidosDeCamarero(camareroId: string): Observable<PedidoResumen[]> {
-    const ref = query(collection(this.firestore, 'pedidos'), where('camareroId', '==', camareroId), orderBy('creadoEn'));
+    const ref = query(this.pedidosRef(), where('camareroId', '==', camareroId), orderBy('creadoEn'));
     return collectionData$<Omit<PedidoResumen, 'id'>>(ref);
   }
 
   async obtenerPedido(pedidoId: string): Promise<PedidoResumen | undefined> {
-    const snap = await getDoc(doc(this.firestore, 'pedidos', pedidoId));
+    const snap = await getDoc(doc(this.pedidosRef(), pedidoId));
     return snap.exists() ? { id: snap.id, ...(snap.data() as Omit<PedidoResumen, 'id'>) } : undefined;
   }
 
   /** Cabecera de un pedido en tiempo real — para saber, sin recargar, en cuanto lo toma un cocinero (CAM-04). */
   pedidoEnVivo(pedidoId: string): Observable<PedidoResumen | undefined> {
-    return docData$<Omit<PedidoResumen, 'id'>>(doc(this.firestore, 'pedidos', pedidoId));
+    return docData$<Omit<PedidoResumen, 'id'>>(doc(this.pedidosRef(), pedidoId));
   }
 
   /** Líneas de un pedido en tiempo real — el corazón de CAM-04 y del checklist de cocina. */
   lineasDePedido(pedidoId: string): Observable<LineaPedido[]> {
-    return collectionData$<Omit<LineaPedido, 'id'>>(collection(this.firestore, 'pedidos', pedidoId, 'lineas'));
+    return collectionData$<Omit<LineaPedido, 'id'>>(collection(doc(this.pedidosRef(), pedidoId), 'lineas'));
   }
 
   /**
@@ -173,7 +191,7 @@ export class PedidosService {
    */
   estadoDeTodasLasLineas(): Observable<{ pedidoId: string; estado: EstadoLinea }[]> {
     return new Observable((subscriber) => {
-      const ref = collectionGroup(this.firestore, 'lineas');
+      const ref = query(collectionGroup(this.firestore, 'lineas'), where('empresaId', '==', this.empresaId()));
       return onSnapshot(
         ref,
         (snap) => {
@@ -189,10 +207,14 @@ export class PedidosService {
     });
   }
 
+  private lineaRef(pedidoId: string, lineaId: string) {
+    return doc(this.pedidosRef(), pedidoId, 'lineas', lineaId);
+  }
+
   /** COC-03: exclusividad garantizada por la regla de seguridad, aquí solo damos un error legible si ya no está libre. */
   async tomarPedido(pedidoId: string, cocineroId: string): Promise<void> {
     await runTransaction(this.firestore, async (tx) => {
-      const ref = doc(this.firestore, 'pedidos', pedidoId);
+      const ref = doc(this.pedidosRef(), pedidoId);
       const snap = await tx.get(ref);
       if (!snap.exists() || snap.data()['cocineroId'] !== null) {
         throw new Error('pedido-ya-tomado');
@@ -204,29 +226,26 @@ export class PedidosService {
   /** COC-04: coloca el producto en la plancha y descuenta stock a la vez. */
   async colocarEnPlancha(pedidoId: string, lineaId: string, productoId: string, cantidad: number): Promise<void> {
     await runTransaction(this.firestore, async (tx) => {
-      const productoRef = doc(this.firestore, 'productos', productoId);
+      const productoRef = doc(this.firestore, 'empresas', this.empresaId(), 'productos', productoId);
       const productoSnap = await tx.get(productoRef);
       const stockActual = (productoSnap.data()?.['stock'] as number | undefined) ?? 0;
       if (stockActual < cantidad) {
         throw new Error('stock-insuficiente');
       }
 
-      const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
-      tx.update(lineaRef, { estado: 'en_plancha', colocadoEn: serverTimestamp() });
+      tx.update(this.lineaRef(pedidoId, lineaId), { estado: 'en_plancha', colocadoEn: serverTimestamp() });
       tx.update(productoRef, { stock: stockActual - cantidad });
     });
   }
 
   /** COC-06: el cocinero decide y confirma cuándo retira el producto de la plancha — queda pendiente de entrega, no listo todavía. */
   async retirarDePlancha(pedidoId: string, lineaId: string): Promise<void> {
-    const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
-    await updateDoc(lineaRef, { estado: 'pendiente_entrega', retiradoEn: serverTimestamp() });
+    await updateDoc(this.lineaRef(pedidoId, lineaId), { estado: 'pendiente_entrega', retiradoEn: serverTimestamp() });
   }
 
   /** CAM-07: el camarero confirma que ya entregó el producto en la mesa — aquí es cuando la línea pasa a "listo". */
   async confirmarEntrega(pedidoId: string, lineaId: string): Promise<void> {
-    const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
-    await updateDoc(lineaRef, { estado: 'listo', listoEn: serverTimestamp() });
+    await updateDoc(this.lineaRef(pedidoId, lineaId), { estado: 'listo', listoEn: serverTimestamp() });
   }
 
   /**
@@ -237,12 +256,12 @@ export class PedidosService {
    * vía para perder datos operativos en curso.
    */
   async borrarPedidoCompletado(pedidoId: string): Promise<void> {
-    const lineasSnap = await getDocs(collection(this.firestore, 'pedidos', pedidoId, 'lineas'));
+    const lineasSnap = await getDocs(collection(doc(this.pedidosRef(), pedidoId), 'lineas'));
     const batch = writeBatch(this.firestore);
     for (const lineaDoc of lineasSnap.docs) {
       batch.delete(lineaDoc.ref);
     }
-    batch.delete(doc(this.firestore, 'pedidos', pedidoId));
+    batch.delete(doc(this.pedidosRef(), pedidoId));
     await batch.commit();
   }
 }

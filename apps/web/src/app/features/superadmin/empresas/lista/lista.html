@@ -1,0 +1,44 @@
+<div class="lista-header">
+  <h2>Empresas</h2>
+  <a routerLink="nueva" class="btn">+ Nueva empresa</a>
+</div>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (empresa of empresas(); track empresa.id) {
+        <tr>
+          <td>{{ empresa.nombre }}</td>
+          <td class="codigo">{{ empresa.codigo }}</td>
+          <td>
+            <span class="chip" [class.activo]="empresa.activa" [class.inactivo]="!empresa.activa">
+              {{ empresa.activa ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+          <td class="acciones">
+            <a [routerLink]="[empresa.id]">Editar</a>
+            <button type="button" (click)="alternarActiva(empresa)" [disabled]="ocupada() === empresa.id">
+              {{ empresa.activa ? 'Desactivar' : 'Activar' }}
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4" class="vacio">Todavía no hay empresas.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,80 @@
+<div class="lista-header">
+  <h2>Usuarios</h2>
+  <a routerLink="invitar" class="btn">+ Invitar usuario</a>
+</div>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Usuario</th>
+        <th>Empresa</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (usuario of usuarios(); track usuario.id) {
+        <tr>
+          <td>
+            {{ usuario.nombre }}
+            @if (esMiPropioUsuario(usuario)) {
+              <span class="tu">(tú)</span>
+            }
+          </td>
+          <td class="email">{{ usuario.username ?? usuario.email }}</td>
+          <td>{{ usuario.empresaNombre }}</td>
+          <td>
+            @if (usuario.rol === 'administrador') {
+              <span class="rol-fijo">Administrador</span>
+            } @else {
+              <select
+                [value]="usuario.rol"
+                (change)="cambiarRol(usuario, $any($event.target).value)"
+                [disabled]="ocupado() === usuario.id"
+              >
+                <option value="camarero">Camarero</option>
+                <option value="cocinero">Cocinero</option>
+              </select>
+            }
+          </td>
+          <td>
+            <span class="chip" [class.activo]="usuario.activo" [class.inactivo]="!usuario.activo">
+              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="acciones-fila">
+            <button
+              type="button"
+              (click)="alternarActivo(usuario)"
+              [disabled]="ocupado() === usuario.id || esMiPropioUsuario(usuario)"
+              [title]="esMiPropioUsuario(usuario) ? 'No puedes desactivarte a ti mismo' : ''"
+            >
+              {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+            @if (usuario.rol !== 'administrador') {
+              <button
+                type="button"
+                class="btn-peligro"
+                (click)="eliminar(usuario)"
+                [disabled]="ocupado() === usuario.id || esMiPropioUsuario(usuario)"
+              >
+                Borrar
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="vacio">Todavía no hay usuarios.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

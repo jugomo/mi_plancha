@@ -4,6 +4,7 @@
       "collectionGroup": "lineas",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
+        { "fieldPath": "empresaId", "order": "ASCENDING" },
         { "fieldPath": "estado", "order": "ASCENDING" },
         { "fieldPath": "pedidoCreadoEn", "order": "ASCENDING" }
       ]
@@ -38,6 +39,14 @@
       "fields": [
         { "fieldPath": "camareroId", "order": "ASCENDING" },
         { "fieldPath": "creadoEn", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "usuarios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "empresaId", "order": "ASCENDING" },
+        { "fieldPath": "nombre", "order": "ASCENDING" }
       ]
     }
   ],

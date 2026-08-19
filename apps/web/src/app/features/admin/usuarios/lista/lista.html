@@ -12,7 +12,7 @@
     <thead>
       <tr>
         <th>Nombre</th>
-        <th>Email</th>
+        <th>Usuario</th>
         <th>Rol</th>
         <th>Estado</th>
         <th></th>
@@ -21,23 +21,16 @@
     <tbody>
       @for (usuario of usuarios(); track usuario.id) {
         <tr>
-          <td>
-            {{ usuario.nombre }}
-            @if (esMiPropioUsuario(usuario)) {
-              <span class="tu">(tú)</span>
-            }
-          </td>
-          <td class="email">{{ usuario.email }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <td class="email">{{ usuario.username }}</td>
           <td>
             <select
               [value]="usuario.rol"
               (change)="cambiarRol(usuario, $any($event.target).value)"
-              [disabled]="ocupado() === usuario.id || esMiPropioUsuario(usuario)"
-              [title]="esMiPropioUsuario(usuario) ? 'No puedes cambiar tu propio rol' : ''"
+              [disabled]="ocupado() === usuario.id"
             >
               <option value="camarero">Camarero</option>
               <option value="cocinero">Cocinero</option>
-              <option value="administrador">Administrador</option>
             </select>
           </td>
           <td>
@@ -45,14 +38,12 @@
               {{ usuario.activo ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
-          <td>
-            <button
-              type="button"
-              (click)="alternarActivo(usuario)"
-              [disabled]="ocupado() === usuario.id || esMiPropioUsuario(usuario)"
-              [title]="esMiPropioUsuario(usuario) ? 'No puedes desactivarte a ti mismo' : ''"
-            >
+          <td class="acciones-fila">
+            <button type="button" (click)="alternarActivo(usuario)" [disabled]="ocupado() === usuario.id">
               {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+            <button type="button" class="btn-peligro" (click)="eliminar(usuario)" [disabled]="ocupado() === usuario.id">
+              Borrar
             </button>
           </td>
         </tr>

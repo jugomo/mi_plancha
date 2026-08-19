@@ -2,6 +2,16 @@
   <h2>Invitar usuario</h2>
 
   <label>
+    Empresa
+    <select name="empresaId" [(ngModel)]="empresaId" required>
+      <option value="" disabled>Elige una empresa…</option>
+      @for (empresa of empresas(); track empresa.id) {
+        <option [value]="empresa.id">{{ empresa.nombre }} ({{ empresa.codigo }})</option>
+      }
+    </select>
+  </label>
+
+  <label>
     Nombre
     <input type="text" name="nombre" [(ngModel)]="nombre" required />
   </label>
@@ -9,7 +19,6 @@
   <label>
     Usuario
     <input type="text" name="username" [(ngModel)]="username" required autocomplete="off" />
-    <span class="ayuda">Con esto y la contraseña entra en la app, junto al código de esta empresa.</span>
   </label>
 
   <label>
@@ -31,7 +40,7 @@
   }
 
   <div class="acciones">
-    <a routerLink="/admin/usuarios" class="btn secundario">Cancelar</a>
+    <a routerLink="/superadmin/usuarios" class="btn secundario">Cancelar</a>
     <button type="submit" [disabled]="f.invalid || guardando()">
       {{ guardando() ? 'Creando…' : 'Crear' }}
     </button>

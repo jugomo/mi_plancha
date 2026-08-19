@@ -8,6 +8,8 @@ import { filter, firstValueFrom, take } from 'rxjs';
 import { HOME_POR_ROL } from '../../../core/auth.guard';
 import { Sesion, Usuario } from '../../../core/sesion';
 
+type Pestana = 'empresa' | 'administracion';
+
 @Component({
   selector: 'mp-login',
   imports: [FormsModule],
@@ -22,17 +24,33 @@ export class Login {
   // dentro de enviar(), donde toObservable() ya no tendría contexto propio.
   private readonly usuarioResuelto$ = toObservable(this.sesion.usuario);
 
+  // Camarero/cocinero (empresa+usuario) es la pestaña por defecto: es el
+  // login del día a día. Administrador/superadmin siguen con email real.
+  protected pestana = signal<Pestana>('empresa');
+
+  protected codigoEmpresa = '';
+  protected username = '';
   protected email = '';
   protected password = '';
+
   protected readonly enviando = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  cambiarPestana(pestana: Pestana): void {
+    this.pestana.set(pestana);
+    this.error.set(null);
+  }
 
   async enviar(): Promise<void> {
     if (this.enviando()) return;
     this.error.set(null);
     this.enviando.set(true);
     try {
-      await this.sesion.iniciarSesion(this.email, this.password);
+      if (this.pestana() === 'empresa') {
+        await this.sesion.iniciarSesionEmpresa(this.codigoEmpresa.trim(), this.username, this.password);
+      } else {
+        await this.sesion.iniciarSesion(this.email, this.password);
+      }
       const usuario = await firstValueFrom(
         this.usuarioResuelto$.pipe(
           filter((u): u is Usuario => !!u),
@@ -47,8 +65,9 @@ export class Login {
     }
   }
 
-  // Nunca distingue entre "el email no existe" y "la contraseña es incorrecta"
-  // (criterio de aceptación de GEN-01, ver USER_STORIES.md).
+  // Nunca distingue cuál de los datos es el incorrecto (criterio de
+  // aceptación de GEN-01, ver USER_STORIES.md) — ni entre email/contraseña,
+  // ni entre empresa/usuario/contraseña.
   private mensajeError(err: unknown): string {
     if (err instanceof FirebaseError) {
       if (err.code === 'auth/too-many-requests') {
@@ -58,6 +77,6 @@ export class Login {
         return 'No hay conexión. Comprueba tu red e inténtalo de nuevo.';
       }
     }
-    return 'Email o contraseña incorrectos.';
+    return this.pestana() === 'empresa' ? 'Empresa, usuario o contraseña incorrectos.' : 'Email o contraseña incorrectos.';
   }
 }

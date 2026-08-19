@@ -1,33 +1,46 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { combineLatest, map } from 'rxjs';
 
+import { Empresa } from '../../../../core/empresa';
 import { Sesion } from '../../../../core/sesion';
 import { UsuarioFila, UsuariosService } from '../../../../core/usuarios.service';
+import { EmpresasService } from '../../empresas/empresas.service';
+
+interface FilaConEmpresa extends UsuarioFila {
+  empresaNombre: string;
+}
 
 @Component({
-  selector: 'mp-usuarios-lista',
+  selector: 'mp-superadmin-usuarios-lista',
   imports: [RouterLink],
   templateUrl: './lista.html',
   styleUrl: './lista.scss',
 })
 export class Lista {
   private readonly servicio = inject(UsuariosService);
+  private readonly empresasService = inject(EmpresasService);
   private readonly sesion = inject(Sesion);
 
-  // Esta pantalla es la del administrador de UNA empresa (la suya): solo
-  // gestiona camarero/cocinero, nunca a sí mismo — el administrador nunca
-  // aparece en su propia lista (no hace falta protección de "no te
-  // autodesactives" aquí; sí existe en la lista cross-empresa del
-  // superadmin, donde un administrador sí puede aparecer como fila).
-  private readonly empresaId = this.sesion.usuario()?.empresaId ?? '';
-  private readonly todos = toSignal(this.servicio.listarPorEmpresa(this.empresaId), {
-    initialValue: [] as UsuarioFila[],
-  });
-  protected readonly usuarios = computed(() => this.todos().filter((u) => u.rol === 'camarero' || u.rol === 'cocinero'));
+  protected readonly usuarios = toSignal(
+    combineLatest([this.servicio.listarTodos(), this.empresasService.listar()]).pipe(
+      map(([usuarios, empresas]: [UsuarioFila[], Empresa[]]) => {
+        const nombrePorId = new Map(empresas.map((e) => [e.id, e.nombre]));
+        return usuarios
+          .filter((u) => u.rol !== 'superadmin')
+          .map((u) => ({ ...u, empresaNombre: u.empresaId ? (nombrePorId.get(u.empresaId) ?? u.empresaId) : '—' }));
+      }),
+    ),
+    { initialValue: [] as FilaConEmpresa[] },
+  );
 
   protected readonly ocupado = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
+
+  esMiPropioUsuario(usuario: UsuarioFila): boolean {
+    return usuario.id === this.sesion.usuario()?.uid;
+  }
 
   async cambiarRol(usuario: UsuarioFila, rol: 'camarero' | 'cocinero'): Promise<void> {
     this.error.set(null);

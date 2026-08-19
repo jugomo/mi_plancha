@@ -3,5 +3,5 @@
 import { describe, it } from 'vitest';
 
 describe('Lista', () => {
-  it.todo('cubrir con Firebase Emulator Suite (Auth + Firestore) — incluir que uno no puede autodesactivarse');
+  it.todo('cubrir con Firebase Emulator Suite (Auth + Firestore)');
 });

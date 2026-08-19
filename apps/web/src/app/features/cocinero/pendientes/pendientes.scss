@@ -62,6 +62,19 @@
       cursor: not-allowed;
     }
   }
+
+  &.sugerencia-llena {
+    border-color: #d9e0e9;
+    background: #f6f8fb;
+
+    .etiqueta {
+      color: #56606f;
+    }
+
+    p {
+      color: #56606f;
+    }
+  }
 }
 
 h3 {

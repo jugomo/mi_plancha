@@ -105,6 +105,18 @@ export class Pendientes {
     ),
   );
 
+  // Hay líneas pendientes de verdad, pero el algoritmo no pudo sugerir
+  // ninguna (ni siquiera vía alerta de forzado, ver calcularSugerencia) —
+  // significa que no queda hueco libre en la plancha (ni con overflow), no
+  // que no haya nada que cocinar. Sin esto, la sección de sugerencia
+  // simplemente desaparecía sin explicar por qué.
+  protected readonly planchaLlenaSinSugerir = computed(
+    () =>
+      this.lineasPendientesTodas().length > 0 &&
+      this.sugerenciaItems().length === 0 &&
+      this.alertasSugerencia().length === 0,
+  );
+
   // COC-08: alerta legible con la mesa, no el id interno del pedido. Al ser
   // reactiva, deja de mostrarse sola en cuanto ese pedido consigue colocarse
   // (ya no aparece en `alertas`) — sin lógica extra para "ocultarla".

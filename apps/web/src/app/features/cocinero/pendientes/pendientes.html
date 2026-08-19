@@ -24,6 +24,11 @@
         {{ aceptando() ? 'Colocando…' : 'Aceptar y poner en plancha' }}
       </button>
     </div>
+  } @else if (planchaLlenaSinSugerir()) {
+    <div class="sugerencia sugerencia-llena">
+      <span class="etiqueta">Sugerencia</span>
+      <p>La plancha está llena — no hay espacio para sugerir más pedidos ahora mismo.</p>
+    </div>
   }
 
   @for (alerta of alertasSugerencia(); track alerta) {

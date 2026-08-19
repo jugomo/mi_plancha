@@ -131,6 +131,7 @@ Como cocinero, quiero ver una sugerencia de qué productos colocar en la plancha
 - La sugerencia se recalcula sola cuando cambia la capacidad libre, entra un pedido nuevo, o algún pedido cruza el umbral de anti-inanición (ver `ALGORITHM.md`).
 - La sugerencia es orientativa: puedo ignorarla y colocar otra cosa si lo prefiero.
 - Si la sugerencia usa capacidad extra (overflow), se indica claramente cuáles de sus productos la usan.
+- Si hay pedidos con líneas pendientes pero no queda hueco libre en la plancha (ni con overflow) para colocar ninguna, lo veo explícito ("la plancha está llena") en vez de que la sección de sugerencia desaparezca sin más.
 
 ### COC-03 — Tomar un pedido
 Como cocinero, quiero tomar un pedido pendiente para asignármelo, para empezar a prepararlo yo.

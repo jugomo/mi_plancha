@@ -2,50 +2,63 @@ import { Routes } from '@angular/router';
 
 import { authGuard, rolGuard, soloInvitadosGuard } from './core/auth.guard';
 
+// El título de cada ruta sigue "mi_plancha - <Rol>" (ver Topbar.rolLabel, mismo
+// texto hardcodeado por pantalla). Angular aplica el `title` del ancestro más
+// cercano en la cadena de rutas activas, así que basta con ponerlo en la ruta
+// padre (shell de cocinero/admin) para que cubra también a sus hijas.
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   {
     path: 'login',
+    title: 'mi_plancha',
     canActivate: [soloInvitadosGuard],
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },
   {
     path: 'camarero',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/mesas/mesas').then((m) => m.Mesas),
   },
   {
     path: 'camarero/abrir',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/abrir-mesa/abrir-mesa').then((m) => m.AbrirMesa),
   },
   {
     path: 'camarero/clientes/:clienteId/pedidos/nuevo',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/pedidos/crear/crear').then((m) => m.Crear),
   },
   {
     path: 'camarero/clientes/:clienteId',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/pedidos/cliente/cliente').then((m) => m.ClientePedidos),
   },
   {
     path: 'camarero/pedidos/:pedidoId',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/pedidos/detalle/detalle').then((m) => m.Detalle),
   },
   {
     path: 'camarero/clientes/:clienteId/cuenta',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/cuentas/generar/generar').then((m) => m.Generar),
   },
   {
     path: 'camarero/completados',
+    title: 'mi_plancha - Camarero',
     canActivate: [authGuard, rolGuard(['camarero'])],
     loadComponent: () => import('./features/camarero/completados/completados').then((m) => m.Completados),
   },
   {
     path: 'cocinero',
+    title: 'mi_plancha - Cocinero',
     canActivate: [authGuard, rolGuard(['cocinero'])],
     loadComponent: () => import('./features/cocinero/shell/shell').then((m) => m.CocineroShell),
     children: [
@@ -56,11 +69,13 @@ export const routes: Routes = [
   },
   {
     path: 'cocinero/pedidos/:pedidoId',
+    title: 'mi_plancha - Cocinero',
     canActivate: [authGuard, rolGuard(['cocinero'])],
     loadComponent: () => import('./features/cocinero/pedido/pedido').then((m) => m.Pedido),
   },
   {
     path: 'admin',
+    title: 'mi_plancha - Administrador',
     canActivate: [authGuard, rolGuard(['administrador'])],
     loadComponent: () => import('./features/admin/shell/shell').then((m) => m.AdminShell),
     children: [

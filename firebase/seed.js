@@ -5,9 +5,12 @@
 // Firebase Console > Configuración del proyecto > Cuentas de servicio > "Generar
 // nueva clave privada". NUNCA se commitea (ver .gitignore).
 //
+// El primer administrador se identifica por variables de entorno (no
+// hardcodeadas, para no dejar el UID/nombre reales en el repo):
+//
 // Uso:
 //   npm install
-//   npm run seed
+//   ADMIN_UID=<uid de Firebase Auth> ADMIN_NOMBRE="<nombre>" npm run seed
 
 const admin = require('firebase-admin');
 const serviceAccount = require('./service-account.json');
@@ -19,10 +22,16 @@ admin.initializeApp({
 const db = admin.firestore();
 const { FieldValue } = admin.firestore;
 
-// --- Ajustar antes de ejecutar ---
 const ADMIN_UID = process.env.ADMIN_UID;
 const ADMIN_NOMBRE = process.env.ADMIN_NOMBRE;
 const NUMERO_DE_MESAS = 12;
+
+if (!ADMIN_UID || !ADMIN_NOMBRE) {
+  console.error(
+    'Faltan variables de entorno. Uso: ADMIN_UID=<uid> ADMIN_NOMBRE="<nombre>" npm run seed'
+  );
+  process.exit(1);
+}
 
 // Ingredientes de referencia — los mismos usados en ALGORITHM.md, algorithm-spec/
 // y los wireframes, para poder probar el resto del sistema con datos conocidos.

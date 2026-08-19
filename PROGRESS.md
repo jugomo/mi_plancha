@@ -16,7 +16,7 @@ _(vacío — nada a medias todavía)_
 
 - Project ID: `mi-plancha` (plan Spark, región Firestore `eur3`)
 - Apps registradas: Web, iOS (`com.jugomo.miplancha`), Android (`com.jugomo.miplancha`)
-- Primer administrador: ya sembrado en `usuarios/`
+- Primer administrador: ya sembrado en `usuarios/` (UID y nombre en las notas locales, no en el repo)
 - `firebase/service-account.json` existe en local (no versionado) — necesario para volver a ejecutar `firebase/seed.js`
 - Dos apps huérfanas con bundle/package antiguo (`com.miplancha.app`) pendientes de borrar manualmente desde la consola cuando convenga (no bloquean nada)
 

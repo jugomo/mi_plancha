@@ -9,7 +9,7 @@
     "capacidadUsadaActual": 46,
     "tiempoMaximoEsperaMin": 12,
     "division": { "umbral": 6, "tamanoSubgrupo": 3 },
-    "ingredientes": {
+    "productos": {
       "hamburguesa": { "capacidadUnidad": 10, "tiempoCoccionSeg": 360 },
       "pinchito": { "capacidadUnidad": 6, "tiempoCoccionSeg": 240 },
       "montadito": { "capacidadUnidad": 5, "tiempoCoccionSeg": 180 },
@@ -21,30 +21,30 @@
         "id": "133",
         "creadoEn": "2026-08-17T12:00:00Z",
         "lineas": [
-          { "id": "L1", "ingrediente": "chorizo", "cantidad": 4, "estado": "pendiente" }
+          { "id": "L1", "producto": "chorizo", "cantidad": 4, "estado": "pendiente" }
         ]
       },
       {
         "id": "126",
         "creadoEn": "2026-08-17T12:05:00Z",
         "lineas": [
-          { "id": "L2", "ingrediente": "montadito", "cantidad": 1, "estado": "pendiente" },
-          { "id": "L3", "ingrediente": "filete", "cantidad": 2, "estado": "pendiente" }
+          { "id": "L2", "producto": "montadito", "cantidad": 1, "estado": "pendiente" },
+          { "id": "L3", "producto": "filete", "cantidad": 2, "estado": "pendiente" }
         ]
       },
       {
         "id": "131",
         "creadoEn": "2026-08-17T12:11:00Z",
         "lineas": [
-          { "id": "L4", "ingrediente": "hamburguesa", "cantidad": 3, "estado": "pendiente" }
+          { "id": "L4", "producto": "hamburguesa", "cantidad": 3, "estado": "pendiente" }
         ]
       }
     ]
   },
   "output": {
     "sugerencia": [
-      { "pedidoId": "133", "lineaId": "L1", "ingrediente": "chorizo", "cantidad": 4, "usandoOverflow": false },
-      { "pedidoId": "126", "lineaId": "L2", "ingrediente": "montadito", "cantidad": 1, "usandoOverflow": false }
+      { "pedidoId": "133", "lineaId": "L1", "producto": "chorizo", "cantidad": 4, "usandoOverflow": false },
+      { "pedidoId": "126", "lineaId": "L2", "producto": "montadito", "cantidad": 1, "usandoOverflow": false }
     ],
     "capacidadUsadaResultante": 83,
     "alertas": []

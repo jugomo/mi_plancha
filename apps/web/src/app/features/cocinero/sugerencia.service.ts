@@ -4,18 +4,18 @@ import { Observable, combineLatest, map } from 'rxjs';
 
 import {
   EntradaAlgoritmo,
-  IngredienteAlgoritmo,
+  ProductoAlgoritmo,
   PedidoAlgoritmo,
   SalidaAlgoritmo,
   calcularSugerencia,
 } from '../../core/algoritmo-sugerencia';
 import { FIRESTORE } from '../../core/firebase.providers';
 import { docData$ } from '../../core/firestore-rx';
-import { Ingrediente, IngredientesService } from '../admin/ingredientes/ingredientes.service';
+import { Producto, ProductosService } from '../admin/productos/productos.service';
 import { PlanchaService } from './plancha.service';
 
 interface LineaPendienteDoc {
-  ingredienteId: string;
+  productoId: string;
   cantidad: number;
   estado: string;
   subgrupo?: number;
@@ -31,7 +31,7 @@ export interface LineaPendienteConPedido extends LineaPendienteDoc {
 @Injectable({ providedIn: 'root' })
 export class SugerenciaService {
   private readonly firestore = inject(FIRESTORE);
-  private readonly ingredientesService = inject(IngredientesService);
+  private readonly productosService = inject(ProductosService);
   private readonly planchaService = inject(PlanchaService);
 
   /**
@@ -74,21 +74,21 @@ export class SugerenciaService {
   sugerencia(): Observable<SalidaAlgoritmo> {
     return combineLatest([
       this.lineasPendientes(),
-      this.ingredientesService.listar(),
+      this.productosService.listar(),
       this.planchaService.enPlancha(),
       this.planchaService.capacidadTotal(),
       docData$<{ tiempoMaximoEsperaMin: number }>(doc(this.firestore, 'config', 'antiInanicion')),
       docData$<{ porcentaje: number }>(doc(this.firestore, 'config', 'overflow')),
       docData$<{ overflowManualActivo: boolean }>(doc(this.firestore, 'plancha', 'estado')),
     ]).pipe(
-      map(([lineasPendientes, ingredientes, enPlancha, capacidadTotal, antiInanicion, overflow, estadoPlancha]) => {
-        const ingredientesMap: Record<string, IngredienteAlgoritmo> = {};
-        for (const ing of ingredientes as Ingrediente[]) {
-          ingredientesMap[ing.id] = { capacidadUnidad: ing.capacidadUnidad, tiempoCoccionSeg: ing.tiempoCoccionSeg };
+      map(([lineasPendientes, productos, enPlancha, capacidadTotal, antiInanicion, overflow, estadoPlancha]) => {
+        const productosMap: Record<string, ProductoAlgoritmo> = {};
+        for (const ing of productos as Producto[]) {
+          productosMap[ing.id] = { capacidadUnidad: ing.capacidadUnidad, tiempoCoccionSeg: ing.tiempoCoccionSeg };
         }
 
         const capacidadUsadaActual = enPlancha.reduce(
-          (suma, l) => suma + (ingredientesMap[l.ingredienteId]?.capacidadUnidad ?? 0) * l.cantidad,
+          (suma, l) => suma + (productosMap[l.productoId]?.capacidadUnidad ?? 0) * l.cantidad,
           0,
         );
 
@@ -106,7 +106,7 @@ export class SugerenciaService {
           }
           pedido.lineas.push({
             id: linea.id,
-            ingrediente: linea.ingredienteId,
+            producto: linea.productoId,
             cantidad: linea.cantidad,
             estado: linea.estado,
             subgrupo: linea.subgrupo ?? 1,
@@ -121,7 +121,7 @@ export class SugerenciaService {
           capacidadUsadaActual,
           tiempoMaximoEsperaMin: antiInanicion?.tiempoMaximoEsperaMin ?? Number.POSITIVE_INFINITY,
           division: { umbral: 0, tamanoSubgrupo: 0 },
-          ingredientes: ingredientesMap,
+          productos: productosMap,
           pedidos: [...pedidosPorId.values()],
         };
 

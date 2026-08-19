@@ -23,7 +23,7 @@ _(vacío — nada a medias todavía)_
 ## P0 — Núcleo operativo mínimo
 
 - [x] GEN-01 — Iniciar sesión (pendiente de que el usuario confirme login manual en `ng serve` — solo él tiene la contraseña del admin)
-- [x] ADM-01 — Gestionar ingredientes (listado + alta + edición + baja; falta que el usuario confirme la UI en el navegador)
+- [x] ADM-01 — Gestionar productos (listado + alta + edición + baja; falta que el usuario confirme la UI en el navegador)
 - [x] ADM-02 — Configurar la capacidad de la plancha (falta confirmación del usuario en el navegador)
 - [x] ADM-06 — Configurar el número de mesas (crea/borra mesas/ en batch atómico; bloquea reducir si alguna mesa sobrante está ocupada — falta confirmación del usuario en el navegador)
 - [x] ADM-07 — Gestionar usuarios y roles (alta vía app Firebase secundaria para no robar la sesión del admin; cambiar rol/activo inline; autobloqueo de auto-desactivarse/auto-cambiarse el rol; email visible en la tabla, denormalizado desde Auth — falta confirmación del usuario en el navegador)
@@ -32,17 +32,17 @@ _(vacío — nada a medias todavía)_
 - [x] CAM-03 — Crear un pedido para un cliente (todo el pedido va al subgrupo 1 por ahora — la división real es ADM-03, P2; falta confirmación del usuario en el navegador)
 - [x] CAM-04 — Ver el estado en tiempo real de un pedido (pantalla de detalle + listado de pedidos por cliente, con alerta de stock bajo; el chip de estado agregado del pedido usa vocabulario propio del overview — Esperando / Cocinando / Pendiente entrega en mesa / Entregado, ver ARCHITECTURE.md — derivado en tiempo real de `cocineroId` + las líneas; ahora también visible por pedido en el listado de pedidos del cliente, no solo dentro del detalle — `calcularEstadoPedidoVista`/`etiquetaEstadoPedidoVista` se movieron a `pedidos.service.ts` para no duplicar la lógica entre las dos pantallas; falta confirmación del usuario en el navegador)
 - [x] CAM-06 — Generar la cuenta de un cliente (con snapshot de precios; verificado con transacción real end-to-end en un escenario aislado; **bug real encontrado y corregido**: un cliente que abrió mesa sin hacer ningún pedido dejaba el botón de "Generar cuenta" permanentemente deshabilitado, sin forma de liberar la mesa — ahora, sin pedidos, la pantalla ofrece "Cerrar mesa" en su lugar, que libera la mesa sin crear un registro vacío en `cuentas/`; verificado con transacción real como camarero autenticado; falta confirmación del usuario en el navegador)
-- [x] CAM-07 — Confirmar la entrega de un ingrediente en mesa (botón en el detalle de pedido, solo visible cuando la línea está `pendiente_entrega`; reglas nuevas: solo el camarero responsable del pedido puede hacer esta transición, el cocinero ya no puede — verificado con custom-token real: cocinero rechazado, camarero responsable aceptado; falta confirmación del usuario en el navegador)
+- [x] CAM-07 — Confirmar la entrega de un producto en mesa (botón en el detalle de pedido, solo visible cuando la línea está `pendiente_entrega`; reglas nuevas: solo el camarero responsable del pedido puede hacer esta transición, el cocinero ya no puede — verificado con custom-token real: cocinero rechazado, camarero responsable aceptado; falta confirmación del usuario en el navegador)
 - [x] COC-01 — Ver los pedidos pendientes por prioridad (FIFO simple por ahora — el forzado por anti-inanición es ADM-04/COC-08, P2; "Mis pedidos en curso" arriba (cada card con chip de estado — Cocinando / Pendiente entrega en mesa, mismo `calcularEstadoPedidoVista` compartido con el camarero), debajo "Pedidos pendientes" (acordeón, expandido por defecto si hay ≤5); "Pedidos completados" ya no vive aquí — se movió a su propia pantalla (`/cocinero/completados`), con un botón dedicado en la barra de navegación Pendientes/Plancha, alineado a la derecha para distinguirlo visualmente de las dos pestañas; el botón para borrar un pedido completado y ya facturado (`cuentaId` asignado) sigue ahí — reglas verificadas con custom-token real: intento sin facturar rechazado, intento facturado con éxito; falta confirmación del usuario en el navegador)
 - [x] COC-03 — Tomar un pedido (exclusividad ya la garantizaban las reglas; falta confirmación del usuario en el navegador)
-- [x] COC-04 — Colocar un ingrediente en la plancha (descuenta stock atómicamente; falta confirmación del usuario en el navegador)
+- [x] COC-04 — Colocar un producto en la plancha (descuenta stock atómicamente; falta confirmación del usuario en el navegador)
 - [x] COC-05 — Ver la plancha en tiempo real (capacidad por tipo + temporizadores; sin overflow todavía — COC-07/ADM-05, P2; **bug real encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
-- [x] COC-06 — Retirar un ingrediente de la plancha (en la misma pantalla del pedido asignado; nuevo estado intermedio `pendiente_entrega` entre `en_plancha` y `listo` — ver ARCHITECTURE.md; la confirmación de entrega final la hace el camarero, ver CAM-07; reglas actualizadas y verificadas con custom-token real: salto directo `en_plancha`→`listo` rechazado; falta confirmación del usuario en el navegador)
+- [x] COC-06 — Retirar un producto de la plancha (en la misma pantalla del pedido asignado; nuevo estado intermedio `pendiente_entrega` entre `en_plancha` y `listo` — ver ARCHITECTURE.md; la confirmación de entrega final la hace el camarero, ver CAM-07; reglas actualizadas y verificadas con custom-token real: salto directo `en_plancha`→`listo` rechazado; falta confirmación del usuario en el navegador)
 
 ## P1 — El diferenciador del producto
 
 - [x] COC-02 — Ver la sugerencia activa de qué cocinar ahora (algoritmo puro en `core/algoritmo-sugerencia.ts`, verificado de verdad contra los 4 casos de `algorithm-spec/` — primeros tests reales del proyecto, no `it.todo()`; corregidos 2 fallos reales del propio pseudocódigo de ALGORITHM.md en el proceso; **bug real de reglas encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
-- [x] CAM-05 — Recibir alerta de stock bajo/agotado (tablero de mesas + detalle de pedido; umbral compartido `UMBRAL_STOCK_BAJO=5` reutilizado también en el CMS de ingredientes; **bug real de reglas encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
+- [x] CAM-05 — Recibir alerta de stock bajo/agotado (tablero de mesas + detalle de pedido; umbral compartido `UMBRAL_STOCK_BAJO=5` reutilizado también en el CMS dy productos; **bug real de reglas encontrado y corregido** — ver nota de collectionGroup más abajo; falta confirmación del usuario en el navegador)
 
 ## P2 — Ajustes finos del algoritmo y del CMS
 
@@ -83,7 +83,7 @@ depender de scripts manuales cada vez.
 - [x] Authentication activado (email/contraseña)
 - [x] Apps Web/iOS/Android registradas y configs descargadas a `apps/*`
 - [x] Primer administrador dado de alta (Auth + `usuarios/{uid}`)
-- [x] Config CMS, mesas e ingredientes de referencia sembrados (`firebase/seed.js`)
+- [x] Config CMS, mesas y productos de referencia sembrados (`firebase/seed.js`)
 - [x] `apps/web` inicializado (Angular CLI 22.1.4 — standalone, zone.js, Vitest, SCSS, sin SSR, prefijo `mp`)
 - [ ] `apps/ios` inicializado (proyecto Xcode)
 - [ ] `apps/android` inicializado (proyecto Gradle)

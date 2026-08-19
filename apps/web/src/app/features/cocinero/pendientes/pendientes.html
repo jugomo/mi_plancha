@@ -9,7 +9,7 @@
       <p>
         Cocinar ahora:
         @for (item of sugerenciaItems(); track item.lineaId; let last = $last) {
-          <strong>{{ item.cantidad }}× {{ item.nombreIngrediente }}</strong>
+          <strong>{{ item.cantidad }}× {{ item.nombreProducto }}</strong>
           @if (item.mesaNumero) {
             (Mesa {{ item.mesaNumero }})
           }

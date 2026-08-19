@@ -11,7 +11,7 @@ const DIR_CASOS = join(import.meta.dirname, '../../../../../algorithm-spec/cases
 
 interface LineaJson {
   id: string;
-  ingrediente: string;
+  producto: string;
   cantidad: number;
   estado: string;
   subgrupo?: number;
@@ -27,11 +27,11 @@ interface CasoJson {
     overflowManualActivo: boolean;
     capacidadUsadaActual: number;
     tiempoMaximoEsperaMin: number;
-    ingredientes: Record<string, { capacidadUnidad: number; tiempoCoccionSeg: number }>;
+    productos: Record<string, { capacidadUnidad: number; tiempoCoccionSeg: number }>;
     pedidos: { id: string; creadoEn: string; subgrupoActual?: number; lineas: LineaJson[] }[];
   };
   output: {
-    sugerencia: { pedidoId: string; lineaId: string; ingrediente: string; cantidad: number; usandoOverflow: boolean }[];
+    sugerencia: { pedidoId: string; lineaId: string; producto: string; cantidad: number; usandoOverflow: boolean }[];
     capacidadUsadaResultante: number;
     alertas: string[];
   };
@@ -51,7 +51,7 @@ function aEntrada(caso: CasoJson): EntradaAlgoritmo {
     capacidadUsadaActual: input.capacidadUsadaActual,
     tiempoMaximoEsperaMin: input.tiempoMaximoEsperaMin,
     division: { umbral: 0, tamanoSubgrupo: 0 }, // no lo usa calcularSugerencia directamente, va por pedido
-    ingredientes: input.ingredientes,
+    productos: input.productos,
     pedidos: input.pedidos.map((p) => ({
       id: p.id,
       creadoEn: Date.parse(p.creadoEn),

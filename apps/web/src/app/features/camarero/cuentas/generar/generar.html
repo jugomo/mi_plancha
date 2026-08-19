@@ -21,8 +21,8 @@
             <div>
               <div>Pedido</div>
               <div class="lineas">
-                @for (linea of pedido.lineas; track linea.ingredienteNombre) {
-                  <span>{{ linea.cantidad }}× {{ linea.ingredienteNombre }}</span>
+                @for (linea of pedido.lineas; track linea.productoNombre) {
+                  <span>{{ linea.cantidad }}× {{ linea.productoNombre }}</span>
                 }
               </div>
             </div>

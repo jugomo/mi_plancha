@@ -2,7 +2,7 @@
   <p class="cargando">Cargando…</p>
 } @else {
   <form class="form-card" (ngSubmit)="guardar()" #f="ngForm">
-    <h2>{{ esEdicion ? 'Editar ingrediente' : 'Nuevo ingrediente' }}</h2>
+    <h2>{{ esEdicion ? 'Editar producto' : 'Nuevo producto' }}</h2>
 
     <label>
       Nombre
@@ -34,7 +34,7 @@
     }
 
     <div class="acciones">
-      <a routerLink="/admin/ingredientes" class="btn secundario">Cancelar</a>
+      <a routerLink="/admin/productos" class="btn secundario">Cancelar</a>
       <button type="submit" [disabled]="f.invalid || guardando()">
         {{ guardando() ? 'Guardando…' : 'Guardar' }}
       </button>

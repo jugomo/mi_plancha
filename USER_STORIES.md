@@ -54,34 +54,34 @@ Como camarero, quiero ver un panel en vivo con todas las mesas (libres y ocupada
 - Cada mesa ocupada muestra: nombre del cliente, tiempo que lleva abierta, y un resumen del punto en que están sus pedidos — Esperando / En plancha / Pendiente entrega en mesa / Todo listo (el mismo vocabulario de línea que en CAM-04, resumido para toda la mesa) — para no tener que entrar a cada pedido a comprobarlo.
 
 ### CAM-03 — Crear un pedido para un cliente
-Como camarero, quiero crear un pedido eligiendo ingredientes y cantidades para la mesa de un cliente, para que la cocina empiece a prepararlo.
-- Veo el stock disponible de cada ingrediente al elegir cantidades.
-- No puedo confirmar un pedido con más cantidad de un ingrediente que el stock actual disponible.
+Como camarero, quiero crear un pedido eligiendo productos y cantidades para la mesa de un cliente, para que la cocina empiece a prepararlo.
+- Veo el stock disponible de cada producto al elegir cantidades.
+- No puedo confirmar un pedido con más cantidad de un producto que el stock actual disponible.
 - Un mismo cliente puede tener varios pedidos activos a la vez (ej. rondas sucesivas).
 
 ### CAM-04 — Ver el estado en tiempo real de un pedido
 Como camarero, quiero ver de un vistazo en qué punto está un pedido completo, y el detalle de cada línea, a medida que cambia, para saber qué hacer sin tener que preguntar en cocina.
-- El estado general del pedido es uno de: **Esperando** (todavía nadie en cocina lo ha tomado), **Cocinando** (un cocinero lo tiene asignado y lo está preparando), **Pendiente entrega en mesa** (al menos un ingrediente ya está retirado de la plancha y a falta de llevarlo a la mesa) o **Entregado** (todo confirmado en mesa).
+- El estado general del pedido es uno de: **Esperando** (todavía nadie en cocina lo ha tomado), **Cocinando** (un cocinero lo tiene asignado y lo está preparando), **Pendiente entrega en mesa** (al menos un producto ya está retirado de la plancha y a falta de llevarlo a la mesa) o **Entregado** (todo confirmado en mesa).
 - Ya veo este mismo estado general, uno por pedido, en el listado de pedidos de un cliente (antes de entrar al detalle) — no hace falta abrir cada uno para saber en qué punto está.
 - Cada línea, por separado, muestra su propio estado (pendiente / en plancha / pendiente de entrega / listo).
 - Si el pedido está dividido en tandas (ver `config/division`), veo claramente qué tanda está en curso.
-- Si algún ingrediente del pedido tiene alerta de stock, la veo destacada en esta pantalla.
+- Si algún producto del pedido tiene alerta de stock, la veo destacada en esta pantalla.
 
 ### CAM-05 — Recibir alerta de stock bajo/agotado
-Como camarero, quiero ser avisado visualmente si un ingrediente de un pedido mío se queda sin stock, para poder informar al cliente o proponerle una alternativa.
+Como camarero, quiero ser avisado visualmente si un producto de un pedido mío se queda sin stock, para poder informar al cliente o proponerle una alternativa.
 - La alerta aparece tanto en el panel de mesas como en el detalle del pedido afectado.
 - La misma alerta la ve también el cocinero (`COC-08`), no soy el único informado.
 
 ### CAM-06 — Generar la cuenta de un cliente
 Como camarero, quiero generar la cuenta de un cliente con la suma de todos sus pedidos, para poder cobrarle y liberar la mesa.
-- El listado muestra cada pedido con su subtotal (líneas × precio del ingrediente) y el total general.
+- El listado muestra cada pedido con su subtotal (líneas × precio del producto) y el total general.
 - Al confirmar, el cliente se elimina del sistema y su mesa vuelve a `libre` (transacción "Generar cuenta" en `DATA_MODEL.md`).
 - La cuenta generada queda guardada de forma permanente en el histórico (`cuentas/`), con los precios de ese momento — aunque el CMS cambie precios después, esta cuenta no se ve afectada.
 - Esta acción es solo informativa: no gestiona cobro ni pago real (fuera de alcance de este MVP).
 - Si el cliente abrió mesa pero no llegó a hacer ningún pedido, no hay nada que facturar — en su lugar veo un botón "Cerrar mesa" que libera la mesa y borra el cliente sin crear ningún registro en `cuentas/` (no tendría sentido un histórico de un importe de 0€).
 
-### CAM-07 — Confirmar la entrega de un ingrediente en mesa
-Como camarero, quiero confirmar cuándo he entregado en la mesa un ingrediente que el cocinero ya retiró de la plancha, para que quede constancia real de que el pedido ya llegó al cliente y no solo de que está preparado.
+### CAM-07 — Confirmar la entrega de un producto en mesa
+Como camarero, quiero confirmar cuándo he entregado en la mesa un producto que el cocinero ya retiró de la plancha, para que quede constancia real de que el pedido ya llegó al cliente y no solo de que está preparado.
 - Solo veo el botón de confirmar cuando el cocinero ya lo marcó "pendiente de entrega" — antes de eso no hay nada que confirmar.
 - Al confirmar, la línea pasa a "listo" — es el estado final de la secuencia (ver `ARCHITECTURE.md`).
 - Solo puedo confirmar la entrega de pedidos de los que soy el camarero responsable.
@@ -100,36 +100,36 @@ Como cocinero, quiero ver la cola de pedidos pendientes ordenada por prioridad, 
 - Cada pedido muestra desde cuándo espera y, si aplica, un aviso de que está cerca del tiempo máximo configurado.
 
 ### COC-02 — Ver la sugerencia activa de qué cocinar ahora
-Como cocinero, quiero ver una sugerencia de qué ingredientes colocar en la plancha ahora mismo, para aprovechar el espacio disponible sin tener que calcularlo yo mismo.
+Como cocinero, quiero ver una sugerencia de qué productos colocar en la plancha ahora mismo, para aprovechar el espacio disponible sin tener que calcularlo yo mismo.
 - La sugerencia se recalcula sola cuando cambia la capacidad libre, entra un pedido nuevo, o algún pedido cruza el umbral de anti-inanición (ver `ALGORITHM.md`).
 - La sugerencia es orientativa: puedo ignorarla y colocar otra cosa si lo prefiero.
-- Si la sugerencia usa capacidad extra (overflow), se indica claramente cuáles de sus ingredientes la usan.
+- Si la sugerencia usa capacidad extra (overflow), se indica claramente cuáles de sus productos la usan.
 
 ### COC-03 — Tomar un pedido
 Como cocinero, quiero tomar un pedido pendiente para asignármelo, para empezar a prepararlo yo.
 - Una vez lo tomo, ningún otro cocinero puede tomarlo ni completarlo (exclusividad garantizada por Security Rules, ver `firebase/firestore.rules`).
 - Si otro cocinero se me adelanta por segundos, mi intento falla con un mensaje claro en vez de dejarme en un estado inconsistente.
 
-### COC-04 — Colocar un ingrediente en la plancha
-Como cocinero, quiero marcar cuándo coloco físicamente un ingrediente de mi pedido en la plancha, para que el sistema arranque su temporizador y descuente el stock.
+### COC-04 — Colocar un producto en la plancha
+Como cocinero, quiero marcar cuándo coloco físicamente un producto de mi pedido en la plancha, para que el sistema arranque su temporizador y descuente el stock.
 - Solo puedo hacerlo en pedidos que yo mismo he tomado.
-- El stock del ingrediente se descuenta en el mismo instante (transacción "Colocar ingrediente" en `DATA_MODEL.md`).
+- El stock del producto se descuenta en el mismo instante (transacción "Colocar producto" en `DATA_MODEL.md`).
 - Si el stock ya no alcanza, la acción falla con aviso claro.
 
 ### COC-05 — Ver la plancha en tiempo real
 Como cocinero, quiero ver cuánta capacidad de la plancha está en uso ahora mismo y qué se está cocinando, para coordinarme con el resto de cocineros que comparten la misma plancha.
-- Veo la capacidad usada frente al total, desglosada por tipo de ingrediente.
-- Veo un temporizador por cada ingrediente en cocción, y aviso visual cuando está a punto de terminar.
+- Veo la capacidad usada frente al total, desglosada por tipo de producto.
+- Veo un temporizador por cada producto en cocción, y aviso visual cuando está a punto de terminar.
 - Si hay overflow en uso (manual o automático), la barra de capacidad lo muestra extendido más allá del 100%.
 
-### COC-06 — Retirar un ingrediente de la plancha
-Como cocinero, quiero marcar un ingrediente como retirado cuando decido que ya está listo, para que el camarero sepa que ya puede pasar a recogerlo y llevarlo a la mesa.
-- El sistema me avisa cuando la cocción de un ingrediente ha terminado, pero soy yo quien decide y confirma el momento de retirarlo.
+### COC-06 — Retirar un producto de la plancha
+Como cocinero, quiero marcar un producto como retirado cuando decido que ya está listo, para que el camarero sepa que ya puede pasar a recogerlo y llevarlo a la mesa.
+- El sistema me avisa cuando la cocción de un producto ha terminado, pero soy yo quien decide y confirma el momento de retirarlo.
 - Al retirarlo, la línea pasa a "pendiente de entrega" — todavía no es "listo"; la entrega en mesa la confirma el camarero (`CAM-07`), no yo.
-- Solo puedo retirar un ingrediente que yo mismo coloqué en plancha, de un pedido que tengo asignado.
+- Solo puedo retirar un producto que yo mismo coloqué en plancha, de un pedido que tengo asignado.
 
 ### COC-07 — Activar/desactivar el overflow manualmente
-Como cocinero, quiero activar manualmente la capacidad extra de la plancha en momentos de mucha demanda, para poder apretar más ingredientes de lo habitual cuando lo considere necesario, y desactivarla cuando ya no la necesite.
+Como cocinero, quiero activar manualmente la capacidad extra de la plancha en momentos de mucha demanda, para poder apretar más productos de lo habitual cuando lo considere necesario, y desactivarla cuando ya no la necesite.
 - Mientras está activo, se ve claramente en la pantalla de la plancha (toggle visible para todo el turno, no solo para mí).
 - El límite nunca supera `capacidad_total × (1 + porcentaje_overflow)` configurado en el CMS.
 
@@ -140,8 +140,8 @@ Como cocinero, quiero ser avisado si un pedido urgente por anti-inanición no ca
 
 ## Administrador (`ADM-`)
 
-### ADM-01 — Gestionar ingredientes
-Como administrador, quiero dar de alta y editar ingredientes (nombre, capacidad, tiempo de cocción, stock, precio), para mantener la carta y las reglas de la plancha al día.
+### ADM-01 — Gestionar productos
+Como administrador, quiero dar de alta y editar productos (nombre, capacidad, tiempo de cocción, stock, precio), para mantener la carta y las reglas de la plancha al día.
 - Los cambios de precio no afectan a cuentas ya generadas (snapshot histórico, ver `DATA_MODEL.md`).
 - No puedo dejar capacidad, tiempo de cocción o precio en valores negativos.
 

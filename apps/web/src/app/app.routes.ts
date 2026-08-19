@@ -64,20 +64,20 @@ export const routes: Routes = [
     canActivate: [authGuard, rolGuard(['administrador'])],
     loadComponent: () => import('./features/admin/shell/shell').then((m) => m.AdminShell),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'ingredientes' },
+      { path: '', pathMatch: 'full', redirectTo: 'productos' },
       {
-        path: 'ingredientes',
-        loadComponent: () => import('./features/admin/ingredientes/lista/lista').then((m) => m.Lista),
+        path: 'productos',
+        loadComponent: () => import('./features/admin/productos/lista/lista').then((m) => m.Lista),
       },
       {
-        path: 'ingredientes/nuevo',
+        path: 'productos/nuevo',
         loadComponent: () =>
-          import('./features/admin/ingredientes/formulario/formulario').then((m) => m.Formulario),
+          import('./features/admin/productos/formulario/formulario').then((m) => m.Formulario),
       },
       {
-        path: 'ingredientes/:id',
+        path: 'productos/:id',
         loadComponent: () =>
-          import('./features/admin/ingredientes/formulario/formulario').then((m) => m.Formulario),
+          import('./features/admin/productos/formulario/formulario').then((m) => m.Formulario),
       },
       {
         path: 'plancha',

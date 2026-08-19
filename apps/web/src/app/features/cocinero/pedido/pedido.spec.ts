@@ -1,4 +1,4 @@
-// Requiere `Sesion`/`PedidosService`/`IngredientesService` (Firestore real) o
+// Requiere `Sesion`/`PedidosService`/`ProductosService` (Firestore real) o
 // el Firebase Emulator Suite, todavía no configurado en este proyecto.
 import { describe, it } from 'vitest';
 

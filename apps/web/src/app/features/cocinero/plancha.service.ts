@@ -7,7 +7,7 @@ import { collectionData$, docData$ } from '../../core/firestore-rx';
 
 export interface LineaEnPlancha {
   id: string;
-  ingredienteId: string;
+  productoId: string;
   cantidad: number;
   mesaNumero: number;
   colocadoEn: Timestamp;

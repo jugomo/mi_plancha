@@ -9,7 +9,7 @@
     "capacidadUsadaActual": 95,
     "tiempoMaximoEsperaMin": 10,
     "division": { "umbral": 6, "tamanoSubgrupo": 3 },
-    "ingredientes": {
+    "productos": {
       "chorizo": { "capacidadUnidad": 8, "tiempoCoccionSeg": 420 },
       "montadito": { "capacidadUnidad": 5, "tiempoCoccionSeg": 180 }
     },
@@ -18,21 +18,21 @@
         "id": "200",
         "creadoEn": "2026-08-17T11:49:00Z",
         "lineas": [
-          { "id": "L1", "ingrediente": "chorizo", "cantidad": 1, "estado": "pendiente" }
+          { "id": "L1", "producto": "chorizo", "cantidad": 1, "estado": "pendiente" }
         ]
       },
       {
         "id": "201",
         "creadoEn": "2026-08-17T11:58:00Z",
         "lineas": [
-          { "id": "L2", "ingrediente": "montadito", "cantidad": 1, "estado": "pendiente" }
+          { "id": "L2", "producto": "montadito", "cantidad": 1, "estado": "pendiente" }
         ]
       }
     ]
   },
   "output": {
     "sugerencia": [
-      { "pedidoId": "200", "lineaId": "L1", "ingrediente": "chorizo", "cantidad": 1, "usandoOverflow": true }
+      { "pedidoId": "200", "lineaId": "L1", "producto": "chorizo", "cantidad": 1, "usandoOverflow": true }
     ],
     "capacidadUsadaResultante": 103,
     "alertas": []

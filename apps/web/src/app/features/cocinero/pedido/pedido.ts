@@ -2,13 +2,13 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
-import { Ingrediente, IngredientesService } from '../../admin/ingredientes/ingredientes.service';
+import { Producto, ProductosService } from '../../admin/productos/productos.service';
 import { LineaPedido, PedidoResumen, PedidosService } from '../../../core/pedidos.service';
 import { Sesion } from '../../../core/sesion';
 import { Topbar } from '../../../core/ui/topbar/topbar';
 
 interface LineaVista extends LineaPedido {
-  nombreIngrediente: string;
+  nombreProducto: string;
   tiempoCoccionSeg: number;
   restanteSeg: number | null; // null si no está en plancha
 }
@@ -22,7 +22,7 @@ interface LineaVista extends LineaPedido {
 export class Pedido {
   protected readonly sesion = inject(Sesion);
   private readonly pedidosService = inject(PedidosService);
-  private readonly ingredientesService = inject(IngredientesService);
+  private readonly productosService = inject(ProductosService);
 
   protected readonly pedidoId = inject(ActivatedRoute).snapshot.paramMap.get('pedidoId')!;
 
@@ -34,8 +34,8 @@ export class Pedido {
   private readonly lineas = toSignal(this.pedidosService.lineasDePedido(this.pedidoId), {
     initialValue: [] as LineaPedido[],
   });
-  private readonly ingredientes = toSignal(this.ingredientesService.listar(), {
-    initialValue: [] as Ingrediente[],
+  private readonly productos = toSignal(this.productosService.listar(), {
+    initialValue: [] as Producto[],
   });
 
   // Reloj que se actualiza cada segundo, solo para recalcular las cuentas
@@ -43,19 +43,19 @@ export class Pedido {
   private readonly reloj = signal(Date.now());
 
   protected readonly lineasVista = computed<LineaVista[]>(() => {
-    const ingredientePorId = new Map(this.ingredientes().map((i) => [i.id, i]));
+    const productoPorId = new Map(this.productos().map((i) => [i.id, i]));
     const ahora = this.reloj();
     return this.lineas().map((linea) => {
-      const ingrediente = ingredientePorId.get(linea.ingredienteId);
+      const producto = productoPorId.get(linea.productoId);
       let restanteSeg: number | null = null;
-      if (linea.estado === 'en_plancha' && linea.colocadoEn && ingrediente) {
-        const finEstimado = linea.colocadoEn.toMillis() + ingrediente.tiempoCoccionSeg * 1000;
+      if (linea.estado === 'en_plancha' && linea.colocadoEn && producto) {
+        const finEstimado = linea.colocadoEn.toMillis() + producto.tiempoCoccionSeg * 1000;
         restanteSeg = Math.max(0, Math.round((finEstimado - ahora) / 1000));
       }
       return {
         ...linea,
-        nombreIngrediente: ingrediente?.nombre ?? linea.ingredienteId,
-        tiempoCoccionSeg: ingrediente?.tiempoCoccionSeg ?? 0,
+        nombreProducto: producto?.nombre ?? linea.productoId,
+        tiempoCoccionSeg: producto?.tiempoCoccionSeg ?? 0,
         restanteSeg,
       };
     });
@@ -97,9 +97,9 @@ export class Pedido {
     this.error.set(null);
     this.ocupada.set(linea.id);
     try {
-      await this.pedidosService.colocarEnPlancha(this.pedidoId, linea.id, linea.ingredienteId, linea.cantidad);
+      await this.pedidosService.colocarEnPlancha(this.pedidoId, linea.id, linea.productoId, linea.cantidad);
     } catch {
-      this.error.set(`No hay stock suficiente de ${linea.nombreIngrediente} ahora mismo.`);
+      this.error.set(`No hay stock suficiente de ${linea.nombreProducto} ahora mismo.`);
     } finally {
       this.ocupada.set(null);
     }

@@ -17,14 +17,14 @@
 //    es true si, tras colocar la línea, el uso acumulado supera
 //    `capacidadTotal` — no solo en la rama de "último recurso automático".
 
-export interface IngredienteAlgoritmo {
+export interface ProductoAlgoritmo {
   capacidadUnidad: number;
   tiempoCoccionSeg: number;
 }
 
 export interface LineaAlgoritmo {
   id: string;
-  ingrediente: string;
+  producto: string;
   cantidad: number;
   estado: string;
   subgrupo?: number;
@@ -45,14 +45,14 @@ export interface EntradaAlgoritmo {
   capacidadUsadaActual: number;
   tiempoMaximoEsperaMin: number;
   division: { umbral: number; tamanoSubgrupo: number };
-  ingredientes: Record<string, IngredienteAlgoritmo>;
+  productos: Record<string, ProductoAlgoritmo>;
   pedidos: PedidoAlgoritmo[];
 }
 
 export interface ItemSugerencia {
   pedidoId: string;
   lineaId: string;
-  ingrediente: string;
+  producto: string;
   cantidad: number;
   usandoOverflow: boolean;
 }
@@ -70,8 +70,8 @@ interface CandidatoPedido {
 }
 
 export function calcularSugerencia(entrada: EntradaAlgoritmo): SalidaAlgoritmo {
-  const capacidadDe = (ingredienteId: string, cantidad: number): number =>
-    (entrada.ingredientes[ingredienteId]?.capacidadUnidad ?? 0) * cantidad;
+  const capacidadDe = (productoId: string, cantidad: number): number =>
+    (entrada.productos[productoId]?.capacidadUnidad ?? 0) * cantidad;
 
   // --- Paso 1: urgencia y forzado ---
   const tiempoMaximoEsperaMs = entrada.tiempoMaximoEsperaMin * 60_000;
@@ -102,12 +102,12 @@ export function calcularSugerencia(entrada: EntradaAlgoritmo): SalidaAlgoritmo {
   const idsSugeridos = new Set<string>();
 
   const incluir = (pedidoId: string, linea: LineaAlgoritmo): void => {
-    const necesaria = capacidadDe(linea.ingrediente, linea.cantidad);
+    const necesaria = capacidadDe(linea.producto, linea.cantidad);
     usoAcumulado += necesaria;
     sugerencia.push({
       pedidoId,
       lineaId: linea.id,
-      ingrediente: linea.ingrediente,
+      producto: linea.producto,
       cantidad: linea.cantidad,
       usandoOverflow: usoAcumulado > entrada.planchaCapacidadTotal,
     });
@@ -121,7 +121,7 @@ export function calcularSugerencia(entrada: EntradaAlgoritmo): SalidaAlgoritmo {
     );
 
     for (const linea of lineasCandidatas) {
-      const necesaria = capacidadDe(linea.ingrediente, linea.cantidad);
+      const necesaria = capacidadDe(linea.producto, linea.cantidad);
 
       if (necesaria <= libreActual()) {
         incluir(pedido.id, linea);
@@ -138,17 +138,17 @@ export function calcularSugerencia(entrada: EntradaAlgoritmo): SalidaAlgoritmo {
     }
   }
 
-  // --- Paso 4: bonus de agrupación por tipo de ingrediente ---
-  const tiposYaIncluidos = new Set(sugerencia.map((s) => s.ingrediente));
+  // --- Paso 4: bonus de agrupación por tipo de producto ---
+  const tiposYaIncluidos = new Set(sugerencia.map((s) => s.producto));
   for (const { pedido } of cola) {
     const subgrupoActual = pedido.subgrupoActual ?? 1;
     for (const linea of pedido.lineas) {
       if (linea.estado !== 'pendiente') continue;
       if ((linea.subgrupo ?? 1) !== subgrupoActual) continue;
       if (idsSugeridos.has(linea.id)) continue;
-      if (!tiposYaIncluidos.has(linea.ingrediente)) continue;
+      if (!tiposYaIncluidos.has(linea.producto)) continue;
 
-      const necesaria = capacidadDe(linea.ingrediente, linea.cantidad);
+      const necesaria = capacidadDe(linea.producto, linea.cantidad);
       if (necesaria <= libreActual()) {
         incluir(pedido.id, linea);
       }

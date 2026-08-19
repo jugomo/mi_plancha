@@ -11,8 +11,8 @@ Es una **heurística voluntariamente simple** (greedy, no un solver de bin-packi
 ## Entradas
 
 - `capacidad_total` y `capacidad_usada_actual` de la plancha.
-- Pedidos con al menos una línea en estado `pendiente`, cada uno con: `timestamp_creación`, líneas (`ingrediente`, `cantidad`, `estado`), cocinero asignado (si lo hay).
-- Por ingrediente: `capacidad_unidad`, `tiempo_cocción`.
+- Pedidos con al menos una línea en estado `pendiente`, cada uno con: `timestamp_creación`, líneas (`producto`, `cantidad`, `estado`), cocinero asignado (si lo hay).
+- Por producto: `capacidad_unidad`, `tiempo_cocción`.
 - Config CMS: `tiempo_máximo_espera` (anti-inanición), `umbral_división` y `tamaño_subgrupo` (división de pedidos), `porcentaje_overflow` (capacidad extra temporal).
 - Estado del toggle manual del cocinero: `overflow_activo_manual` (on/off).
 
@@ -34,7 +34,7 @@ Se construye una cola de líneas candidatas a partir de los pedidos con líneas 
 1. Primero los pedidos **forzados**, de mayor a menor urgencia.
 2. Después el resto, por `timestamp_creación` ascendente (FIFO puro).
 
-Para un pedido cuyo nº total de ingredientes supera `umbral_división`, solo se consideran candidatas las líneas de su **subgrupo actual** (de tamaño `tamaño_subgrupo`) — no hace falta que quepa el pedido entero para empezar a avanzar; en cuanto ese subgrupo queda `listo`, el siguiente subgrupo pasa a ser candidato.
+Para un pedido cuyo nº total de productos supera `umbral_división`, solo se consideran candidatas las líneas de su **subgrupo actual** (de tamaño `tamaño_subgrupo`) — no hace falta que quepa el pedido entero para empezar a avanzar; en cuanto ese subgrupo queda `listo`, el siguiente subgrupo pasa a ser candidato.
 
 ## Paso 3 — Selección greedy por capacidad (con overflow)
 
@@ -50,8 +50,8 @@ libre_actual()     = overflow_activo_manual ? libre_extendida() : libre_base()
 sugerencia = []
 
 para cada pedido en la cola (orden del Paso 2):
-  para cada línea pendiente del pedido (agrupada por ingrediente):
-    necesaria = cantidad × capacidad_unidad(ingrediente)
+  para cada línea pendiente del pedido (agrupada por producto):
+    necesaria = cantidad × capacidad_unidad(producto)
 
     si necesaria ≤ libre_actual():
         uso_acumulado += necesaria
@@ -74,17 +74,17 @@ El overflow automático **solo se aplica a líneas de pedidos forzados** y únic
 1. `libre_base()` y `libre_extendida()` se **recalculan siempre** a partir del mismo `uso_acumulado` — no son dos contadores que cada rama decrementa por su cuenta. Si una línea entra por la vía de overflow automático, el hueco "base" que ve el siguiente pedido de la cola también baja (aunque ese pedido no sea forzado y nunca toque `libre_extendida()` directamente) — porque físicamente ya no queda ese hueco. Tratarlas como reservas separadas deja colarse a pedidos no forzados por una base que ya estaba agotada.
 2. `usando_overflow` se marca igual en las dos vías: es `true` si, tras colocar la línea, `uso_acumulado` supera `capacidad_total` — no solo en la rama de "último recurso automático". Con overflow manual activo, una línea puede entrar por la rama normal (`necesaria ≤ libre_actual()`) y aun así estar usando espacio por encima de la capacidad base.
 
-## Paso 4 — Bonus de agrupación por tipo de ingrediente
+## Paso 4 — Bonus de agrupación por tipo de producto
 
-Con la capacidad libre restante tras el Paso 3, se hace una segunda pasada: por cada tipo de ingrediente ya presente en `sugerencia`, buscar más líneas pendientes de ese mismo ingrediente (de cualquier pedido de la cola, aunque sea de menor prioridad) que quepan en lo que queda libre, y añadirlas también.
+Con la capacidad libre restante tras el Paso 3, se hace una segunda pasada: por cada tipo de producto ya presente en `sugerencia`, buscar más líneas pendientes de ese mismo producto (de cualquier pedido de la cola, aunque sea de menor prioridad) que quepan en lo que queda libre, y añadirlas también.
 
-Motivo: los ingredientes se organizan por tipo sobre la plancha (`DOMAIN.md`) y agrupar refuerzos del mismo tipo aprovecha mejor el hueco sin complicar al cocinero con más tipos simultáneos de los necesarios.
+Motivo: los productos se organizan por tipo sobre la plancha (`DOMAIN.md`) y agrupar refuerzos del mismo tipo aprovecha mejor el hueco sin complicar al cocinero con más tipos simultáneos de los necesarios.
 
 ## Paso 5 — Presentación y recálculo
 
-- La sugerencia se muestra como: ingredientes agrupados por tipo + pedidos de origen, capacidad que ocuparía (`usa X/capacidad_total`), y cualquier alerta de pedido forzado que no quepa.
+- La sugerencia se muestra como: productos agrupados por tipo + pedidos de origen, capacidad que ocuparía (`usa X/capacidad_total`), y cualquier alerta de pedido forzado que no quepa.
 - Si se está usando overflow (manual o automático), se marca visualmente qué líneas lo usan y la barra de capacidad se extiende por encima del 100% hasta `capacidad_extendida`, para que el cocinero sepa en todo momento que está apretando más de lo normal.
-- Se **recalcula** ante cualquier cambio relevante: se libera capacidad (ingrediente retirado de la plancha), se crea un pedido nuevo, un cocinero confirma una sugerencia, o pasa el tiempo suficiente como para que la urgencia de algún pedido cruce el umbral forzado (revisión periódica, ej. cada 30 s).
+- Se **recalcula** ante cualquier cambio relevante: se libera capacidad (producto retirado de la plancha), se crea un pedido nuevo, un cocinero confirma una sugerencia, o pasa el tiempo suficiente como para que la urgencia de algún pedido cruce el umbral forzado (revisión periódica, ej. cada 30 s).
 
 ## Qué pedido debe tomar un cocinero libre
 

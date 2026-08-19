@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { Ingrediente, IngredientesService } from '../../../admin/ingredientes/ingredientes.service';
+import { Producto, ProductosService } from '../../../admin/productos/productos.service';
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
 import { ClientesService } from '../../clientes.service';
@@ -16,15 +16,15 @@ import { PedidosService } from '../../../../core/pedidos.service';
 })
 export class Crear {
   protected readonly sesion = inject(Sesion);
-  private readonly ingredientesService = inject(IngredientesService);
+  private readonly productosService = inject(ProductosService);
   private readonly clientesService = inject(ClientesService);
   private readonly pedidosService = inject(PedidosService);
   private readonly router = inject(Router);
 
   private readonly clienteId = inject(ActivatedRoute).snapshot.paramMap.get('clienteId')!;
 
-  protected readonly ingredientes = toSignal(this.ingredientesService.listar(), {
-    initialValue: [] as Ingrediente[],
+  protected readonly productos = toSignal(this.productosService.listar(), {
+    initialValue: [] as Producto[],
   });
   protected readonly cantidades = signal<Record<string, number>>({});
 
@@ -58,10 +58,10 @@ export class Crear {
     return this.cantidades()[id] ?? 0;
   }
 
-  incrementar(ingrediente: Ingrediente): void {
-    const actual = this.cantidad(ingrediente.id);
-    if (actual >= ingrediente.stock) return; // nunca por encima del stock (CAM-03)
-    this.cantidades.update((mapa) => ({ ...mapa, [ingrediente.id]: actual + 1 }));
+  incrementar(producto: Producto): void {
+    const actual = this.cantidad(producto.id);
+    if (actual >= producto.stock) return; // nunca por encima del stock (CAM-03)
+    this.cantidades.update((mapa) => ({ ...mapa, [producto.id]: actual + 1 }));
   }
 
   decrementar(id: string): void {
@@ -80,7 +80,7 @@ export class Crear {
 
     const lineas = Object.entries(this.cantidades())
       .filter(([, cantidad]) => cantidad > 0)
-      .map(([ingredienteId, cantidad]) => ({ ingredienteId, cantidad }));
+      .map(([productoId, cantidad]) => ({ productoId, cantidad }));
 
     this.error.set(null);
     this.guardando.set(true);

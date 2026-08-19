@@ -21,7 +21,7 @@ import { FIRESTORE } from './firebase.providers';
 import { collectionData$, docData$ } from './firestore-rx';
 
 export interface LineaNueva {
-  ingredienteId: string;
+  productoId: string;
   cantidad: number;
 }
 
@@ -42,7 +42,7 @@ export interface PedidoResumen {
   cuentaId: string | null;
 }
 
-// pendiente_entrega: el cocinero ya retiró el ingrediente de la plancha, pero
+// pendiente_entrega: el cocinero ya retiró el producto de la plancha, pero
 // todavía no ha confirmado que lo entregó físicamente en la mesa. "listo" pasa
 // a significar "ya entregado", no solo "ya cocinado" — ver ARCHITECTURE.md
 // (Máquina de estados de una línea de pedido).
@@ -50,7 +50,7 @@ export type EstadoLinea = 'pendiente' | 'en_plancha' | 'pendiente_entrega' | 'li
 
 export interface LineaPedido {
   id: string;
-  ingredienteId: string;
+  productoId: string;
   cantidad: number;
   estado: EstadoLinea;
   colocadoEn: Timestamp | null;
@@ -107,7 +107,7 @@ export class PedidosService {
     for (const linea of lineas) {
       const lineaRef = doc(collection(this.firestore, 'pedidos', pedidoRef.id, 'lineas'));
       batch.set(lineaRef, {
-        ingredienteId: linea.ingredienteId,
+        productoId: linea.productoId,
         cantidad: linea.cantidad,
         estado: 'pendiente',
         subgrupo: 1,
@@ -201,29 +201,29 @@ export class PedidosService {
     });
   }
 
-  /** COC-04: coloca el ingrediente en la plancha y descuenta stock a la vez. */
-  async colocarEnPlancha(pedidoId: string, lineaId: string, ingredienteId: string, cantidad: number): Promise<void> {
+  /** COC-04: coloca el producto en la plancha y descuenta stock a la vez. */
+  async colocarEnPlancha(pedidoId: string, lineaId: string, productoId: string, cantidad: number): Promise<void> {
     await runTransaction(this.firestore, async (tx) => {
-      const ingredienteRef = doc(this.firestore, 'ingredientes', ingredienteId);
-      const ingredienteSnap = await tx.get(ingredienteRef);
-      const stockActual = (ingredienteSnap.data()?.['stock'] as number | undefined) ?? 0;
+      const productoRef = doc(this.firestore, 'productos', productoId);
+      const productoSnap = await tx.get(productoRef);
+      const stockActual = (productoSnap.data()?.['stock'] as number | undefined) ?? 0;
       if (stockActual < cantidad) {
         throw new Error('stock-insuficiente');
       }
 
       const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
       tx.update(lineaRef, { estado: 'en_plancha', colocadoEn: serverTimestamp() });
-      tx.update(ingredienteRef, { stock: stockActual - cantidad });
+      tx.update(productoRef, { stock: stockActual - cantidad });
     });
   }
 
-  /** COC-06: el cocinero decide y confirma cuándo retira el ingrediente de la plancha — queda pendiente de entrega, no listo todavía. */
+  /** COC-06: el cocinero decide y confirma cuándo retira el producto de la plancha — queda pendiente de entrega, no listo todavía. */
   async retirarDePlancha(pedidoId: string, lineaId: string): Promise<void> {
     const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
     await updateDoc(lineaRef, { estado: 'pendiente_entrega', retiradoEn: serverTimestamp() });
   }
 
-  /** CAM-07: el camarero confirma que ya entregó el ingrediente en la mesa — aquí es cuando la línea pasa a "listo". */
+  /** CAM-07: el camarero confirma que ya entregó el producto en la mesa — aquí es cuando la línea pasa a "listo". */
   async confirmarEntrega(pedidoId: string, lineaId: string): Promise<void> {
     const lineaRef = doc(this.firestore, 'pedidos', pedidoId, 'lineas', lineaId);
     await updateDoc(lineaRef, { estado: 'listo', listoEn: serverTimestamp() });

@@ -19,7 +19,7 @@
     </div>
 
     @if (hayStockBajo()) {
-      <p class="alerta" role="alert">⚠ Algún ingrediente de este pedido tiene el stock bajo.</p>
+      <p class="alerta" role="alert">⚠ Algún producto de este pedido tiene el stock bajo.</p>
     }
 
     @if (accionError()) {
@@ -29,7 +29,7 @@
     <div class="lineas">
       @for (linea of lineasVista(); track linea.id) {
         <div class="linea" [class.stock-bajo]="linea.stockBajo">
-          <span class="nombre">{{ linea.cantidad }}× {{ linea.nombreIngrediente }}</span>
+          <span class="nombre">{{ linea.cantidad }}× {{ linea.nombreProducto }}</span>
           @if (linea.estado === 'pendiente_entrega') {
             <button type="button" (click)="confirmarEntrega(linea)" [disabled]="confirmando() === linea.id">
               {{ confirmando() === linea.id ? 'Confirmando…' : 'Confirmar entrega en mesa' }}

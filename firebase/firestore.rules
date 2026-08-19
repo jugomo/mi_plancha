@@ -152,13 +152,13 @@ service cloud.firestore {
     match /pedidos/{pedidoId}/lineas/{lineaId} {
       allow read: if autenticado();
 
-      // La cantidad no puede superar el stock actual del ingrediente
+      // La cantidad no puede superar el stock actual del producto
       // (criterio de aceptación de CAM-03).
       allow create: if esRol('camarero')
         && request.resource.data.estado == 'pendiente'
         && request.resource.data.cantidad > 0
         && request.resource.data.cantidad
-          <= get(/databases/$(database)/documents/ingredientes/$(request.resource.data.ingredienteId)).data.stock;
+          <= get(/databases/$(database)/documents/productos/$(request.resource.data.productoId)).data.stock;
 
       // Colocar en la plancha o retirarla (pendiente de entrega): solo el
       // cocinero asignado al pedido padre, respetando la secuencia
@@ -198,8 +198,8 @@ service cloud.firestore {
       allow read: if autenticado();
     }
 
-    // ---------- ingredientes ----------
-    match /ingredientes/{ingredienteId} {
+    // ---------- productos ----------
+    match /productos/{productoId} {
       allow read: if autenticado();
 
       // CMS: alta, precio, capacidad, tiempo de cocción. Ninguno puede ser negativo
@@ -211,7 +211,7 @@ service cloud.firestore {
         && request.resource.data.precio >= 0;
       allow delete: if esRol('administrador');
 
-      // Descuento de stock al colocar un ingrediente en la plancha: el cocinero
+      // Descuento de stock al colocar un producto en la plancha: el cocinero
       // solo puede tocar `stock`, y solo para bajarlo (nunca negativo). No hay forma
       // de atar aquí el descuento a la línea de pedido exacta que lo originó —
       // límite de confianza aceptado (ver cabecera de este archivo).

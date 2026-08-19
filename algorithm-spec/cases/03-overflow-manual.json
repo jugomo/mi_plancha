@@ -9,7 +9,7 @@
     "capacidadUsadaActual": 90,
     "tiempoMaximoEsperaMin": 15,
     "division": { "umbral": 6, "tamanoSubgrupo": 3 },
-    "ingredientes": {
+    "productos": {
       "filete": { "capacidadUnidad": 12, "tiempoCoccionSeg": 300 },
       "chorizo": { "capacidadUnidad": 8, "tiempoCoccionSeg": 420 }
     },
@@ -18,22 +18,22 @@
         "id": "300",
         "creadoEn": "2026-08-17T11:55:00Z",
         "lineas": [
-          { "id": "L1", "ingrediente": "filete", "cantidad": 1, "estado": "pendiente" }
+          { "id": "L1", "producto": "filete", "cantidad": 1, "estado": "pendiente" }
         ]
       },
       {
         "id": "301",
         "creadoEn": "2026-08-17T11:56:00Z",
         "lineas": [
-          { "id": "L2", "ingrediente": "chorizo", "cantidad": 1, "estado": "pendiente" }
+          { "id": "L2", "producto": "chorizo", "cantidad": 1, "estado": "pendiente" }
         ]
       }
     ]
   },
   "output": {
     "sugerencia": [
-      { "pedidoId": "300", "lineaId": "L1", "ingrediente": "filete", "cantidad": 1, "usandoOverflow": true },
-      { "pedidoId": "301", "lineaId": "L2", "ingrediente": "chorizo", "cantidad": 1, "usandoOverflow": true }
+      { "pedidoId": "300", "lineaId": "L1", "producto": "filete", "cantidad": 1, "usandoOverflow": true },
+      { "pedidoId": "301", "lineaId": "L2", "producto": "chorizo", "cantidad": 1, "usandoOverflow": true }
     ],
     "capacidadUsadaResultante": 110,
     "alertas": []

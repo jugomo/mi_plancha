@@ -1,7 +1,7 @@
-// Requiere `IngredientesService` (Firestore real) o el Firebase Emulator Suite,
+// Requiere `ProductosService` (Firestore real) o el Firebase Emulator Suite,
 // todavía no configurado en este proyecto.
 import { describe, it } from 'vitest';
 
-describe('Formulario', () => {
+describe('Lista', () => {
   it.todo('cubrir con Firebase Emulator Suite (Firestore)');
 });

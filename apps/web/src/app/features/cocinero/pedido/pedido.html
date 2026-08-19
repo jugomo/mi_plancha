@@ -19,7 +19,7 @@
       @for (linea of lineasVista(); track linea.id) {
         <div class="linea">
           <div class="info">
-            <span class="nombre">{{ linea.cantidad }}× {{ linea.nombreIngrediente }}</span>
+            <span class="nombre">{{ linea.cantidad }}× {{ linea.nombreProducto }}</span>
             @if (linea.estado === 'en_plancha' && linea.restanteSeg !== null) {
               <span class="timer" [class.casi-listo]="linea.restanteSeg <= 15">
                 {{ linea.restanteSeg === 0 ? 'Cocción terminada' : formatoRestante(linea.restanteSeg) + ' restante' }}

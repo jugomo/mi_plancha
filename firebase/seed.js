@@ -33,9 +33,9 @@ if (!ADMIN_UID || !ADMIN_NOMBRE) {
   process.exit(1);
 }
 
-// Ingredientes de referencia — los mismos usados en ALGORITHM.md, algorithm-spec/
+// Productos de referencia — los mismos usados en ALGORITHM.md, algorithm-spec/
 // y los wireframes, para poder probar el resto del sistema con datos conocidos.
-const INGREDIENTES = {
+const PRODUCTOS = {
   hamburguesa: { nombre: 'Hamburguesa', capacidadUnidad: 10, tiempoCoccionSeg: 360, stock: 34, precio: 4.5 },
   pinchito: { nombre: 'Pinchito', capacidadUnidad: 6, tiempoCoccionSeg: 240, stock: 58, precio: 3.0 },
   montadito: { nombre: 'Montadito', capacidadUnidad: 5, tiempoCoccionSeg: 180, stock: 12, precio: 2.5 },
@@ -76,13 +76,13 @@ async function seed() {
     batch.set(db.doc(`mesas/${i}`), { numero: i, estado: 'libre', clienteId: null });
   }
 
-  // Ingredientes de referencia.
-  for (const [id, datos] of Object.entries(INGREDIENTES)) {
-    batch.set(db.doc(`ingredientes/${id}`), datos);
+  // Productos de referencia.
+  for (const [id, datos] of Object.entries(PRODUCTOS)) {
+    batch.set(db.doc(`productos/${id}`), datos);
   }
 
   await batch.commit();
-  console.log('Seed completado: administrador, config, mesas e ingredientes creados.');
+  console.log('Seed completado: administrador, config, mesas y productos creados.');
 }
 
 seed().catch((err) => {

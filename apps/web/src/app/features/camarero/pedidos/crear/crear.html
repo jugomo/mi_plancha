@@ -15,22 +15,22 @@
       <p class="error" role="alert">{{ error() }}</p>
     }
 
-    <div class="ingredientes">
-      @for (ingrediente of ingredientes(); track ingrediente.id) {
-        <div class="fila" [class.sin-stock]="ingrediente.stock === 0">
+    <div class="productos">
+      @for (producto of productos(); track producto.id) {
+        <div class="fila" [class.sin-stock]="producto.stock === 0">
           <div>
-            <div class="nombre">{{ ingrediente.nombre }}</div>
-            <div class="stock">{{ ingrediente.stock }} uds disponibles</div>
+            <div class="nombre">{{ producto.nombre }}</div>
+            <div class="stock">{{ producto.stock }} uds disponibles</div>
           </div>
           <div class="stepper">
-            <button type="button" (click)="decrementar(ingrediente.id)" [disabled]="cantidad(ingrediente.id) === 0">
+            <button type="button" (click)="decrementar(producto.id)" [disabled]="cantidad(producto.id) === 0">
               −
             </button>
-            <span class="cantidad">{{ cantidad(ingrediente.id) }}</span>
+            <span class="cantidad">{{ cantidad(producto.id) }}</span>
             <button
               type="button"
-              (click)="incrementar(ingrediente)"
-              [disabled]="cantidad(ingrediente.id) >= ingrediente.stock"
+              (click)="incrementar(producto)"
+              [disabled]="cantidad(producto.id) >= producto.stock"
             >
               +
             </button>
@@ -41,7 +41,7 @@
 
     <div class="pie">
       <a routerLink="/camarero" class="btn secundario">Cancelar</a>
-      <span class="resumen">{{ totalSeleccionado() }} ingredientes seleccionados</span>
+      <span class="resumen">{{ totalSeleccionado() }} productos seleccionados</span>
       <button type="button" (click)="confirmar()" [disabled]="totalSeleccionado() === 0 || guardando()">
         {{ guardando() ? 'Confirmando…' : 'Confirmar pedido' }}
       </button>

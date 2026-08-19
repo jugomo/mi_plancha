@@ -9,7 +9,7 @@
     "capacidadUsadaActual": 50,
     "tiempoMaximoEsperaMin": 20,
     "division": { "umbral": 6, "tamanoSubgrupo": 3 },
-    "ingredientes": {
+    "productos": {
       "pinchito": { "capacidadUnidad": 6, "tiempoCoccionSeg": 240 },
       "filete": { "capacidadUnidad": 12, "tiempoCoccionSeg": 300 }
     },
@@ -19,15 +19,15 @@
         "creadoEn": "2026-08-17T11:50:00Z",
         "subgrupoActual": 1,
         "lineas": [
-          { "id": "L1", "ingrediente": "pinchito", "cantidad": 3, "estado": "pendiente", "subgrupo": 1 },
-          { "id": "L2", "ingrediente": "filete", "cantidad": 2, "estado": "pendiente", "subgrupo": 2 }
+          { "id": "L1", "producto": "pinchito", "cantidad": 3, "estado": "pendiente", "subgrupo": 1 },
+          { "id": "L2", "producto": "filete", "cantidad": 2, "estado": "pendiente", "subgrupo": 2 }
         ]
       }
     ]
   },
   "output": {
     "sugerencia": [
-      { "pedidoId": "400", "lineaId": "L1", "ingrediente": "pinchito", "cantidad": 3, "usandoOverflow": false }
+      { "pedidoId": "400", "lineaId": "L1", "producto": "pinchito", "cantidad": 3, "usandoOverflow": false }
     ],
     "capacidadUsadaResultante": 68,
     "alertas": []

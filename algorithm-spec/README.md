@@ -18,7 +18,7 @@ El objetivo es que las tres implementaciones (Angular, SwiftUI, Jetpack Compose 
     "capacidadUsadaActual": "number — suma ya ocupada en la plancha antes de aplicar la sugerencia",
     "tiempoMaximoEsperaMin": "number — anti-inanición",
     "division": { "umbral": "number", "tamanoSubgrupo": "number" },
-    "ingredientes": {
+    "productos": {
       "<id>": { "capacidadUnidad": "number", "tiempoCoccionSeg": "number" }
     },
     "pedidos": [
@@ -27,14 +27,14 @@ El objetivo es que las tres implementaciones (Angular, SwiftUI, Jetpack Compose 
         "creadoEn": "ISO 8601",
         "subgrupoActual": "number (opcional, por defecto 1)",
         "lineas": [
-          { "id": "string", "ingrediente": "<id>", "cantidad": "number", "estado": "pendiente", "subgrupo": "number (opcional, por defecto 1)" }
+          { "id": "string", "producto": "<id>", "cantidad": "number", "estado": "pendiente", "subgrupo": "number (opcional, por defecto 1)" }
         ]
       }
     ]
   },
   "output": {
     "sugerencia": [
-      { "pedidoId": "string", "lineaId": "string", "ingrediente": "<id>", "cantidad": "number", "usandoOverflow": "boolean" }
+      { "pedidoId": "string", "lineaId": "string", "producto": "<id>", "cantidad": "number", "usandoOverflow": "boolean" }
     ],
     "capacidadUsadaResultante": "number",
     "alertas": ["string — id del pedido forzado que no cabe (la capa de presentación compone el mensaje legible, con mesa/cliente), vacío si no hay"]

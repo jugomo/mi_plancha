@@ -12,11 +12,11 @@ import {
   etiquetaEstadoPedidoVista,
 } from '../../../core/pedidos.service';
 import { Sesion } from '../../../core/sesion';
-import { Ingrediente, IngredientesService } from '../../admin/ingredientes/ingredientes.service';
+import { Producto, ProductosService } from '../../admin/productos/productos.service';
 import { LineaPendienteConPedido, SugerenciaService } from '../sugerencia.service';
 
 interface ItemVista extends ItemSugerencia {
-  nombreIngrediente: string;
+  nombreProducto: string;
   mesaNumero: number | undefined;
 }
 
@@ -34,7 +34,7 @@ export class Pendientes {
   private readonly sesion = inject(Sesion);
   private readonly pedidosService = inject(PedidosService);
   private readonly sugerenciaService = inject(SugerenciaService);
-  private readonly ingredientesService = inject(IngredientesService);
+  private readonly productosService = inject(ProductosService);
   private readonly router = inject(Router);
 
   protected readonly pendientes = toSignal(this.pedidosService.pendientesSinAsignar(), {
@@ -84,23 +84,23 @@ export class Pendientes {
   private readonly lineasPendientesTodas = toSignal(this.sugerenciaService.lineasPendientes(), {
     initialValue: [] as LineaPendienteConPedido[],
   });
-  private readonly ingredientes = toSignal(this.ingredientesService.listar(), {
-    initialValue: [] as Ingrediente[],
+  private readonly productos = toSignal(this.productosService.listar(), {
+    initialValue: [] as Producto[],
   });
 
   protected readonly sugerenciaItems = computed<ItemVista[]>(() => {
-    const ingredientePorId = new Map(this.ingredientes().map((i) => [i.id, i]));
+    const productoPorId = new Map(this.productos().map((i) => [i.id, i]));
     const mesaPorPedido = this.sugerenciaService.mesaPorPedido(this.lineasPendientesTodas());
     return this.sugerenciaBruta().sugerencia.map((item) => ({
       ...item,
-      nombreIngrediente: ingredientePorId.get(item.ingrediente)?.nombre ?? item.ingrediente,
+      nombreProducto: productoPorId.get(item.producto)?.nombre ?? item.producto,
       mesaNumero: mesaPorPedido.get(item.pedidoId),
     }));
   });
 
   protected readonly capacidadQueUsaria = computed(() =>
     this.sugerenciaItems().reduce(
-      (suma, item) => suma + (this.ingredientes().find((i) => i.id === item.ingrediente)?.capacidadUnidad ?? 0) * item.cantidad,
+      (suma, item) => suma + (this.productos().find((i) => i.id === item.producto)?.capacidadUnidad ?? 0) * item.cantidad,
       0,
     ),
   );
@@ -172,7 +172,7 @@ export class Pendientes {
           fallos++;
           continue; // otro cocinero se adelantó a tomarlo
         }
-        await this.pedidosService.colocarEnPlancha(item.pedidoId, item.lineaId, item.ingrediente, item.cantidad);
+        await this.pedidosService.colocarEnPlancha(item.pedidoId, item.lineaId, item.producto, item.cantidad);
       } catch {
         fallos++;
       }

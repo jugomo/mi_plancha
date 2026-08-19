@@ -39,7 +39,7 @@
   <div class="items">
     @for (item of items(); track item.id) {
       <div class="item" [class.casi-listo]="item.restanteSeg <= 15">
-        <span class="nombre">{{ item.cantidad }}× {{ item.nombreIngrediente }}</span>
+        <span class="nombre">{{ item.cantidad }}× {{ item.nombreProducto }}</span>
         <span class="mesa">Mesa {{ item.mesaNumero }}</span>
         <span class="timer">{{ item.restanteSeg === 0 ? '¡Listo!' : formatoRestante(item.restanteSeg) }}</span>
       </div>

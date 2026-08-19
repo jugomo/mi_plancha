@@ -2,16 +2,16 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { IngredienteEntrada, IngredientesService } from '../ingredientes.service';
+import { ProductoEntrada, ProductosService } from '../productos.service';
 
 @Component({
-  selector: 'mp-ingrediente-formulario',
+  selector: 'mp-producto-formulario',
   imports: [FormsModule, RouterLink],
   templateUrl: './formulario.html',
   styleUrl: './formulario.scss',
 })
 export class Formulario {
-  private readonly servicio = inject(IngredientesService);
+  private readonly servicio = inject(ProductosService);
   private readonly router = inject(Router);
 
   protected readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id');
@@ -31,18 +31,18 @@ export class Formulario {
     if (this.id) {
       this.servicio
         .obtener(this.id)
-        .then((ingrediente) => {
-          if (!ingrediente) {
-            this.error.set('No se encontró el ingrediente.');
+        .then((producto) => {
+          if (!producto) {
+            this.error.set('No se encontró el producto.');
             return;
           }
-          this.nombre = ingrediente.nombre;
-          this.capacidadUnidad = ingrediente.capacidadUnidad;
-          this.tiempoCoccionSeg = ingrediente.tiempoCoccionSeg;
-          this.stock = ingrediente.stock;
-          this.precio = ingrediente.precio;
+          this.nombre = producto.nombre;
+          this.capacidadUnidad = producto.capacidadUnidad;
+          this.tiempoCoccionSeg = producto.tiempoCoccionSeg;
+          this.stock = producto.stock;
+          this.precio = producto.precio;
         })
-        .catch(() => this.error.set('No se pudo cargar el ingrediente.'))
+        .catch(() => this.error.set('No se pudo cargar el producto.'))
         .finally(() => this.cargando.set(false));
     }
   }
@@ -52,7 +52,7 @@ export class Formulario {
     this.error.set(null);
     this.guardando.set(true);
 
-    const datos: IngredienteEntrada = {
+    const datos: ProductoEntrada = {
       nombre: this.nombre.trim(),
       capacidadUnidad: this.capacidadUnidad,
       tiempoCoccionSeg: this.tiempoCoccionSeg,
@@ -66,7 +66,7 @@ export class Formulario {
       } else {
         await this.servicio.crear(datos);
       }
-      await this.router.navigateByUrl('/admin/ingredientes');
+      await this.router.navigateByUrl('/admin/productos');
     } catch {
       this.error.set('No se pudo guardar. Revisa los datos e inténtalo de nuevo.');
     } finally {

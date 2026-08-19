@@ -62,7 +62,7 @@ No se guarda un campo `estado` agregado en el pedido: se deriva siempre de sus l
 
 #### Subcolección `pedidos/{pedidoId}/lineas/{lineaId}`
 
-- `ingredienteId: string`
+- `productoId: string`
 - `cantidad: number`
 - `estado: "pendiente" | "en_plancha" | "pendiente_entrega" | "listo"` — ver la máquina de estados completa en [ARCHITECTURE.md](./ARCHITECTURE.md#máquina-de-estados-de-una-línea-de-pedido)
 - `subgrupo: number`
@@ -74,7 +74,7 @@ No se guarda un campo `estado` agregado en el pedido: se deriva siempre de sus l
 
 Las líneas van en subcolección (no como array dentro del pedido) para poder actualizar una línea suelta sin reescribir el pedido entero, y para que las Security Rules puedan autorizar por línea (ej. "solo el cocinero asignado puede cambiar el estado de esta línea").
 
-### `ingredientes/{ingredienteId}`
+### `productos/{productoId}`
 
 - `nombre: string`
 - `capacidadUnidad: number`
@@ -89,7 +89,7 @@ Registro histórico permanente, creado al generar la cuenta (`DOMAIN.md`) — es
 - `mesaNumero: number`, `clienteNombre: string` — denormalizados, ya que `clientes/{clienteId}` se borra al generar la cuenta.
 - `camareroId: uid` — quien la generó.
 - `pedidoIds: array<string>` — referencia a los pedidos incluidos.
-- `lineas: array<{ pedidoId, ingredienteNombre, cantidad, precioUnidad, subtotal }>` — **snapshot** de nombres y precios en el momento de generar la cuenta, no una referencia viva a `ingredientes/`. Es importante que sea snapshot: si el administrador cambia un precio en el CMS más tarde, las cuentas ya generadas no deben cambiar de valor retroactivamente.
+- `lineas: array<{ pedidoId, productoNombre, cantidad, precioUnidad, subtotal }>` — **snapshot** de nombres y precios en el momento de generar la cuenta, no una referencia viva a `productos/`. Es importante que sea snapshot: si el administrador cambia un precio en el CMS más tarde, las cuentas ya generadas no deben cambiar de valor retroactivamente.
 - `total: number`
 - `generadaEn: timestamp`
 
@@ -105,7 +105,7 @@ Documento único de **estado operativo** (no configuración — lo toca cualquie
 
 ## Cómo se calcula la capacidad usada en tiempo real
 
-No se guarda como campo persistido (se desincronizaría fácilmente sin backend). Se obtiene con una **collection group query** sobre `lineas` filtrando `estado == "en_plancha"`, escuchada en tiempo real (`onSnapshot`) por cada cliente; la capacidad usada es la suma de `cantidad × capacidadUnidad(ingrediente)` de esas líneas. El mismo mecanismo (collection group sobre `lineas`, filtrando `estado == "pendiente"`) alimenta la cola de candidatos del algoritmo de sugerencia (`ALGORITHM.md`), ya con `pedidoCreadoEn`, `cocineroId` y `mesaNumero` disponibles sin lecturas adicionales gracias a la denormalización.
+No se guarda como campo persistido (se desincronizaría fácilmente sin backend). Se obtiene con una **collection group query** sobre `lineas` filtrando `estado == "en_plancha"`, escuchada en tiempo real (`onSnapshot`) por cada cliente; la capacidad usada es la suma de `cantidad × capacidadUnidad(producto)` de esas líneas. El mismo mecanismo (collection group sobre `lineas`, filtrando `estado == "pendiente"`) alimenta la cola de candidatos del algoritmo de sugerencia (`ALGORITHM.md`), ya con `pedidoCreadoEn`, `cocineroId` y `mesaNumero` disponibles sin lecturas adicionales gracias a la denormalización.
 
 **Requiere un índice de *collection group*** sobre `lineas` (campo `estado`, y otro compuesto `estado + pedidoCreadoEn` para poder ordenar por antigüedad directamente en la consulta).
 
@@ -115,7 +115,7 @@ Sin backend, estas operaciones son las que más importa que sean atómicas — t
 
 1. **Abrir mesa**: crea `clientes/{nuevoId}` y actualiza `mesas/{numero}` a `estado: "ocupada"` + `clienteId` en la misma transacción. Falla si la mesa ya estaba `"ocupada"`.
 2. **Tomar pedido**: actualiza `pedidos/{id}.cocineroId` de `null` al uid del cocinero. Falla (con reintento/lectura fresca) si ya no es `null` — así se garantiza la exclusividad aunque dos cocineros lo intenten a la vez.
-3. **Colocar ingrediente en la plancha**: actualiza la línea a `estado: "en_plancha"` + `colocadoEn` y descuenta `ingredientes/{id}.stock` en la misma transacción. Falla si el stock ya no alcanza.
+3. **Colocar producto en la plancha**: actualiza la línea a `estado: "en_plancha"` + `colocadoEn` y descuenta `productos/{id}.stock` en la misma transacción. Falla si el stock ya no alcanza.
 4. **Generar cuenta**: lee todas las `lineas` de todos los `pedidos` del cliente para componer el listado con snapshot de precios y el total, y en una transacción: crea `cuentas/{nuevoId}` con ese snapshot, marca cada `pedidos/{id}.cuentaId` con el id de la cuenta, borra `clientes/{clienteId}` y actualiza `mesas/{numero}` a `estado: "libre"`, `clienteId: null`. Los `pedidos` en sí **no se borran automáticamente** (quedan como detalle operativo denormalizado), pero la fuente de verdad del histórico de cara al negocio es `cuentas/` — se conserva de forma permanente, sin fecha de expiración por ahora. Una vez facturado (`cuentaId != null`), el cocinero que lo llevó puede borrarlo manualmente desde su lista de completados, como limpieza opcional — `cuentas/` ya tiene todo lo necesario como historial, así que el pedido operativo deja de hacer falta. Antes de facturar, el borrado está bloqueado por las reglas.
 5. **Cerrar mesa sin pedidos**: variante de la anterior para un cliente que abrió mesa pero no llegó a pedir nada — no hay `lineas` que leer ni nada que sumar, así que la transacción se reduce a borrar `clientes/{clienteId}` y liberar `mesas/{numero}`, sin crear ningún documento en `cuentas/` (un histórico con total 0€ no aporta nada).
 

@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
-import { Ingrediente, IngredientesService } from '../../../admin/ingredientes/ingredientes.service';
+import { Producto, ProductosService } from '../../../admin/productos/productos.service';
 import { UMBRAL_STOCK_BAJO } from '../../../../core/alertas-stock.service';
 import { Sesion } from '../../../../core/sesion';
 import { Topbar } from '../../../../core/ui/topbar/topbar';
@@ -17,7 +17,7 @@ import {
 } from '../../../../core/pedidos.service';
 
 interface LineaVista extends LineaPedido {
-  nombreIngrediente: string;
+  nombreProducto: string;
   stockBajo: boolean;
 }
 
@@ -30,7 +30,7 @@ interface LineaVista extends LineaPedido {
 export class Detalle {
   protected readonly sesion = inject(Sesion);
   private readonly pedidosService = inject(PedidosService);
-  private readonly ingredientesService = inject(IngredientesService);
+  private readonly productosService = inject(ProductosService);
 
   protected readonly pedidoId = inject(ActivatedRoute).snapshot.paramMap.get('pedidoId')!;
 
@@ -43,8 +43,8 @@ export class Detalle {
   private readonly lineas = toSignal(this.pedidosService.lineasDePedido(this.pedidoId), {
     initialValue: [] as LineaPedido[],
   });
-  private readonly ingredientes = toSignal(this.ingredientesService.listar(), {
-    initialValue: [] as Ingrediente[],
+  private readonly productos = toSignal(this.productosService.listar(), {
+    initialValue: [] as Producto[],
   });
   // En vivo (no el `pedido` cargado una vez en el constructor) para poder distinguir
   // "esperando" de "cocinando" en cuanto un cocinero toma el pedido, sin recargar.
@@ -53,13 +53,13 @@ export class Detalle {
   });
 
   protected readonly lineasVista = computed<LineaVista[]>(() => {
-    const ingredientePorId = new Map(this.ingredientes().map((i) => [i.id, i]));
+    const productoPorId = new Map(this.productos().map((i) => [i.id, i]));
     return this.lineas().map((linea) => {
-      const ingrediente = ingredientePorId.get(linea.ingredienteId);
+      const producto = productoPorId.get(linea.productoId);
       return {
         ...linea,
-        nombreIngrediente: ingrediente?.nombre ?? linea.ingredienteId,
-        stockBajo: (ingrediente?.stock ?? Infinity) <= UMBRAL_STOCK_BAJO,
+        nombreProducto: producto?.nombre ?? linea.productoId,
+        stockBajo: (producto?.stock ?? Infinity) <= UMBRAL_STOCK_BAJO,
       };
     });
   });
@@ -105,7 +105,7 @@ export class Detalle {
     return etiquetaEstadoPedidoVista(estado);
   }
 
-  /** CAM-07: confirmo que ya llevé el ingrediente a la mesa — ahí es cuando pasa a "listo". */
+  /** CAM-07: confirmo que ya llevé el producto a la mesa — ahí es cuando pasa a "listo". */
   async confirmarEntrega(linea: LineaVista): Promise<void> {
     if (this.confirmando()) return;
     this.accionError.set(null);

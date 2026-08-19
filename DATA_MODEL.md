@@ -162,7 +162,7 @@ Documento único de **estado operativo** (no configuración — lo toca cualquie
 
 No se guarda como campo persistido (se desincronizaría fácilmente sin backend). Se obtiene con una **collection group query** sobre `lineas` filtrando `empresaId == <la mía>` y `estado == "en_plancha"`, escuchada en tiempo real (`onSnapshot`) por cada cliente; la capacidad usada es la suma de `cantidad × capacidadUnidad(producto)` de esas líneas. El mismo mecanismo (collection group sobre `lineas`, filtrando `empresaId` y `estado == "pendiente"`) alimenta la cola de candidatos del algoritmo de sugerencia (`ALGORITHM.md`), ya con `pedidoCreadoEn`, `cocineroId` y `mesaNumero` disponibles sin lecturas adicionales gracias a la denormalización.
 
-**Requiere un índice de *collection group*** sobre `lineas` — `empresaId + estado + pedidoCreadoEn` (campo líder `empresaId` porque las 4 consultas que lo usan siempre filtran primero por empresa, ver más arriba).
+**Requiere un índice de *collection group*** sobre `lineas` — `empresaId + estado + pedidoCreadoEn` (campo líder `empresaId` porque las consultas que lo usan siempre filtran primero por empresa, ver más arriba). Además, `ClientesService.mesasEnVivo()`, `AlertasStockService.mesasConAlerta()` y `PedidosService.estadoDeTodasLasLineas()` filtran **solo** por `empresaId` (sin `estado` ni `orderBy`) — Firestore no auto-indexa campos sueltos en consultas *collection group* (a diferencia de una colección normal), así que hace falta además un *field override* explícito habilitando `empresaId` como índice de un solo campo en modo `COLLECTION_GROUP` (`firestore.indexes.json` → `fieldOverrides`).
 
 ## Transacciones clave (invariantes multi-documento)
 

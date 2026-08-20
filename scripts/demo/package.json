@@ -1,0 +1,15 @@
+{
+  "name": "mi-plancha-demo",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Script de demo dirigida: crea una empresa DEMO aislada y ejecuta el flujo camarero+cocinero en vivo, para verlo reaccionar en dos pestañas ya logueadas (ver README.md).",
+  "scripts": {
+    "setup": "node setup.mjs",
+    "demo": "node demo.mjs"
+  },
+  "dependencies": {
+    "firebase": "^11.0.0",
+    "firebase-admin": "^12.0.0"
+  }
+}

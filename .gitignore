@@ -29,3 +29,7 @@ firebase/service-account.json
 
 # Dependencias del script de seed
 firebase/node_modules/
+
+# Script de demo dirigida (scripts/demo/README.md)
+scripts/demo/node_modules/
+scripts/demo/.demo-empresa.json

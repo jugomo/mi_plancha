@@ -37,6 +37,10 @@ export class Sesion {
   private readonly router = inject(Router);
 
   readonly usuario = signal<Usuario | null | undefined>(undefined);
+  // Nombre de la empresa del usuario actual, para mostrarlo en el Topbar
+  // (ver core/ui/topbar) — null mientras se resuelve o para superadmin, que
+  // no pertenece a ninguna.
+  readonly empresaNombre = signal<string | null>(null);
 
   private dejarDeEscucharUsuario: Unsubscribe | null = null;
   private dejarDeEscucharEmpresa: Unsubscribe | null = null;
@@ -53,6 +57,7 @@ export class Sesion {
 
     if (!user) {
       this.usuario.set(null);
+      this.empresaNombre.set(null);
       // Los guards (authGuard/rolGuard) solo se evalúan al navegar — si la
       // sesión se invalida estando ya en una pantalla (logout explícito, o
       // el forzado de cerrarPorSesionInvalida()), nadie vuelve a evaluarlos
@@ -77,18 +82,22 @@ export class Sesion {
   private escucharEmpresa(empresaId: string | null): void {
     this.dejarDeEscucharEmpresa?.();
     this.dejarDeEscucharEmpresa = null;
+    this.empresaNombre.set(null);
 
     if (!empresaId) return; // superadmin no pertenece a ninguna empresa
 
     this.dejarDeEscucharEmpresa = onSnapshot(doc(this.firestore, 'empresas', empresaId), (snap) => {
       if (!snap.exists() || snap.data()['activa'] !== true) {
         this.cerrarPorSesionInvalida();
+        return;
       }
+      this.empresaNombre.set(snap.data()['nombre'] ?? null);
     });
   }
 
   private cerrarPorSesionInvalida(): void {
     this.usuario.set(null);
+    this.empresaNombre.set(null);
     if (this.auth.currentUser) {
       void signOut(this.auth);
     }

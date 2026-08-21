@@ -1,7 +1,10 @@
 <header class="topbar">
   <h1>{{ titulo() }}</h1>
   <div class="usuario">
-    <span>{{ nombre() }} · {{ rolLabel() }}</span>
+    @if (etiquetaEmpresa()) {
+      <span class="empresa">{{ etiquetaEmpresa() }}</span>
+    }
+    <span>{{ etiquetaUsuario() }}</span>
     <button type="button" (click)="cerrarSesion.emit()">Cerrar sesión</button>
   </div>
 </header>

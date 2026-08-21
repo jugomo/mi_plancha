@@ -1,7 +1,8 @@
 <mp-topbar
-  titulo="mi_plancha"
+  titulo="mi_plancha · Camarero"
+  [empresaNombre]="sesion.empresaNombre() ?? ''"
+  [empresaCodigo]="sesion.usuario()?.empresaId ?? ''"
   [nombre]="sesion.usuario()?.nombre ?? ''"
-  rolLabel="Camarero"
   (cerrarSesion)="cerrarSesion()"
 />
 

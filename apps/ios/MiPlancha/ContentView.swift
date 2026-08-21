@@ -4,7 +4,8 @@ import SwiftUI
 /// el proyecto nativo está inicializado y compila.
 struct ContentView: View {
     var body: some View {
-        Text("In progress — mi_plancha")
+        
+        Text("mi_plancha")
             .padding()
     }
 }

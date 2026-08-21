@@ -7,17 +7,47 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4326C9B1303869BA002469B6 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 4326C9B0303869BA002469B6 /* FirebaseAuth */; };
+		4326C9B3303869C5002469B6 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4326C9B2303869C5002469B6 /* FirebaseFirestore */; };
+		4326C9B630386C42002469B6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4326C9B430386AB2002469B6 /* GoogleService-Info.plist */; };
+		4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9B730386E67002469B6 /* UsernameEmail.swift */; };
+		4326C9BA3038A59E002469B6 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9B93038A59B002469B6 /* AuthService.swift */; };
+		4326C9BC3038B121002469B6 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9BB3038B11D002469B6 /* LoginView.swift */; };
 		44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508DA14609824D34CA7669D7 /* ContentView.swift */; };
 		DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiPlanchaApp.swift; sourceTree = "<group>"; };
-		2DCAC5812AF44AE8A6659F86 /* MiPlancha.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MiPlancha.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DCAC5812AF44AE8A6659F86 /* MiPlancha.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MiPlancha.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4326C9AD30386766002469B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4326C9B430386AB2002469B6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		4326C9B730386E67002469B6 /* UsernameEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameEmail.swift; sourceTree = "<group>"; };
+		4326C9B93038A59B002469B6 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		4326C9BB3038B11D002469B6 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		508DA14609824D34CA7669D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		4326C9AE303869AA002469B6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4326C9B1303869BA002469B6 /* FirebaseAuth in Frameworks */,
+				4326C9B3303869C5002469B6 /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
+		4326C9AF303869BA002469B6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		6386F70C85D3BC835566FABE /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -30,6 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				931A7E226C1E69257C86DDA0 /* MiPlancha */,
+				4326C9AF303869BA002469B6 /* Frameworks */,
 				6386F70C85D3BC835566FABE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -37,6 +68,11 @@
 		931A7E226C1E69257C86DDA0 /* MiPlancha */ = {
 			isa = PBXGroup;
 			children = (
+				4326C9BB3038B11D002469B6 /* LoginView.swift */,
+				4326C9B93038A59B002469B6 /* AuthService.swift */,
+				4326C9B730386E67002469B6 /* UsernameEmail.swift */,
+				4326C9B430386AB2002469B6 /* GoogleService-Info.plist */,
+				4326C9AD30386766002469B6 /* Info.plist */,
 				508DA14609824D34CA7669D7 /* ContentView.swift */,
 				0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */,
 			);
@@ -51,6 +87,8 @@
 			buildConfigurationList = 5E952F17A35B93096E084906 /* Build configuration list for PBXNativeTarget "MiPlancha" */;
 			buildPhases = (
 				F922022847E6FF8675F75508 /* Sources */,
+				4326C9AE303869AA002469B6 /* Frameworks */,
+				4326C9B530386C2F002469B6 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -58,6 +96,8 @@
 			);
 			name = MiPlancha;
 			packageProductDependencies = (
+				4326C9B0303869BA002469B6 /* FirebaseAuth */,
+				4326C9B2303869C5002469B6 /* FirebaseFirestore */,
 			);
 			productName = MiPlancha;
 			productReference = 2DCAC5812AF44AE8A6659F86 /* MiPlancha.app */;
@@ -71,8 +111,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = E8E5C862F950C92A54435B70 /* Build configuration list for PBXProject "MiPlancha" */;
 			developmentRegion = en;
@@ -83,6 +121,9 @@
 			);
 			mainGroup = 8CBE0B9714A11630D802A8E5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4326C9AC30386228002469B6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6386F70C85D3BC835566FABE /* Products */;
 			projectDirPath = "";
@@ -93,6 +134,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		4326C9B530386C2F002469B6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4326C9B630386C42002469B6 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F922022847E6FF8675F75508 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -100,6 +152,9 @@
 			files = (
 				44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */,
 				DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */,
+				4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */,
+				4326C9BC3038B121002469B6 /* LoginView.swift in Sources */,
+				4326C9BA3038A59E002469B6 /* AuthService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,6 +169,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MiPlancha/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = mi_plancha;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -136,6 +192,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MiPlancha/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = mi_plancha;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -291,6 +348,30 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4326C9AC30386228002469B6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.18.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4326C9B0303869BA002469B6 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4326C9AC30386228002469B6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		4326C9B2303869C5002469B6 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4326C9AC30386228002469B6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5702DCA09F665943FDBC4C6F /* Project object */;
 }

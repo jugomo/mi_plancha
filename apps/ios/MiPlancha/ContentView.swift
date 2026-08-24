@@ -1,15 +1,26 @@
 import SwiftUI
+import FirebaseCore
 
-/// Placeholder de arranque. Sin lógica de negocio todavía: solo confirma que
-/// el proyecto nativo está inicializado y compila.
 struct ContentView: View {
+    let auth: AuthService
+    
     var body: some View {
-        
-        Text("mi_plancha")
-            .padding()
+        if auth.user != nil {
+            Text("bienvenido")
+                .padding()
+            
+        } else {
+            LoginView { company, username, password in
+                try await auth.initSession(companyCode: company, username: username, password: password)
+            }
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    if FirebaseApp.app() == nil {
+        FirebaseApp.configure()
+    }
+    return ContentView(auth: AuthService())
+    
 }

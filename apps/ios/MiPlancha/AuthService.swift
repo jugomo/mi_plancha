@@ -20,9 +20,17 @@ import FirebaseFirestore
 final class AuthService {
     private(set) var user: User?
     private(set) var usuario: Usuario?
+    private(set) var isRestoringSession = false
     
     init() {
         user = Auth.auth().currentUser
+        if let currentUser = user {
+            isRestoringSession = true
+            Task {
+                self.usuario = try? await fetchUser(uid: currentUser.uid)
+                self.isRestoringSession = false
+            }
+        }
     }
     
     func initSession(companyCode: String, username: String, password: String) async throws {

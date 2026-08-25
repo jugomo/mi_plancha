@@ -13,6 +13,10 @@
 		4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9B730386E67002469B6 /* UsernameEmail.swift */; };
 		4326C9BA3038A59E002469B6 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9B93038A59B002469B6 /* AuthService.swift */; };
 		4326C9BC3038B121002469B6 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9BB3038B11D002469B6 /* LoginView.swift */; };
+		4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */; };
+		4338DDD0303DB445004F39EE /* TablesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCF303DB440004F39EE /* TablesService.swift */; };
+		43A3D2D7303C51C50021724D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A3D2D6303C51C00021724D /* User.swift */; };
+		43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */; };
 		44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508DA14609824D34CA7669D7 /* ContentView.swift */; };
 		DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */; };
 /* End PBXBuildFile section */
@@ -25,6 +29,10 @@
 		4326C9B730386E67002469B6 /* UsernameEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameEmail.swift; sourceTree = "<group>"; };
 		4326C9B93038A59B002469B6 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		4326C9BB3038B11D002469B6 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleContainerView.swift; sourceTree = "<group>"; };
+		4338DDCF303DB440004F39EE /* TablesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TablesService.swift; sourceTree = "<group>"; };
+		43A3D2D6303C51C00021724D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaiterView.swift; sourceTree = "<group>"; };
 		508DA14609824D34CA7669D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -68,6 +76,10 @@
 		931A7E226C1E69257C86DDA0 /* MiPlancha */ = {
 			isa = PBXGroup;
 			children = (
+				43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */,
+				4338DDCF303DB440004F39EE /* TablesService.swift */,
+				4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */,
+				43A3D2D6303C51C00021724D /* User.swift */,
 				4326C9BB3038B11D002469B6 /* LoginView.swift */,
 				4326C9B93038A59B002469B6 /* AuthService.swift */,
 				4326C9B730386E67002469B6 /* UsernameEmail.swift */,
@@ -151,7 +163,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */,
+				4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */,
+				4338DDD0303DB445004F39EE /* TablesService.swift in Sources */,
+				43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */,
 				DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */,
+				43A3D2D7303C51C50021724D /* User.swift in Sources */,
 				4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */,
 				4326C9BC3038B121002469B6 /* LoginView.swift in Sources */,
 				4326C9BA3038A59E002469B6 /* AuthService.swift in Sources */,

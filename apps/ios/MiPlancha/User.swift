@@ -15,3 +15,13 @@ struct Usuario {
     var rol: Rol
     var companyId: String? // superadmin not having company
 }
+
+enum TableStatus: String {
+    case libre, ocupada, cobrar
+}
+
+struct Table: Identifiable {
+    let id: String
+    var number: Int
+    var status: TableStatus
+}

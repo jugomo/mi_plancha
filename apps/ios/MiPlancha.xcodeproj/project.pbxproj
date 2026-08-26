@@ -17,6 +17,7 @@
 		4338DDD0303DB445004F39EE /* TablesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCF303DB440004F39EE /* TablesService.swift */; };
 		43A3D2D7303C51C50021724D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A3D2D6303C51C00021724D /* User.swift */; };
 		43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */; };
+		43FE1B4C303ED95D0090B216 /* TableCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FE1B4B303ED9520090B216 /* TableCardView.swift */; };
 		44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508DA14609824D34CA7669D7 /* ContentView.swift */; };
 		DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */; };
 /* End PBXBuildFile section */
@@ -33,6 +34,7 @@
 		4338DDCF303DB440004F39EE /* TablesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TablesService.swift; sourceTree = "<group>"; };
 		43A3D2D6303C51C00021724D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaiterView.swift; sourceTree = "<group>"; };
+		43FE1B4B303ED9520090B216 /* TableCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCardView.swift; sourceTree = "<group>"; };
 		508DA14609824D34CA7669D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -76,6 +78,7 @@
 		931A7E226C1E69257C86DDA0 /* MiPlancha */ = {
 			isa = PBXGroup;
 			children = (
+				43FE1B4B303ED9520090B216 /* TableCardView.swift */,
 				43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */,
 				4338DDCF303DB440004F39EE /* TablesService.swift */,
 				4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */,
@@ -171,6 +174,7 @@
 				4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */,
 				4326C9BC3038B121002469B6 /* LoginView.swift in Sources */,
 				4326C9BA3038A59E002469B6 /* AuthService.swift in Sources */,
+				43FE1B4C303ED95D0090B216 /* TableCardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

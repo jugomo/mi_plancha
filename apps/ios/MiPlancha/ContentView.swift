@@ -22,7 +22,7 @@ struct ContentView: View {
                 Text("Cocinero: \(usuario.name)")
             }
             case .camarero: RoleContainerView(usuario: usuario, onLogout: logout) {
-                Text("Camarero: \(usuario.name)")
+                WaiterView(user: usuario)
             }
             }
         } else {

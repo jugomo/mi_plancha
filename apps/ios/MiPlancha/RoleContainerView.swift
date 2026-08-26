@@ -16,7 +16,9 @@ struct RoleContainerView<Content: View>: View {
         NavigationStack {
             content().toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Text(usuario.name).fontWeight(.semibold)
+                    HStack {
+                        Text(usuario.name).fontWeight(.semibold)
+                    }.fixedSize()
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Salir", action: onLogout)

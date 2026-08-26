@@ -14,9 +14,9 @@ final class TablesService {
     private var listener: ListenerRegistration?
     private(set) var tables: [Table] = []
     
-    func startListening(empresaId: String) {
+    func startListening(companyId: String) {
         listener = Firestore.firestore()
-            .collection("empresas").document(empresaId).collection("mesas")
+            .collection("empresas").document(companyId).collection("mesas")
             .addSnapshotListener { [weak self] snapshot, _ in
                 guard let docs = snapshot?.documents else { return }
                 let parsed = docs.compactMap { doc -> Table? in

@@ -18,6 +18,8 @@
 		43A3D2D7303C51C50021724D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A3D2D6303C51C00021724D /* User.swift */; };
 		43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */; };
 		43FE1B4C303ED95D0090B216 /* TableCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FE1B4B303ED9520090B216 /* TableCardView.swift */; };
+		43FE1B4E303EEB180090B216 /* LinesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FE1B4D303EEB130090B216 /* LinesService.swift */; };
+		43FE1B50303EF2D10090B216 /* TableDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FE1B4F303EF2CC0090B216 /* TableDetailView.swift */; };
 		44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508DA14609824D34CA7669D7 /* ContentView.swift */; };
 		DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +37,8 @@
 		43A3D2D6303C51C00021724D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaiterView.swift; sourceTree = "<group>"; };
 		43FE1B4B303ED9520090B216 /* TableCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCardView.swift; sourceTree = "<group>"; };
+		43FE1B4D303EEB130090B216 /* LinesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesService.swift; sourceTree = "<group>"; };
+		43FE1B4F303EF2CC0090B216 /* TableDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableDetailView.swift; sourceTree = "<group>"; };
 		508DA14609824D34CA7669D7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -78,6 +82,8 @@
 		931A7E226C1E69257C86DDA0 /* MiPlancha */ = {
 			isa = PBXGroup;
 			children = (
+				43FE1B4F303EF2CC0090B216 /* TableDetailView.swift */,
+				43FE1B4D303EEB130090B216 /* LinesService.swift */,
 				43FE1B4B303ED9520090B216 /* TableCardView.swift */,
 				43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */,
 				4338DDCF303DB440004F39EE /* TablesService.swift */,
@@ -167,7 +173,9 @@
 			files = (
 				44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */,
 				4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */,
+				43FE1B50303EF2D10090B216 /* TableDetailView.swift in Sources */,
 				4338DDD0303DB445004F39EE /* TablesService.swift in Sources */,
+				43FE1B4E303EEB180090B216 /* LinesService.swift in Sources */,
 				43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */,
 				DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */,
 				43A3D2D7303C51C50021724D /* User.swift in Sources */,

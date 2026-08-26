@@ -16,7 +16,9 @@ struct WaiterView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(service.tables) { table in
-                    TableCardView(table: table)
+                    NavigationLink(destination: TableDetailView(table: table)) {
+                        TableCardView(table: table)
+                    }
                 }
             }.padding()
         }

@@ -25,3 +25,17 @@ struct Table: Identifiable {
     var number: Int
     var status: TableStatus
 }
+
+enum LineStatus: String {
+    case pending = "pendiente"
+    case cooking = "en_plancha"
+    case pedingDelivery = "pendiente_entrega"
+    case ready = "listo"
+}
+
+struct OrderLine: Identifiable {
+    let id: String
+    let amount: Int
+    var status: LineStatus
+    var productId: String
+}

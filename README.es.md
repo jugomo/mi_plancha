@@ -4,6 +4,8 @@
 
 Sistema de gestión de cocina en tiempo real para optimizar el uso de una plancha de carne compartida: maximizar su uso mientras se sirven los pedidos por orden de llegada, con flexibilidad para adelantar pedidos y evitar esperas excesivas.
 
+El desarrollo de este proyecto cuenta con la asistencia de agentes de IA (Claude Code), las apps nativas de iOS y Android se desarrollan de forma manual, con asistencia puntual únicamente.
+
 ## Documentación
 
 | Documento | Contenido |

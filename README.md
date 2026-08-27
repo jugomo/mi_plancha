@@ -4,6 +4,8 @@
 
 Real-time kitchen management system to optimize the use of a shared grill: maximize its throughput while serving orders in arrival order, with the flexibility to bump orders ahead and avoid excessive waits.
 
+This project's development is assisted by AI agents (Claude Code), the native iOS and Android apps are developed manually, with only occasional assistance.
+
 ## Documentation
 
 | Document | Contents |

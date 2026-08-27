@@ -38,4 +38,5 @@ struct OrderLine: Identifiable {
     let amount: Int
     var status: LineStatus
     var productId: String
+    var tableNumber: Int
 }

@@ -14,9 +14,11 @@ final class LinesService {
     private(set) var lines: [OrderLine] = []
     private var listener: ListenerRegistration?
     private var refs: [String: DocumentReference] = [:]
+    private(set) var productNames : [String : String] = [:]
     
     func startListening(tableNumber: Int, companyId: String) {
-        print("tableNumber: \(tableNumber)")
+        // fetch product nmaes
+        Task { await      fetchProductNames(companyId: companyId)}
         
         listener = Firestore.firestore()
             .collectionGroup("lineas")
@@ -37,9 +39,10 @@ final class LinesService {
                     guard let amount = data["cantidad"] as? Int,
                           let rawStatus = data["estado"] as? String,
                           let status = LineStatus(rawValue: rawStatus),
-                          let productId = data["productoId"] as? String
+                          let productId = data["productoId"] as? String,
+                            let tableNumber = data["mesaNumero"] as? Int
                     else { return nil }
-                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId)
+                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber)
                     
                 }
                 let newRefs = Dictionary(uniqueKeysWithValues: docs.map { ($0.documentID, $0.reference)} )
@@ -58,5 +61,19 @@ final class LinesService {
     func markDelivered(lineId: String) async throws {
         guard let ref =  refs[lineId] else { return }
         try await ref.updateData(["estado":LineStatus.ready.rawValue])
+    }
+    
+    func fetchProductNames(companyId: String) async {
+        guard let snapshot = try? await Firestore.firestore()
+            .collection("empresas").document(companyId).collection("productos")
+            .getDocuments()
+        else {return}
+        
+        productNames = snapshot.documents.reduce(into: [:]) { dict, doc in
+            if let nombre = doc.data()["nombre" ] as? String {
+                dict[doc.documentID] = nombre
+            }
+        }
+        
     }
 }

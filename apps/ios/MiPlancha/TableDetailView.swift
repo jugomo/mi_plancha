@@ -17,7 +17,7 @@ struct TableDetailView: View {
         List (service.lines) { line in
             HStack{
                 Text("\(line.amount)x").fontWeight(.bold)
-                Text(line.productId)
+                Text(service.productNames[line.productId] ?? "-")
                 Spacer()
                 Text(line.status.rawValue).foregroundStyle(.secondary)
             }

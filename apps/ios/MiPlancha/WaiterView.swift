@@ -29,6 +29,7 @@ struct WaiterView: View {
         .onDisappear {
             service.stopListening()
         }
+         .navigationTitle("Mesas")
     }
 }
 

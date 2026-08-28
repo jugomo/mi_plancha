@@ -10,20 +10,27 @@ import SwiftUI
 struct TableCardView: View {
     private(set) var table: Table
     
-    var body: some View {
-        let bgcolor = switch (table.status) {
-        case .cobrar:
-            Color.orange
-        case .ocupada:
-            Color.red
-        case .libre:
-            Color.green
+    private var color: Color {
+        switch table.status {
+        case .libre:    return .green
+        case .ocupada:  return .blue
+        case .cobrar:   return .orange
         }
-        
-        Text("Mesa: \(table.number)")
-            .padding(24)
-            .background(bgcolor)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("\(table.number)")
+                .font(.system(size: 40, weight: .bold))
+                .foregroundStyle(.white)
+            Text(table.status.rawValue)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.85))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+        .background(color)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 

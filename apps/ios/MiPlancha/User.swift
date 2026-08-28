@@ -5,6 +5,8 @@
 //  Created by julio on 24/08/2026.
 //
 
+import SwiftUI
+
 enum Rol: String {
     case camarero, cocinero, administrador, superadmin
 }
@@ -31,6 +33,24 @@ enum LineStatus: String {
     case cooking = "en_plancha"
     case pedingDelivery = "pendiente_entrega"
     case ready = "listo"
+
+    var color: Color {
+        switch self {
+        case .pending:         return .yellow
+        case .cooking:         return .orange
+        case .pedingDelivery:  return .blue
+        case .ready:           return .green
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .pending:         return "Pendiente"
+        case .cooking:         return "En plancha"
+        case .pedingDelivery:  return "Para entregar"
+        case .ready:           return "Entregado"
+        }
+    }
 }
 
 struct OrderLine: Identifiable {

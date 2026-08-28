@@ -7,6 +7,7 @@
 
 import Observation
 import FirebaseFirestore
+import FirebaseAuth
 
 @Observable
 @MainActor
@@ -15,10 +16,15 @@ final class LinesService {
     private var listener: ListenerRegistration?
     private var refs: [String: DocumentReference] = [:]
     private(set) var productNames : [String : String] = [:]
+    private var companyId = ""
+    private var tableNumber = 0
     
     func startListening(tableNumber: Int, companyId: String) {
+        self.companyId = companyId
+        self.tableNumber = tableNumber
+        
         // fetch product nmaes
-        Task { await      fetchProductNames(companyId: companyId)}
+        Task { self.productNames = await      fetchProductNames(companyId: companyId)}
         
         listener = Firestore.firestore()
             .collectionGroup("lineas")
@@ -63,17 +69,26 @@ final class LinesService {
         try await ref.updateData(["estado":LineStatus.ready.rawValue])
     }
     
-    func fetchProductNames(companyId: String) async {
-        guard let snapshot = try? await Firestore.firestore()
-            .collection("empresas").document(companyId).collection("productos")
-            .getDocuments()
-        else {return}
+    func addLine(productId: String, amount: Int) async throws {
+        let pedidoRef = Firestore.firestore()
+            .collection("empresas").document(companyId)
+            .collection("pedidos").document()
         
-        productNames = snapshot.documents.reduce(into: [:]) { dict, doc in
-            if let nombre = doc.data()["nombre" ] as? String {
-                dict[doc.documentID] = nombre
-            }
-        }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         
+        try await pedidoRef.setData([
+            "mesaNumero": tableNumber,
+            "empresaId": companyId,
+            "camareroId": uid,
+            "cocineroId":NSNull(),
+            "cuentaId": NSNull()
+        ])
+        try await pedidoRef.collection("lineas").addDocument(data: [
+            "productoId": productId,
+            "cantidad": amount,
+            "estado": LineStatus.pending.rawValue,
+            "mesaNumero": tableNumber,
+            "empresaId": companyId
+        ])
     }
 }

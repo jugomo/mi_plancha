@@ -16,9 +16,10 @@ final class CookLinesService {
     private var refs: [String : DocumentReference] = [:]
     private var listener: ListenerRegistration?
     
+    
     func startListening(companyId: String) {
         Task {
-            await fetchProductNames(companyId: companyId)
+            self.productNames = await fetchProductNames(companyId: companyId)
         }
         
         listener = Firestore.firestore()
@@ -55,15 +56,5 @@ final class CookLinesService {
         guard let ref = refs[lineId] else { return }
         let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pedingDelivery
         try await ref.updateData(["estado": nextStatus.rawValue])
-    }
-
-    private func fetchProductNames(companyId: String) async {
-        guard let snapshot = try? await Firestore.firestore()
-            .collection("empresas").document(companyId).collection("productos")
-            .getDocuments()
-        else { return }
-        productNames = snapshot.documents.reduce(into: [:]) { dict, doc in
-            if let nombre = doc.data()["nombre"] as? String { dict[doc.documentID] = nombre }
-        }
     }
 }

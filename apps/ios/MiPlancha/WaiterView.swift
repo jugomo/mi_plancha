@@ -11,6 +11,8 @@ struct WaiterView: View {
     let companyId: String
     let columns = [GridItem(.adaptive(minimum: 120))]
     @State private var service = TablesService()
+    @State private var tableToOpen: Table? = nil
+    @State private var clientName = ""
     
     var body: some View {
         ScrollView {
@@ -18,6 +20,18 @@ struct WaiterView: View {
                 ForEach(service.tables) { table in
                     NavigationLink(destination: TableDetailView(table: table, companyId: companyId )) {
                         TableCardView(table: table)
+                    }
+                    .contextMenu{
+                        if table.status == .libre {
+                            Button("Acrir mesa") {
+//                                Task { try? await service.openTable(table, clientName: <#String#>) }
+                                tableToOpen = table
+                            }
+                        } else {
+                            Button("Cerrar mesa") {
+                                Task { try? await service.closeTable(table)}
+                            }
+                        }
                     }
                 }
             }.padding()
@@ -30,6 +44,24 @@ struct WaiterView: View {
             service.stopListening()
         }
          .navigationTitle("Mesas")
+         .alert("Nombre del cliente", isPresented: Binding(
+            get: { tableToOpen != nil },
+            set: { if !$0 { tableToOpen = nil } }
+         ), actions: {
+             TextField("Nombre", text: $clientName)
+             Button("Abrir") {
+                 if let t = tableToOpen {
+                     let name = clientName
+                     Task { try? await service.openTable(t, clientName: name) }
+                 }
+                 tableToOpen = nil
+                 clientName = ""
+             }
+             Button("Cancelar", role: .cancel) {
+                 tableToOpen = nil
+                 clientName = ""
+             }
+         })
     }
 }
 

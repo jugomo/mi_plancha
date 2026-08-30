@@ -56,5 +56,6 @@ final class CookLinesService {
         guard let ref = refs[lineId] else { return }
         let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pedingDelivery
         try await ref.updateData(["estado": nextStatus.rawValue])
+        try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])
     }
 }

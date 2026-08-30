@@ -24,7 +24,6 @@ struct WaiterView: View {
                     .contextMenu{
                         if table.status == .libre {
                             Button("Acrir mesa") {
-//                                Task { try? await service.openTable(table, clientName: <#String#>) }
                                 tableToOpen = table
                             }
                         } else {
@@ -36,6 +35,7 @@ struct WaiterView: View {
                 }
             }.padding()
         }
+        .environment(service)
         .onAppear {
             
              service.startListening(companyId: companyId)

@@ -13,11 +13,13 @@ import FirebaseAuth
 @MainActor
 final class LinesService {
     private(set) var lines: [OrderLine] = []
-    private var listener: ListenerRegistration?
+    private var listenerLine: ListenerRegistration?
+    private var listenerMesa: ListenerRegistration?
     private var refs: [String: DocumentReference] = [:]
     private(set) var productNames : [String : String] = [:]
     private var companyId = ""
     private var tableNumber = 0
+    private(set) var tableStatus: TableStatus = .libre
     
     func startListening(tableNumber: Int, companyId: String) {
         self.companyId = companyId
@@ -26,7 +28,7 @@ final class LinesService {
         // fetch product nmaes
         Task { self.productNames = await      fetchProductNames(companyId: companyId)}
         
-        listener = Firestore.firestore()
+        listenerLine = Firestore.firestore()
             .collectionGroup("lineas")
             .whereField("mesaNumero", isEqualTo: tableNumber)
             .whereField("empresaId", isEqualTo: companyId)
@@ -36,17 +38,15 @@ final class LinesService {
                     print("ERROR: \(error)")
                 }
                 guard let docs = snapshot?.documents else {
-                    print("no results")
                     return
                 }
                 let parsed = docs.compactMap { doc -> OrderLine? in
                     let data = doc.data()
-                    print("linea data: \(data)")  // ← añade esta línea
                     guard let amount = data["cantidad"] as? Int,
                           let rawStatus = data["estado"] as? String,
                           let status = LineStatus(rawValue: rawStatus),
                           let productId = data["productoId"] as? String,
-                            let tableNumber = data["mesaNumero"] as? Int
+                          let tableNumber = data["mesaNumero"] as? Int
                     else { return nil }
                     return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber)
                     
@@ -57,11 +57,25 @@ final class LinesService {
                     self?.refs = newRefs
                 }
             }
+        
+        listenerMesa = Firestore.firestore()
+            .collection("empresas").document(companyId)
+            .collection("mesas").document(String(tableNumber))  // el id es el numero como string
+            .addSnapshotListener { [weak self] snapshot, _ in
+                guard let data = snapshot?.data(),
+                      let raw = data["estado"] as? String,
+                      let status = TableStatus(rawValue: raw) else { return }
+                Task { @MainActor [weak self] in self?.tableStatus = status }
+            }
+        
     }
     
     func stopListening() {
-        listener?.remove()
-        listener = nil
+        listenerLine?.remove()
+        listenerLine = nil
+        
+        listenerMesa?.remove()
+        listenerMesa = nil
     }
     
     func markDelivered(lineId: String) async throws {
@@ -81,14 +95,29 @@ final class LinesService {
             "empresaId": companyId,
             "camareroId": uid,
             "cocineroId":NSNull(),
-            "cuentaId": NSNull()
+            "cuentaId": NSNull(),
+            "pedidoCreadoEn": FieldValue.serverTimestamp()
         ])
+        
         try await pedidoRef.collection("lineas").addDocument(data: [
             "productoId": productId,
             "cantidad": amount,
             "estado": LineStatus.pending.rawValue,
             "mesaNumero": tableNumber,
-            "empresaId": companyId
+            "empresaId": companyId,
+            "pedidoCreadoEn": FieldValue.serverTimestamp()
         ])
+    }
+    
+    func openTable(tableId: String, clientName: String) async throws {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        let clientRef = db.collection("empresas").document(companyId)
+            .collection("clientes").document()
+        try await clientRef.setData(["camareroId": uid, "mesaId": tableId,
+                                      "nombre": clientName, "abiertoEn": FieldValue.serverTimestamp()])
+        try await db.collection("empresas").document(companyId)
+            .collection("mesas").document(tableId)
+            .updateData(["estado": "ocupada", "clienteId": clientRef.documentID])
     }
 }

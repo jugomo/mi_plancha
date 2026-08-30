@@ -12,10 +12,10 @@ struct TableDetailView: View {
     let companyId: String
     @State private var service = LinesService()
     @State private var showingAddLine = false
-    
+    @State private var showingOpenAlert = false
+    @State private var clientName = ""
     
     var body: some View {
-         
         List(service.lines) { line in
             HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 3)
@@ -36,16 +36,37 @@ struct TableDetailView: View {
             }
         }
         .overlay {
-            if service.lines.isEmpty{
+            if service.tableStatus == .libre {
+                ContentUnavailableView {
+                    Label("Mesa cerrada", systemImage: "door.left.hand.closed")
+                } description: {
+                    Text("Abre la mesa para empezar a tomar pedidos")
+                } actions: {
+                    Button("Abrir mesa") { showingOpenAlert = true }
+                        .buttonStyle(.borderedProminent)
+                }
+            } else if service.lines.isEmpty {
                 ContentUnavailableView("Sin pedidos", systemImage: "checkmark.circle")
             }
+        }
+        .alert("Nombre del cliente", isPresented: $showingOpenAlert) {
+            TextField("Nombre", text: $clientName)
+            Button("Abrir") {
+                let name = clientName
+                clientName = ""
+                Task { try? await service.openTable(tableId: table.id, clientName: name) }
+            }
+            Button("Cancelar", role: .cancel) { clientName = "" }
         }
         .navigationTitle("Mesa \(table.number)")
         .onAppear { service.startListening(tableNumber: table.number, companyId: companyId ) }
         .onDisappear { service.stopListening() }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("add") {showingAddLine = true}
+            if service.tableStatus == .ocupada {
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("add") {showingAddLine = true}
+                }
             }
         }
         .sheet(isPresented: $showingAddLine) {
@@ -53,10 +74,12 @@ struct TableDetailView: View {
         }
         
     }
+    
 }
 
 #Preview {
     NavigationStack {
         TableDetailView(table: .init(id: "1", number: 1, status: .ocupada), companyId: "V628")
     }
+    .environment(TablesService())
 }

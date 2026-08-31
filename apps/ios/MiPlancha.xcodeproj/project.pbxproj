@@ -72,6 +72,49 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		43A843653045980A00FC8836 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				4326C9B93038A59B002469B6 /* AuthService.swift */,
+				4326C9BB3038B11D002469B6 /* LoginView.swift */,
+				43A3D2D6303C51C00021724D /* User.swift */,
+				4326C9B730386E67002469B6 /* UsernameEmail.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		43A843663045980B00FC8836 /* Waiter */ = {
+			isa = PBXGroup;
+			children = (
+				43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */,
+				43FE1B4B303ED9520090B216 /* TableCardView.swift */,
+				43FE1B4F303EF2CC0090B216 /* TableDetailView.swift */,
+				43AEB83730417E5500DEE2EB /* AddLineView.swift */,
+				43A843633045724C00FC8836 /* CuentaView.swift */,
+				43FE1B4D303EEB130090B216 /* LinesService.swift */,
+				4338DDCF303DB440004F39EE /* TablesService.swift */,
+			);
+			path = Waiter;
+			sourceTree = "<group>";
+		};
+		43A843673045980C00FC8836 /* Cook */ = {
+			isa = PBXGroup;
+			children = (
+				43EB207F304091CB00EB2FBE /* CookView.swift */,
+				43EB207D30408FBF00EB2FBE /* CookLinesService.swift */,
+			);
+			path = Cook;
+			sourceTree = "<group>";
+		};
+		43A843683045980C00FC8836 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				43AEB8353041703000DEE2EB /* ProductUtils.swift */,
+				4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		6386F70C85D3BC835566FABE /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -92,25 +135,14 @@
 		931A7E226C1E69257C86DDA0 /* MiPlancha */ = {
 			isa = PBXGroup;
 			children = (
-				43A843633045724C00FC8836 /* CuentaView.swift */,
-				43AEB83730417E5500DEE2EB /* AddLineView.swift */,
-				43AEB8353041703000DEE2EB /* ProductUtils.swift */,
-				43EB207F304091CB00EB2FBE /* CookView.swift */,
-				43EB207D30408FBF00EB2FBE /* CookLinesService.swift */,
-				43FE1B4F303EF2CC0090B216 /* TableDetailView.swift */,
-				43FE1B4D303EEB130090B216 /* LinesService.swift */,
-				43FE1B4B303ED9520090B216 /* TableCardView.swift */,
-				43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */,
-				4338DDCF303DB440004F39EE /* TablesService.swift */,
-				4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */,
-				43A3D2D6303C51C00021724D /* User.swift */,
-				4326C9BB3038B11D002469B6 /* LoginView.swift */,
-				4326C9B93038A59B002469B6 /* AuthService.swift */,
-				4326C9B730386E67002469B6 /* UsernameEmail.swift */,
 				4326C9B430386AB2002469B6 /* GoogleService-Info.plist */,
 				4326C9AD30386766002469B6 /* Info.plist */,
 				508DA14609824D34CA7669D7 /* ContentView.swift */,
 				0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */,
+				43A843653045980A00FC8836 /* Auth */,
+				43A843663045980B00FC8836 /* Waiter */,
+				43A843673045980C00FC8836 /* Cook */,
+				43A843683045980C00FC8836 /* Shared */,
 			);
 			path = MiPlancha;
 			sourceTree = "<group>";

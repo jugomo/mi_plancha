@@ -19,8 +19,11 @@ struct AddLineView: View {
             Form {
                 
                 Picker("Producto", selection: $selectedProductId) {
-                    ForEach(service.productNames.sorted(by: { $0.value < $1.value }), id: \.key) { item in
-                        Text(item.value).tag(item.key)
+                    let available = service.products.filter{$0.value.stock > 0}
+                                                    .sorted{$0.value.name < $1.value.name}
+                    
+                    ForEach(available, id: \.key) { item in
+                        Text(item.value.name).tag(item.key)
                     }
                     
                 }
@@ -38,8 +41,9 @@ struct AddLineView: View {
                 
             }
             .onAppear {
-                selectedProductId = service.productNames
-                    .sorted(by: {$0.value < $1.value})
+                selectedProductId = service.products
+                    .filter { $0.value.stock > 0 }
+                    .sorted(by: {$0.value.name < $1.value.name})
                     .first?.key ?? ""
             }
         }

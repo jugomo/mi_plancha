@@ -12,14 +12,22 @@ import FirebaseFirestore
 @MainActor
 final class CookLinesService {
     private(set) var lines: [OrderLine] = []
-    private(set) var productNames: [String: String] = [:]
+    private(set) var products: [String: ProductInfo] = [:]
+    private(set) var capacidadPlancha = 0
     private var refs: [String : DocumentReference] = [:]
     private var listener: ListenerRegistration?
     
     
     func startListening(companyId: String) {
         Task {
-            self.productNames = await fetchProductNames(companyId: companyId)
+            let snap = try? await Firestore.firestore()
+                .collection("empresas").document(companyId)
+                .getDocument()
+            self.capacidadPlancha = snap?.data()?["capacidadPlancha"] as? Int ?? 0
+        }
+
+        Task {
+            self.products = await fetchProducts(companyId: companyId)
         }
         
         listener = Firestore.firestore()
@@ -54,8 +62,23 @@ final class CookLinesService {
 
     func advance(lineId: String, currentStatus: LineStatus) async throws {
         guard let ref = refs[lineId] else { return }
+        
+        if currentStatus == .pending {
+            //  sum capacidad of current products in the grill
+            let inUse = lines
+                .filter{$0.status == .cooking }
+                .compactMap { products[$0.productId]?.capacidadUnidad }
+                .reduce(0, +)
+            
+            let needed = products[lines.first {$0.id == lineId}?.productId ?? "" ]?.capacidadUnidad ?? 0
+            
+            guard inUse  + needed <= capacidadPlancha else {return}
+        }
+        
         let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pedingDelivery
         try await ref.updateData(["estado": nextStatus.rawValue])
-        try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])
+        if currentStatus == .pending {
+            try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])
+        }
     }
 }

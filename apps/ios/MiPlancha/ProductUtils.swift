@@ -8,17 +8,37 @@
 
 import FirebaseFirestore
 
+struct ProductInfo {
+    let name: String
+    let price: Double
+    let stock: Int
+    let capacidadUnidad: Int
+    let tiempoCoccionSeg: Int
+}
 
-func fetchProductNames(companyId: String) async -> [String:String]  {
-    guard let snapshot = try? await Firestore.firestore()
-        .collection("empresas").document(companyId).collection("productos")
-        .getDocuments()
-    else {return [:]}
+func fetchProducts(companyId: String) async -> [String : ProductInfo] {
+    guard let snap = try? await Firestore.firestore()
+        .collection("empresas").document(companyId)
+        .collection("productos").getDocuments()
+    else { return [:]}
     
-     return snapshot.documents.reduce(into: [:]) { dict, doc in
-        if let nombre = doc.data()["nombre" ] as? String {
-            dict[doc.documentID] = nombre
-        }
-    }
+    return Dictionary (uniqueKeysWithValues: snap.documents.compactMap { doc -> (String, ProductInfo)? in
+        let data = doc.data()
+        guard let name  = data["nombre"] as? String,
+              let price = data ["precio"] as? Double,
+              let stock = data["stock"] as? Int,
+              let capacidadUnidad = data["capacidadUnidad"] as? Int,
+              let tiempoCoccionSeg = data["tiempoCoccionSeg"] as? Int
+        else {return nil}
+        
+        return (doc.documentID, ProductInfo(name: name,
+                                            price: price,
+                                            stock: stock,
+                                            capacidadUnidad: capacidadUnidad,
+                                            tiempoCoccionSeg: tiempoCoccionSeg
+                                           ))
+    })
     
 }
+
+

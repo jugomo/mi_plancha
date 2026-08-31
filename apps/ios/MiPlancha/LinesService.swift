@@ -16,17 +16,17 @@ final class LinesService {
     private var listenerLine: ListenerRegistration?
     private var listenerMesa: ListenerRegistration?
     private var refs: [String: DocumentReference] = [:]
-    private(set) var productNames : [String : String] = [:]
+    private(set) var products : [String : ProductInfo] = [:]
     private var companyId = ""
-    private var tableNumber = 0
+     var tableNumber = 0
     private(set) var tableStatus: TableStatus = .libre
+    private(set) var billLines: [OrderLine] = []
     
     func startListening(tableNumber: Int, companyId: String) {
         self.companyId = companyId
         self.tableNumber = tableNumber
         
-        // fetch product nmaes
-        Task { self.productNames = await      fetchProductNames(companyId: companyId)}
+        Task { self.products = await fetchProducts(companyId: companyId)}
         
         listenerLine = Firestore.firestore()
             .collectionGroup("lineas")
@@ -115,9 +115,38 @@ final class LinesService {
         let clientRef = db.collection("empresas").document(companyId)
             .collection("clientes").document()
         try await clientRef.setData(["camareroId": uid, "mesaId": tableId,
-                                      "nombre": clientName, "abiertoEn": FieldValue.serverTimestamp()])
+                                     "nombre": clientName, "abiertoEn": FieldValue.serverTimestamp()])
         try await db.collection("empresas").document(companyId)
             .collection("mesas").document(tableId)
             .updateData(["estado": "ocupada", "clienteId": clientRef.documentID])
+    }
+    
+    func closeTable(tableId: String) async throws {
+        try await Firestore.firestore()
+            .collection("empresas").document(companyId)
+            .collection("mesas").document(tableId)
+            .updateData(["estado": "libre", "clienteId": NSNull()])
+    }
+    
+    func fetchBillLines() async{
+        guard let snapshot = try? await Firestore.firestore()
+            .collectionGroup("lineas")
+            .whereField("mesaNumero", isEqualTo: tableNumber)
+            .whereField("empresaId", isEqualTo: companyId)
+            .getDocuments()
+        else { return }
+        
+        billLines = snapshot.documents.compactMap { doc -> OrderLine? in
+            let data = doc.data()
+            guard let amount = data["cantidad"] as? Int,
+                  let rawStatus = data["estado"] as? String,
+                  let status = LineStatus(rawValue: rawStatus),
+                  let productId = data["productoId"] as? String,
+            let tableNumber = data["mesaNumero"] as? Int
+            else { return nil }
+            
+            return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber)
+        }
+        
     }
 }

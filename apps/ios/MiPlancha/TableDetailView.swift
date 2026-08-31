@@ -14,6 +14,7 @@ struct TableDetailView: View {
     @State private var showingAddLine = false
     @State private var showingOpenAlert = false
     @State private var clientName = ""
+    @State private var showingCuenta = false
     
     var body: some View {
         List(service.lines) { line in
@@ -22,7 +23,7 @@ struct TableDetailView: View {
                     .fill(line.status.color)
                     .frame(width: 5)
                 Text("\(line.amount)x").fontWeight(.bold)
-                Text(service.productNames[line.productId] ?? line.productId)
+                Text(service.products[line.productId]?.name ?? line.productId)
                 Spacer()
                 Text(line.status.label)
                     .font(.caption)
@@ -67,12 +68,17 @@ struct TableDetailView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("add") {showingAddLine = true}
                 }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("🫰🏼") { showingCuenta = true }
+                }
             }
         }
         .sheet(isPresented: $showingAddLine) {
             AddLineView(service: service)
         }
-        
+        .sheet(isPresented: $showingCuenta, content: {
+            CuentaView(tableId: table.id, service: service)
+        })
     }
     
 }

@@ -18,13 +18,13 @@ struct ContentView: View {
             case .administrador: RoleContainerView(usuario: usuario, onLogout: logout) {
                 Text("Admin: \(usuario.name)")
             }
-            case .cocinero: RoleContainerView(usuario: usuario, onLogout: logout) {
+            case .cocinero:
                 if let companyId = usuario.companyId {
                     RoleContainerView(usuario: usuario, onLogout: logout) {
                         CookView(companyId: companyId)
                     }
                 }
-            }
+            
             case .camarero:
                 if let companyId = usuario.companyId {
                     RoleContainerView(usuario: usuario, onLogout: logout) {

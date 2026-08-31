@@ -18,7 +18,7 @@ struct CookView: View {
                     .fill(line.status.color)
                     .frame(width: 5)
                 Text("M\(line.tableNumber)").fontWeight(.bold).foregroundStyle(.secondary)
-                Text(service.productNames[line.productId] ?? line.productId)
+                Text(service.products[line.productId]?.name ?? line.productId)
                 Spacer()
                 Text("\(line.amount)x")
                 Text(line.status.label)

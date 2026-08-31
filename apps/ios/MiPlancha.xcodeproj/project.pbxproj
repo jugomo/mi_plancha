@@ -16,6 +16,7 @@
 		4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */; };
 		4338DDD0303DB445004F39EE /* TablesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCF303DB440004F39EE /* TablesService.swift */; };
 		43A3D2D7303C51C50021724D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A3D2D6303C51C00021724D /* User.swift */; };
+		43A843643045725100FC8836 /* CuentaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A843633045724C00FC8836 /* CuentaView.swift */; };
 		43AEB8363041703400DEE2EB /* ProductUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AEB8353041703000DEE2EB /* ProductUtils.swift */; };
 		43AEB83830417E5800DEE2EB /* AddLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AEB83730417E5500DEE2EB /* AddLineView.swift */; };
 		43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */; };
@@ -39,6 +40,7 @@
 		4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleContainerView.swift; sourceTree = "<group>"; };
 		4338DDCF303DB440004F39EE /* TablesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TablesService.swift; sourceTree = "<group>"; };
 		43A3D2D6303C51C00021724D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		43A843633045724C00FC8836 /* CuentaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CuentaView.swift; sourceTree = "<group>"; };
 		43AEB8353041703000DEE2EB /* ProductUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductUtils.swift; sourceTree = "<group>"; };
 		43AEB83730417E5500DEE2EB /* AddLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLineView.swift; sourceTree = "<group>"; };
 		43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaiterView.swift; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		931A7E226C1E69257C86DDA0 /* MiPlancha */ = {
 			isa = PBXGroup;
 			children = (
+				43A843633045724C00FC8836 /* CuentaView.swift */,
 				43AEB83730417E5500DEE2EB /* AddLineView.swift */,
 				43AEB8353041703000DEE2EB /* ProductUtils.swift */,
 				43EB207F304091CB00EB2FBE /* CookView.swift */,
@@ -186,6 +189,7 @@
 				44A2CD477EBE8321912D9BA7 /* ContentView.swift in Sources */,
 				4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */,
 				43FE1B50303EF2D10090B216 /* TableDetailView.swift in Sources */,
+				43A843643045725100FC8836 /* CuentaView.swift in Sources */,
 				4338DDD0303DB445004F39EE /* TablesService.swift in Sources */,
 				43FE1B4E303EEB180090B216 /* LinesService.swift in Sources */,
 				43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */,

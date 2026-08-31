@@ -22,8 +22,11 @@ final class CookLinesService {
         Task {
             let snap = try? await Firestore.firestore()
                 .collection("empresas").document(companyId)
+                .collection("config").document("plancha")
                 .getDocument()
-            self.capacidadPlancha = snap?.data()?["capacidadPlancha"] as? Int ?? 0
+            
+            self.capacidadPlancha = snap?.data()?["capacidadTotal"] as? Int ?? 0
+            print("self.capacidadTotal::: \(self.capacidadPlancha)")
         }
 
         Task {
@@ -67,12 +70,15 @@ final class CookLinesService {
             //  sum capacidad of current products in the grill
             let inUse = lines
                 .filter{$0.status == .cooking }
-                .compactMap { products[$0.productId]?.capacidadUnidad }
-                .reduce(0, +)
+                .reduce(0) { sum, line in
+                    sum + (products[line.productId]?.capacidadUnidad ?? 0) * line.amount
+                }
+            let targetLine = lines.first {$0.id == lineId}
+            let needed = (products[lines.first {$0.id == lineId}?.productId ?? "" ]?.capacidadUnidad ?? 0) * (targetLine?.amount ?? 0)
             
-            let needed = products[lines.first {$0.id == lineId}?.productId ?? "" ]?.capacidadUnidad ?? 0
-            
-            guard inUse  + needed <= capacidadPlancha else {return}
+            guard inUse  + needed <= capacidadPlancha else {
+                throw CookError.fullGrill
+            }
         }
         
         let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pedingDelivery
@@ -81,4 +87,8 @@ final class CookLinesService {
             try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])
         }
     }
+}
+
+enum CookError: Error {
+    case fullGrill
 }

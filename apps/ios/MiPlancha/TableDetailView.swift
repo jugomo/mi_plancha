@@ -30,10 +30,12 @@ struct TableDetailView: View {
                     .foregroundStyle(.secondary)
             }
             .swipeActions {
-                Button("Entregado") {
-                    Task { try? await service.markDelivered(lineId: line.id) }
+                if line.status == .pedingDelivery {
+                    Button("Entregado") {
+                        Task { try? await service.markDelivered(lineId: line.id) }
+                    }
+                    .tint(.green)
                 }
-                .tint(.green)
             }
         }
         .overlay {

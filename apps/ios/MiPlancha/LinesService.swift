@@ -21,6 +21,8 @@ final class LinesService {
      var tableNumber = 0
     private(set) var tableStatus: TableStatus = .libre
     private(set) var billLines: [OrderLine] = []
+     var clientId: String?
+     var clientName: String?
     
     func startListening(tableNumber: Int, companyId: String) {
         self.companyId = companyId
@@ -62,10 +64,29 @@ final class LinesService {
             .collection("empresas").document(companyId)
             .collection("mesas").document(String(tableNumber))  // el id es el numero como string
             .addSnapshotListener { [weak self] snapshot, _ in
-                guard let data = snapshot?.data(),
+                guard let self,
+                      let data = snapshot?.data(),
                       let raw = data["estado"] as? String,
                       let status = TableStatus(rawValue: raw) else { return }
-                Task { @MainActor [weak self] in self?.tableStatus = status }
+                
+                let clienteId = data["clienteId"] as? String
+                
+                Task { @MainActor [weak self] in
+                    guard let self else {return}
+                    
+                    self.tableStatus = status
+                    self.clientId = clienteId
+                    
+                    if let clienteId {
+                        let doc = try? await Firestore.firestore()
+                            .collection("empresas").document(self.companyId)
+                            .collection("clientes").document(clienteId)
+                            .getDocument()
+                        self.clientName = doc?.data()?["nombre"] as? String
+                    } else {
+                        self.clientName = nil
+                    }
+                }
             }
         
     }
@@ -96,7 +117,9 @@ final class LinesService {
             "camareroId": uid,
             "cocineroId":NSNull(),
             "cuentaId": NSNull(),
-            "pedidoCreadoEn": FieldValue.serverTimestamp()
+            "creadoEn": FieldValue.serverTimestamp(),
+            "clienteId": clientId ?? NSNull(),
+            "clienteNombre": clientName ?? NSNull()
         ])
         
         try await pedidoRef.collection("lineas").addDocument(data: [

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TableCardView: View {
     private(set) var table: Table
+    private(set) var clientName: String?
     
     private var color: Color {
         switch table.status {
@@ -26,6 +27,12 @@ struct TableCardView: View {
             Text(table.status.rawValue)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.85))
+    
+            if clientName != nil {
+                Text(clientName!)
+                    .font(.caption)
+                    .foregroundStyle(.white)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
@@ -35,5 +42,5 @@ struct TableCardView: View {
 }
 
 #Preview {
-    TableCardView(table: Table(id: "1234", number: 1, status: .cobrar))
+    TableCardView(table: Table(id: "1234", number: 1, status: .cobrar),  clientName: "demo")
 }

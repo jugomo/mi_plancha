@@ -15,6 +15,7 @@ final class TablesService {
     private var listener: ListenerRegistration?
     private(set) var tables: [Table] = []
     private var companyId = ""
+    private(set) var clientNames: [String : String] = [:]
     
     func startListening(companyId: String) {
         self.companyId = companyId
@@ -25,14 +26,34 @@ final class TablesService {
                 guard let docs = snapshot?.documents else { return }
                 let parsed = docs.compactMap { doc -> Table? in
                     let data = doc.data()
+                    let clienteId = data["clienteId"] as? String
                     guard let number = data["numero"] as? Int,
                           let statusRaw = data["estado"] as? String,
                           let status = TableStatus(rawValue: statusRaw)
                     else { return nil }
-                    return Table(id: doc.documentID, number: number, status: status)
+                    return Table(id: doc.documentID, number: number, status: status, clientId: clienteId)
                 }
                 Task { @MainActor [weak self] in
-                    self?.tables = parsed
+                    guard let self else { return }
+                    self.tables = parsed
+                    
+                    for table in parsed {
+                        guard let clientId = table.clientId,
+                              self.clientNames[table.id] == nil else {continue}
+                        
+                        let doc = try? await Firestore.firestore()
+                            .collection("empresas").document(self.companyId)
+                            .collection("clientes").document(clientId)
+                            .getDocument()
+                        
+                        if let name = doc?.data()?["nombre"] as? String{
+                            self.clientNames[table.id] = name
+                        }
+                    }
+                    
+                    let occupiedIds = Set(parsed.filter { $0.status == .ocupada }.map { $0.id })
+                    clientNames = clientNames.filter { occupiedIds.contains($0.key) }
+                    print("clientNames: \(clientNames)")
                 }
             }
     }

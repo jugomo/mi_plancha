@@ -26,7 +26,7 @@ struct Table: Identifiable {
     let id: String
     var number: Int
     var status: TableStatus
-    var clienteId: String?
+    var clientId: String?
 }
 
 enum LineStatus: String {

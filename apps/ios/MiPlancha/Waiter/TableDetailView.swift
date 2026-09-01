@@ -61,12 +61,17 @@ struct TableDetailView: View {
             }
             Button("Cancelar", role: .cancel) { clientName = "" }
         }
-        .navigationTitle("Mesa \(table.number)")
         .onAppear { service.startListening(tableNumber: table.number, companyId: companyId ) }
         .onDisappear { service.stopListening() }
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack {
+                    Text("Mesa \(table.number)").font(.title)
+                    Text(service.clientName ?? "").font(.caption)
+                }
+            }
+            
             if service.tableStatus == .ocupada {
-                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("add") {showingAddLine = true}
                 }

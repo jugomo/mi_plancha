@@ -19,7 +19,7 @@ struct WaiterView: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(service.tables) { table in
                     NavigationLink(destination: TableDetailView(table: table, companyId: companyId )) {
-                        TableCardView(table: table)
+                        TableCardView(table: table, clientName: service.clientNames[table.id])
                     }
                     .contextMenu{
                         if table.status == .libre {
@@ -66,5 +66,5 @@ struct WaiterView: View {
 }
 
 #Preview {
-    WaiterView(companyId: "V628")
+    WaiterView(companyId: "V628" )
 }

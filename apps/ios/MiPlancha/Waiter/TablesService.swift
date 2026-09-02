@@ -53,7 +53,6 @@ final class TablesService {
                     
                     let occupiedIds = Set(parsed.filter { $0.status == .ocupada }.map { $0.id })
                     clientNames = clientNames.filter { occupiedIds.contains($0.key) }
-                    print("clientNames: \(clientNames)")
                 }
             }
     }

@@ -24,6 +24,11 @@ final class LinesService {
      var clientId: String?
      var clientName: String?
     
+    var orders: [Order] {
+        Dictionary(grouping: lines, by: \.orderId)
+            .map {Order(id:$0.key, lines: $0.value)}
+    }
+    
     func startListening(tableNumber: Int, companyId: String) {
         self.companyId = companyId
         self.tableNumber = tableNumber
@@ -50,7 +55,9 @@ final class LinesService {
                           let productId = data["productoId"] as? String,
                           let tableNumber = data["mesaNumero"] as? Int
                     else { return nil }
-                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber)
+                    let orderId = doc.reference.parent.parent?.documentID ?? ""
+                    
+                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId)
                     
                 }
                 let newRefs = Dictionary(uniqueKeysWithValues: docs.map { ($0.documentID, $0.reference)} )
@@ -167,11 +174,21 @@ final class LinesService {
                   let rawStatus = data["estado"] as? String,
                   let status = LineStatus(rawValue: rawStatus),
                   let productId = data["productoId"] as? String,
-            let tableNumber = data["mesaNumero"] as? Int
+                  let tableNumber = data["mesaNumero"] as? Int
             else { return nil }
+            let orderId = doc.reference.parent.parent?.documentID ?? ""
             
-            return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber)
+            return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId)
         }
         
+    }
+    
+    func markOrderDelivered(orderId: String) async throws {
+        let toDeliver = lines.filter { $0.orderId  == orderId && $0.status == .pendingDelivery }
+        
+        for line in toDeliver {
+            guard let ref = refs[line.id] else { continue}
+            try await ref.updateData(["estado": LineStatus.ready.rawValue])
+        }
     }
 }

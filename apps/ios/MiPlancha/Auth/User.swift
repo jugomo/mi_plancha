@@ -32,14 +32,14 @@ struct Table: Identifiable {
 enum LineStatus: String {
     case pending = "pendiente"
     case cooking = "en_plancha"
-    case pedingDelivery = "pendiente_entrega"
+    case pendingDelivery = "pendiente_entrega"
     case ready = "listo"
 
     var color: Color {
         switch self {
         case .pending:         return .yellow
         case .cooking:         return .orange
-        case .pedingDelivery:  return .blue
+        case .pendingDelivery:  return .blue
         case .ready:           return .green
         }
     }
@@ -48,7 +48,7 @@ enum LineStatus: String {
         switch self {
         case .pending:         return "Pendiente"
         case .cooking:         return "En plancha"
-        case .pedingDelivery:  return "Para entregar"
+        case .pendingDelivery:  return "Para entregar"
         case .ready:           return "Entregado"
         }
     }
@@ -57,7 +57,17 @@ enum LineStatus: String {
 struct OrderLine: Identifiable {
     let id: String
     let amount: Int
-    var status: LineStatus
-    var productId: String
-    var tableNumber: Int
+    let status: LineStatus
+    let productId: String
+    let tableNumber: Int
+    let orderId: String
+}
+
+struct Order: Identifiable {
+    let id: String
+    let lines: [OrderLine]
+    
+    var isReadyToDeliver: Bool {
+        lines.allSatisfy { $0.status == .pendingDelivery }
+    }
 }

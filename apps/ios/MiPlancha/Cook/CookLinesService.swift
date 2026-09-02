@@ -48,7 +48,9 @@ final class CookLinesService {
                           let productId = data["productoId"] as? String,
                           let mesaNumero = data["mesaNumero"] as? Int
                     else { return nil }
-                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: mesaNumero)
+                    let orderId = doc.reference.parent.parent?.documentID ?? ""
+                    
+                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: mesaNumero, orderId: orderId)
                 }
                 let newRefs = Dictionary(uniqueKeysWithValues: docs.map { ($0.documentID, $0.reference) })
                 Task { @MainActor [weak self] in
@@ -81,7 +83,7 @@ final class CookLinesService {
             }
         }
         
-        let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pedingDelivery
+        let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pendingDelivery
         try await ref.updateData(["estado": nextStatus.rawValue])
         if currentStatus == .pending {
             try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])

@@ -17,24 +17,36 @@ struct TableDetailView: View {
     @State private var showingCuenta = false
     
     var body: some View {
-        List(service.lines) { line in
-            HStack(spacing: 12) {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(line.status.color)
-                    .frame(width: 5)
-                Text("\(line.amount)x").fontWeight(.bold)
-                Text(service.products[line.productId]?.name ?? line.productId)
-                Spacer()
-                Text(line.status.label)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .swipeActions {
-                if line.status == .pedingDelivery {
-                    Button("Entregado") {
-                        Task { try? await service.markDelivered(lineId: line.id) }
+        List {
+            ForEach(service.orders) { order in
+                Section {
+                    ForEach(order.lines) { line in
+                        HStack(spacing: 12) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(line.status.color)
+                                .frame(width: 5)
+                            Text("\(line.amount)x").fontWeight(.bold)
+                            Text(service.products[line.productId]?.name ?? line.productId)
+                            Spacer()
+                            Text(line.status.label)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+//                        .swipeActions {
+//                            if line.status == .pedingDelivery {
+//                                Button("Entregado") {
+//                                    Task { try? await service.markDelivered(lineId: line.id) }
+//                                }
+//                                .tint(.green)
+//                            }
+//                        }
                     }
-                    .tint(.green)
+                    if order.isReadyToDeliver {
+                        Button("Entregar pedido") {
+                            Task{ try? await service.markOrderDelivered(orderId: order.id) }
+                        }
+                        .foregroundStyle(.green)
+                    }
                 }
             }
         }

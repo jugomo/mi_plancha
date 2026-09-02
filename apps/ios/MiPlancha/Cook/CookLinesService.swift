@@ -46,11 +46,12 @@ final class CookLinesService {
                           let rawStatus = data["estado"] as? String,
                           let status = LineStatus(rawValue: rawStatus),
                           let productId = data["productoId"] as? String,
-                          let mesaNumero = data["mesaNumero"] as? Int
+                          let mesaNumero = data["mesaNumero"] as? Int,
+                          let createdAt = (data["pedidoCreadoEn"] as? Timestamp)?.dateValue()
                     else { return nil }
                     let orderId = doc.reference.parent.parent?.documentID ?? ""
                     
-                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: mesaNumero, orderId: orderId)
+                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: mesaNumero, orderId: orderId, createdAt:createdAt)
                 }
                 let newRefs = Dictionary(uniqueKeysWithValues: docs.map { ($0.documentID, $0.reference) })
                 Task { @MainActor [weak self] in

@@ -61,11 +61,16 @@ struct OrderLine: Identifiable {
     let productId: String
     let tableNumber: Int
     let orderId: String
+    var createdAt: Date
 }
 
 struct Order: Identifiable {
     let id: String
     let lines: [OrderLine]
+    
+    var createdAt: Date? {
+        lines.first?.createdAt
+    }
     
     var isReadyToDeliver: Bool {
         lines.allSatisfy { $0.status == .pendingDelivery }

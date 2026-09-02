@@ -48,6 +48,11 @@ struct TableDetailView: View {
                         .foregroundStyle(.green)
                     }
                 }
+                header: {
+                    if let date = order.createdAt {
+                        Text(date, format: .dateTime.hour().minute())
+                    }
+                }
             }
         }
         .overlay {

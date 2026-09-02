@@ -53,11 +53,12 @@ final class LinesService {
                           let rawStatus = data["estado"] as? String,
                           let status = LineStatus(rawValue: rawStatus),
                           let productId = data["productoId"] as? String,
-                          let tableNumber = data["mesaNumero"] as? Int
+                          let tableNumber = data["mesaNumero"] as? Int,
+                          let createdAt = (data["pedidoCreadoEn"] as? Timestamp)?.dateValue()
                     else { return nil }
                     let orderId = doc.reference.parent.parent?.documentID ?? ""
                     
-                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId)
+                    return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId, createdAt: createdAt)
                     
                 }
                 let newRefs = Dictionary(uniqueKeysWithValues: docs.map { ($0.documentID, $0.reference)} )
@@ -174,11 +175,12 @@ final class LinesService {
                   let rawStatus = data["estado"] as? String,
                   let status = LineStatus(rawValue: rawStatus),
                   let productId = data["productoId"] as? String,
-                  let tableNumber = data["mesaNumero"] as? Int
+                  let tableNumber = data["mesaNumero"] as? Int,
+                  let createdAt = (data["pedidoCreadoEn"] as? Timestamp)?.dateValue()
             else { return nil }
             let orderId = doc.reference.parent.parent?.documentID ?? ""
             
-            return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId)
+            return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId, createdAt: createdAt)
         }
         
     }

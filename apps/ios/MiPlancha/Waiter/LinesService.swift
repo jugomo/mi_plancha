@@ -104,7 +104,7 @@ final class LinesService {
         try await ref.updateData(["estado":LineStatus.ready.rawValue])
     }
     
-    func addLine(productId: String, amount: Int) async throws {
+    func addOrder(lines: [(productId: String, amount: Int)]) async throws {
         let pedidoRef = Firestore.firestore()
             .collection("empresas").document(companyId)
             .collection("pedidos").document()
@@ -122,14 +122,16 @@ final class LinesService {
             "clienteNombre": clientName ?? NSNull()
         ])
         
-        try await pedidoRef.collection("lineas").addDocument(data: [
-            "productoId": productId,
-            "cantidad": amount,
-            "estado": LineStatus.pending.rawValue,
-            "mesaNumero": tableNumber,
-            "empresaId": companyId,
-            "pedidoCreadoEn": FieldValue.serverTimestamp()
-        ])
+        for line in lines {
+            try await pedidoRef.collection("lineas").addDocument(data: [
+                "productoId": line.productId,
+                "cantidad": line.amount,
+                "estado": LineStatus.pending.rawValue,
+                "mesaNumero": tableNumber,
+                "empresaId": companyId,
+                "pedidoCreadoEn": FieldValue.serverTimestamp()
+            ])
+        }
     }
     
     func openTable(tableId: String, clientName: String) async throws {

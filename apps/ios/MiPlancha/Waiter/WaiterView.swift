@@ -13,6 +13,8 @@ struct WaiterView: View {
     @State private var service = TablesService()
     @State private var tableToOpen: Table? = nil
     @State private var clientName = ""
+    @State private var linesService = LinesService()
+    @State private var tableForCuenta: Table? = nil
     
     var body: some View {
         ScrollView {
@@ -27,8 +29,8 @@ struct WaiterView: View {
                                 tableToOpen = table
                             }
                         } else {
-                            Button("Cerrar mesa") {
-                                Task { try? await service.closeTable(table)}
+                            Button("Cobrar") {
+                                tableForCuenta = table
                             }
                         }
                     }
@@ -62,6 +64,15 @@ struct WaiterView: View {
                  clientName = ""
              }
          })
+        .sheet(item: $tableForCuenta) { table in
+            CuentaView(tableId: table.id, service: linesService)
+                .onAppear {
+                    linesService.startListening(tableNumber: table.number, companyId: companyId)
+                }
+                .onDisappear {
+                    linesService.stopListening()
+                }
+        }
     }
 }
 

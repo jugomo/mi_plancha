@@ -11,44 +11,63 @@ struct AddLineView: View {
     @State private var selectedProductId = ""
     @State private var amount = 1
     @Environment(\.dismiss) private var  dismiss
-    
+    @State private var quantities: [String : Int] = [:]
 
+    private var available: [(key: String, value: ProductInfo)] {
+        service.products
+            .filter { $0.value.stock > 0 }
+            .sorted { $0.value.name < $1.value.name }
+    }
     
     var body: some View {
         NavigationStack {
-            Form {
-                
-                Picker("Producto", selection: $selectedProductId) {
-                    let available = service.products.filter{$0.value.stock > 0}
-                                                    .sorted{$0.value.name < $1.value.name}
-                    
-                    ForEach(available, id: \.key) { item in
-                        Text(item.value.name).tag(item.key)
+            List(available, id: \.key) { item in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.value.name)
+                        Text("Disponible \(item.value.stock)")
+                            .font (.caption).foregroundStyle(.secondary)
                     }
-                    
+                    Spacer()
+                    Stepper(
+                        "\(quantities[item.key, default: 0])",
+                        value:Binding(
+                            get: {quantities[item.key, default: 0]},
+                            set: {quantities[item.key] = $0}
+                        ),
+                        in: 0...item.value.stock
+                    )
                 }
-                
-                Stepper("Cantidad: \(amount)", value: $amount, in: 1...20)
-                
-                Button("Añadir" ) {
-                    guard !selectedProductId.isEmpty else { return }
-                    
-                    Task {
-                        try? await service.addLine(productId: selectedProductId, amount: amount)
-                        dismiss()
-                    }
-                }
-                
             }
-            .onAppear {
-                selectedProductId = service.products
-                    .filter { $0.value.stock > 0 }
-                    .sorted(by: {$0.value.name < $1.value.name})
-                    .first?.key ?? ""
+            .navigationTitle("Nuevo pedido")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Enviar") {
+                        let lines = quantities
+                            .filter { $0.value > 0 }
+                            .map {(productId: $0.key, amount: $0.value)}
+                        Task{
+                            try? await service.addOrder(lines: lines)
+                            dismiss()
+                        }
+                    }
+                    .disabled(!quantities.values.contains {$0 > 0})
+                }
+                
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                
             }
         }
-        
+//        .onAppear {
+//            selectedProductId = service.products
+//                .filter { $0.value.stock > 0 }
+//                .sorted(by: {$0.value.name < $1.value.name})
+//                .first?.key ?? ""
+//        }
     }
+        
 }
 
 #Preview {

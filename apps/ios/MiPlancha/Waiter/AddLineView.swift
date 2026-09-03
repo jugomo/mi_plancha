@@ -8,7 +8,6 @@ import SwiftUI
 
 struct AddLineView: View {
     let service : LinesService
-    @State private var selectedProductId = ""
     @State private var amount = 1
     @Environment(\.dismiss) private var  dismiss
     @State private var quantities: [String : Int] = [:]
@@ -60,12 +59,6 @@ struct AddLineView: View {
                 
             }
         }
-//        .onAppear {
-//            selectedProductId = service.products
-//                .filter { $0.value.stock > 0 }
-//                .sorted(by: {$0.value.name < $1.value.name})
-//                .first?.key ?? ""
-//        }
     }
         
 }

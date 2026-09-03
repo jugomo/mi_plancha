@@ -10,6 +10,7 @@ import SwiftUI
 struct TableCardView: View {
     private(set) var table: Table
     private(set) var clientName: String?
+    let summary: TableOrderSummary?
     
     private var color: Color {
         switch table.status {
@@ -24,23 +25,48 @@ struct TableCardView: View {
             Text("\(table.number)")
                 .font(.system(size: 40, weight: .bold))
                 .foregroundStyle(.white)
-            Text(table.status.rawValue)
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.85))
+            
+//            Text(table.status.rawValue)
+//                .font(.caption)
+//                .foregroundStyle(.white.opacity(0.85))
     
-            if clientName != nil {
-                Text(clientName!)
-                    .font(.caption)
-                    .foregroundStyle(.white)
-            }
+            Text(clientName ?? " ")
+                .font(.caption)
+                .foregroundStyle(.white)
+                .opacity(clientName != nil ? 1 : 0)
+            
+            Label(summary?.worstStatus.label ?? " ",
+                  systemImage: summary != nil ? statusIcon(summary!.worstStatus) : "clock")
+                .font(.caption)
+                .foregroundStyle(.white)
+                .opacity(summary != nil ? 1 : 0)
+            
+            Text(summary?.lastUpdate ?? Date(), style: .relative)
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.7))
+                .opacity(summary != nil ? 1 : 0)
+        
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.vertical, 24)
         .background(color)
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
+    
+    private func statusIcon(_ status: LineStatus) -> String {
+        switch status {
+        case .pending: return "clock"
+        case .cooking: return "flame"
+        case .pendingDelivery : return "bell"
+        default: return "checkmark.circle"
+        }
+    }
 }
 
 #Preview {
-    TableCardView(table: Table(id: "1234", number: 1, status: .cobrar),  clientName: "demo")
+    TableCardView(
+        table: Table(id: "1234", number: 1, status: .cobrar),
+        clientName: "rufus",
+        summary: TableOrderSummary(worstStatus: .cooking, lastUpdate:    .now)
+    )
 }

@@ -30,8 +30,8 @@ struct Table: Identifiable {
 }
 
 enum LineStatus: String {
-    case pending = "pendiente"
-    case cooking = "en_plancha"
+    case pending = "esperando"
+    case cooking = "cocinado"
     case pendingDelivery = "pendiente_entrega"
     case ready = "listo"
 
@@ -46,8 +46,8 @@ enum LineStatus: String {
 
     var label: String {
         switch self {
-        case .pending:         return "Pendiente"
-        case .cooking:         return "En plancha"
+        case .pending:         return "Esperando"
+        case .cooking:         return "Cocinando"
         case .pendingDelivery:  return "Para entregar"
         case .ready:           return "Entregado"
         }

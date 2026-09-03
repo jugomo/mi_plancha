@@ -21,7 +21,13 @@ struct WaiterView: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(service.tables) { table in
                     NavigationLink(destination: TableDetailView(table: table, companyId: companyId )) {
-                        TableCardView(table: table, clientName: service.clientNames[table.id])
+                        
+                        let summary: TableOrderSummary? = service.tableOrderInfo[table.number]
+                        ?? service.clientSatAt[table.id].map { TableOrderSummary(worstStatus: .pending, lastUpdate: $0) }
+                        
+                        TableCardView(table: table,
+                                      clientName: service.clientNames[table.id],
+                                      summary: summary)
                     }
                     .contextMenu{
                         if table.status == .libre {

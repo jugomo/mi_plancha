@@ -16,6 +16,9 @@ final class TablesService {
     private(set) var tables: [Table] = []
     private var companyId = ""
     private(set) var clientNames: [String : String] = [:]
+    private(set) var clientSatAt: [String : Date] = [:]
+    private(set) var tableOrderInfo: [Int: TableOrderSummary] = [:]
+    private var listenerLines: ListenerRegistration?
     
     func startListening(companyId: String) {
         self.companyId = companyId
@@ -49,10 +52,55 @@ final class TablesService {
                         if let name = doc?.data()?["nombre"] as? String{
                             self.clientNames[table.id] = name
                         }
+                        
+                        if let ts = doc?.data()?["abiertoEn"] as? Timestamp {
+                            self.clientSatAt[table.id] = ts.dateValue()
+                        }
                     }
                     
                     let occupiedIds = Set(parsed.filter { $0.status == .ocupada }.map { $0.id })
                     clientNames = clientNames.filter { occupiedIds.contains($0.key) }
+                    clientSatAt = clientSatAt.filter { occupiedIds.contains($0.key) }
+                }
+            }
+        
+        listenerLines = Firestore.firestore()
+            .collectionGroup("lineas")
+            .whereField("empresaId", isEqualTo: companyId)
+            .whereField("estado", isNotEqualTo: LineStatus.ready.rawValue)
+            .addSnapshotListener { snapshot, _ in
+                guard let docs = snapshot?.documents else {return }
+                
+                var grouped: [Int:[LineStatus]] = [:]
+                var timestamps: [Int:Date] = [:]
+                
+                for doc in docs {
+                    let data = doc.data()
+                    guard let tableNumber = data["mesaNumero"] as? Int,
+                          let rawStatus = data["estado"] as? String,
+                          let status = LineStatus(rawValue: rawStatus) else { return}
+                    
+                    grouped[tableNumber, default: []].append(status)
+                    
+                    let ts = (data["colocadoEn"] as? Timestamp)?.dateValue()
+                    ?? (data["pedidoCreadoEn"] as? Timestamp)?.dateValue()
+                    if let ts {
+                        let current = timestamps[tableNumber]
+                        timestamps[tableNumber] = current.map { max($0, ts) } ?? ts
+                    }
+                }
+                
+                print("voy a mostrar info de mesas")
+                Task { @MainActor [weak self] in
+                    self?.tableOrderInfo = grouped.compactMapValues { statuses in
+                        print("STATUS: \(statuses)")
+                        
+                        guard let worst = statuses.min(by: { Self.priority($0) < Self.priority($1) }),
+                              let date = timestamps[...].first?.value else { return nil }
+                        
+                        print("WORST: \(worst) - DATE: \(date)")
+                        return TableOrderSummary(worstStatus: worst, lastUpdate: date)
+                    }
                 }
             }
     }
@@ -60,6 +108,9 @@ final class TablesService {
     func stopListening() {
         listener?.remove()
         listener = nil
+        
+        listenerLines?.remove()
+        listenerLines = nil
     }
     
     func openTable(_ table: Table, clientName: String) async throws {
@@ -89,4 +140,18 @@ final class TablesService {
             .collection("mesas").document(table.id)
             .updateData(["estado": "libre", "clienteId": NSNull()])
     }
+    
+    private static func priority(_ status: LineStatus) -> Int {
+        switch status {
+        case .pending: return 0
+        case .cooking: return 1
+        case .pendingDelivery: return 2
+        default: return 3
+        }
+    }
+}
+
+struct TableOrderSummary {
+    let worstStatus: LineStatus
+    let lastUpdate: Date
 }

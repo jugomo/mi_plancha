@@ -181,4 +181,5 @@ final class TablesService {
 struct TableOrderSummary {
     let worstStatus: LineStatus
     let lastUpdate: Date
+    var displayLabel: String? = nil
 }

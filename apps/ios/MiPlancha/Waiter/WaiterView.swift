@@ -88,7 +88,7 @@ struct WaiterView: View {
             return TableOrderSummary(worstStatus: .ready, lastUpdate: d)
         }
         if let d = service.clientSatAt[table.id] {
-            return TableOrderSummary(worstStatus: .pending, lastUpdate: d)
+            return TableOrderSummary(worstStatus: .pending, lastUpdate: d, displayLabel: "Esperando camarero")
         }
         return nil
     }

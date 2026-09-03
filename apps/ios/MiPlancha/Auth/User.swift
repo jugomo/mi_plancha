@@ -46,7 +46,7 @@ enum LineStatus: String {
 
     var label: String {
         switch self {
-        case .pending:         return "Esperando"
+        case .pending:         return "Esperando cocina"
         case .cooking:         return "Cocinando"
         case .pendingDelivery:  return "Para entregar"
         case .ready:           return "Entregado"

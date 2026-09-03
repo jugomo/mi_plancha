@@ -19,7 +19,11 @@ struct TableCardView: View {
         case .ocupada:
             switch summary?.worstStatus {
             case .pendingDelivery: return Color.orange.opacity(0.85)
-            case .pending, .cooking: return Color.orange.opacity(0.35)
+            case .pending:
+                return summary?.displayLabel != nil
+                    ? Color.orange.opacity(0.75)   // waiting waiter
+                    : Color.orange.opacity(0.35)   // waiting cook
+            case .cooking: return Color.orange.opacity(0.35)
             default: return .green  // nil o .ready → idle
             }
         }
@@ -42,7 +46,7 @@ struct TableCardView: View {
                 .foregroundStyle(textColor)
                 .opacity(clientName != nil ? 1 : 0)
             
-            Label(summary?.worstStatus.label ?? " ",
+            Label(summary?.displayLabel ?? summary?.worstStatus.label ?? " ",
                   systemImage: summary != nil ? statusIcon(summary!.worstStatus) : "clock")
                 .font(.caption)
                 .foregroundStyle(textColor)

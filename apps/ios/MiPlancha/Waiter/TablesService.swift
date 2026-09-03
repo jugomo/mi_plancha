@@ -17,6 +17,7 @@ final class TablesService {
     private var companyId = ""
     private(set) var clientNames: [String : String] = [:]
     private(set) var clientSatAt: [String : Date] = [:]
+    private(set) var tablesAllDelivered: [Int : Date] = [:]
     private(set) var tableOrderInfo: [Int: TableOrderSummary] = [:]
     private var listenerLines: ListenerRegistration?
     
@@ -58,6 +59,9 @@ final class TablesService {
                         }
                     }
                     
+                    let libreNums = Set(parsed.filter { $0.status == .libre }.map { $0.number })
+                    for num in libreNums { self.tablesAllDelivered.removeValue(forKey: num) }
+                    
                     let occupiedIds = Set(parsed.filter { $0.status == .ocupada }.map { $0.id })
                     clientNames = clientNames.filter { occupiedIds.contains($0.key) }
                     clientSatAt = clientSatAt.filter { occupiedIds.contains($0.key) }
@@ -92,6 +96,16 @@ final class TablesService {
                 
                 print("voy a mostrar info de mesas")
                 Task { @MainActor [weak self] in
+                    let previousNums = Set(self!.tableOrderInfo.keys)
+                    let newNums = Set(grouped.keys)
+                    
+                    for num in previousNums.subtracting(newNums) {
+                        self?.tablesAllDelivered[num] = .now
+                    }
+                    for num in newNums {
+                        self?.tablesAllDelivered.removeValue(forKey: num)
+                    }
+                    
                     self?.tableOrderInfo = grouped.compactMapValues { statuses in
                         print("STATUS: \(statuses)")
                         
@@ -139,6 +153,19 @@ final class TablesService {
             .collection("empresas").document(companyId)
             .collection("mesas").document(table.id)
             .updateData(["estado": "libre", "clienteId": NSNull()])
+    }
+    
+    func deliverAllPending(tableNumber: Int) async throws {
+        let snapshot = try await Firestore.firestore()
+            .collectionGroup("lineas")
+            .whereField("empresaId", isEqualTo: companyId)
+            .whereField("mesaNumero", isEqualTo: tableNumber)
+            .whereField("estado", isEqualTo: LineStatus.pendingDelivery.rawValue)
+            .getDocuments()
+        
+        for doc in snapshot.documents {
+            try await doc.reference.updateData(["estado": LineStatus.ready.rawValue])
+        }
     }
     
     private static func priority(_ status: LineStatus) -> Int {

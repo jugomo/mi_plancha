@@ -20,14 +20,10 @@ struct WaiterView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(service.tables) { table in
-                    NavigationLink(destination: TableDetailView(table: table, companyId: companyId )) {
-                        
-                        let summary: TableOrderSummary? = service.tableOrderInfo[table.number]
-                        ?? service.clientSatAt[table.id].map { TableOrderSummary(worstStatus: .pending, lastUpdate: $0) }
-                        
+                    NavigationLink(destination: TableDetailView(table: table, companyId: companyId )) {    
                         TableCardView(table: table,
                                       clientName: service.clientNames[table.id],
-                                      summary: summary)
+                                      summary: summary(for: table))
                     }
                     .contextMenu{
                         if table.status == .libre {
@@ -35,6 +31,11 @@ struct WaiterView: View {
                                 tableToOpen = table
                             }
                         } else {
+                            if service.tableOrderInfo[table.number]?.worstStatus == .pendingDelivery {
+                                Button("Entregar pedido") {
+                                    Task { try? await service.deliverAllPending(tableNumber: table.number) }
+                                }
+                            }
                             Button("Cobrar") {
                                 tableForCuenta = table
                             }
@@ -79,6 +80,17 @@ struct WaiterView: View {
                     linesService.stopListening()
                 }
         }
+    }
+    
+    private func summary(for table: Table) -> TableOrderSummary? {
+        if let s = service.tableOrderInfo[table.number] { return s }
+        if let d = service.tablesAllDelivered[table.number] {
+            return TableOrderSummary(worstStatus: .ready, lastUpdate: d)
+        }
+        if let d = service.clientSatAt[table.id] {
+            return TableOrderSummary(worstStatus: .pending, lastUpdate: d)
+        }
+        return nil
     }
 }
 

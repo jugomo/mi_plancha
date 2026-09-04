@@ -62,6 +62,7 @@ struct OrderLine: Identifiable {
     let tableNumber: Int
     let orderId: String
     var createdAt: Date
+    var cookedAt: Date?
 }
 
 struct Order: Identifiable {

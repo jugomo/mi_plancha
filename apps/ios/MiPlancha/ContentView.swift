@@ -19,9 +19,9 @@ struct ContentView: View {
                 Text("Admin: \(usuario.name)")
             }
             case .cocinero:
-                if let companyId = usuario.companyId {
+                if let companyId = usuario.companyId, let userId = auth.user?.uid {
                     RoleContainerView(usuario: usuario, onLogout: logout) {
-                        CookView(companyId: companyId)
+                        CookView(companyId: companyId, userId: userId)
                     }
                 }
             

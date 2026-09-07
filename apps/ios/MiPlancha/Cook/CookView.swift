@@ -22,6 +22,9 @@ struct CookView: View {
                 .tabItem { Label("Plancha", systemImage: "rectangle.stack") }
         }
         .navigationTitle("")
+        .onAppear {service.startListening(companyId: companyId)}
+        .onDisappear {service.stopListening()}
+        
     }
     
     @ViewBuilder func orders() -> some View {
@@ -30,13 +33,59 @@ struct CookView: View {
         
         List {
             Section("En curso") {
-                ForEach(cooking) { line in
-                    lineRow(line)
+                let grouped: [String : [OrderLine]] = Dictionary(grouping: cooking, by: \.orderId)
+                let cookingByOrder = grouped.sorted { a,b in
+                    let aDate = (a.value.map(\.createdAt).min() ?? .distantFuture)
+                    let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
+                    return aDate < bDate
+                }
+                ForEach(cookingByOrder, id: \.key) { orderId, orderLines in
+                    HStack {
+                        let tableNumber: Int = orderLines.first?.tableNumber ?? 0
+                        Text("Mesa \(tableNumber)").fontWeight(.semibold)
+                        Spacer()
+                    }
+                    .listRowBackground(Color(.systemGray6))
+                    .padding(.vertical, 10)
+                    
+                    ForEach(orderLines) { line in
+                        lineRow(line)
+                    }
                 }
             }
             Section("Pendientes") {
-                ForEach(pending) { line in
-                    lineRow(line)
+                let grouped: [String : [OrderLine]] = Dictionary(grouping: pending, by: \.orderId)
+                let pendingByOrder = grouped.sorted { a,b in
+                        let aDate = (a.value.map(\.createdAt).min() ?? .distantFuture)
+                        let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
+                        return aDate < bDate
+                }
+                ForEach(pendingByOrder, id: \.key) { orderId, orderLines in
+                    HStack {
+                        let tableNumber: Int = orderLines.first?.tableNumber ?? 0
+                        Text("Mesa \(tableNumber)").fontWeight(.semibold)
+                        Spacer()
+                        Button("Tomar pedido") {
+                            Task {
+                                for line in orderLines {
+                                    do {
+                                        try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                                    } catch CookError.fullGrill {
+                                        showingPlanchaLlena = true
+                                        return
+                                    } catch {}
+                                }
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        
+                    }
+                    .listRowBackground(Color(.systemGray6))
+                    
+                    ForEach(orderLines) { line in
+                        lineRow(line)
+                    }
                 }
             }
             
@@ -118,10 +167,11 @@ struct CookView: View {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(line.status.color)
                     .frame(width: 5)
-                Text("M\(line.tableNumber)").fontWeight(.bold).foregroundStyle(.secondary)
-                Spacer()
+//                Text("M\(line.tableNumber)").fontWeight(.bold).foregroundStyle(.secondary)
                 Text(service.products[line.productId]?.name ?? line.productId)
                 Text("\(line.amount)x")
+                Spacer()
+                
             }
             HStack {
                 Text(line.status.label)
@@ -136,7 +186,7 @@ struct CookView: View {
             Button(line.status == .pending ? "Cocinar" : "Listo") {
                 Task {
                     do {
-                        try await service.advance(lineId: line.id, currentStatus: line.status)
+                        try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
                     } catch CookError.fullGrill {
                         showingPlanchaLlena = true
                     } catch {}
@@ -160,20 +210,32 @@ struct CookView: View {
                 Text(service.products[line.productId]?.name ?? line.productId)
                 Text("\(line.amount)x")
             }
-            HStack {
-                Text(start, style: .relative)
-                    .font(.caption).foregroundStyle(.secondary)
-                if cookTime > 0 {
-                    Spacer()
-                    Text("\(cookTime / 60) min")
+            TimelineView(.periodic(from: start , by: 10)) { context in
+                let elapsed =  context.date.timeIntervalSince(start)
+                let isDone = cookTime > 0 && elapsed >= Double()
+                
+                HStack {
+                    Text(start, style: .relative)
                         .font(.caption).foregroundStyle(.secondary)
+                    if cookTime > 0 {
+                        Spacer()
+                        if isDone {
+                            Text("Listo")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.green)
+                        } else {
+                            Text("\(cookTime / 60) min")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
         }
         .swipeActions {
             Button("Listo") {
                 Task {
-                    try? await service.advance(lineId: line.id, currentStatus: line.status)
+                    try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
                 }
             }
             .tint(.green)

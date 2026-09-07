@@ -102,7 +102,7 @@ final class CookLinesService {
         listenerStatus = nil
     }
 
-    func advance(lineId: String, currentStatus: LineStatus) async throws {
+    func advance(lineId: String, currentStatus: LineStatus, userId: String) async throws {
         guard let ref = refs[lineId] else { return }
         
         if currentStatus == .pending {
@@ -125,6 +125,7 @@ final class CookLinesService {
         try await ref.updateData(["estado": nextStatus.rawValue])
         if currentStatus == .pending {
             try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])
+            try await ref.parent.parent?.updateData(["cocineroId": userId])
         }
     }
     

@@ -30,8 +30,8 @@ struct Table: Identifiable {
 }
 
 enum LineStatus: String {
-    case pending = "esperando"
-    case cooking = "cocinado"
+    case pending = "pendiente" //--> esperando
+    case cooking = "en_plancha" //--> cocinado
     case pendingDelivery = "pendiente_entrega"
     case ready = "listo"
 

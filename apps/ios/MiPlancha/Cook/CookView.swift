@@ -39,16 +39,12 @@ struct CookView: View {
                     let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
                     return aDate < bDate
                 }
-                ForEach(cookingByOrder, id: \.key) { orderId, orderLines in
-                    HStack {
-                        let tableNumber: Int = orderLines.first?.tableNumber ?? 0
-                        Text("Mesa \(tableNumber)").fontWeight(.semibold)
-                        Spacer()
-                    }
-                    .listRowBackground(Color(.systemGray6))
-                    .padding(.vertical, 10)
+                ForEach(cookingByOrder, id: \.key) { group in
+                    let tableNumber: Int = group.value.first?.tableNumber ?? 0
                     
-                    ForEach(orderLines) { line in
+                    inCourseHeader(tableNumber: tableNumber, lines: group.value)
+
+                    ForEach(group.value) { line in
                         lineRow(line)
                     }
                 }
@@ -60,30 +56,12 @@ struct CookView: View {
                         let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
                         return aDate < bDate
                 }
-                ForEach(pendingByOrder, id: \.key) { orderId, orderLines in
-                    HStack {
-                        let tableNumber: Int = orderLines.first?.tableNumber ?? 0
-                        Text("Mesa \(tableNumber)").fontWeight(.semibold)
-                        Spacer()
-                        Button("Tomar pedido") {
-                            Task {
-                                for line in orderLines {
-                                    do {
-                                        try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
-                                    } catch CookError.fullGrill {
-                                        showingPlanchaLlena = true
-                                        return
-                                    } catch {}
-                                }
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        
-                    }
-                    .listRowBackground(Color(.systemGray6))
+                ForEach(pendingByOrder, id: \.key) { group in
+                    let tableNumber: Int = group.value.first?.tableNumber ?? 0
                     
-                    ForEach(orderLines) { line in
+                    pendingHeader(tableNumber: tableNumber, lines: group.value)
+                    
+                    ForEach(group.value) { line in
                         lineRow(line)
                     }
                 }
@@ -148,9 +126,26 @@ struct CookView: View {
             }
             
             Section("En plancha") {
-                ForEach(cooking) { line in
-                    grillRow(line)
+                let grouped : [String : [OrderLine]] = Dictionary(grouping: cooking, by: \.orderId)
+                let cookingByOrder = grouped.sorted { a,b in
+                    let aDate = (a.value.map(\.createdAt).min() ?? .distantFuture)
+                    let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
+                     return  aDate < bDate
                 }
+                ForEach(cookingByOrder, id: \.key) { orderId, orderLines in
+                    HStack {
+                        let tableNumber = orderLines.first?.tableNumber ?? 0
+                        Text("Mesa \(tableNumber)").fontWeight(.semibold)
+                        Spacer()
+                    }
+                    .listRowBackground(Color(.systemGray6))
+                    .padding(.vertical, 10)
+                    
+                    ForEach(cooking) { line in
+                        grillRow(line)
+                    }
+                }
+                
             }
         }
         .navigationTitle("Plancha")
@@ -161,25 +156,94 @@ struct CookView: View {
         }
     }
     
+    @ViewBuilder func inCourseHeader(tableNumber: Int, lines: [OrderLine]) -> some View {
+        HStack {
+            Text("Mesa \(tableNumber)").fontWeight(.semibold)
+            Spacer()
+            Button("Retirar de plancha") {
+                Task {
+                    for line in lines {
+                        try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                    }
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+        .listRowBackground(Color(.systemGray6))
+        .padding(.vertical, 10)
+    }
+    
+    @ViewBuilder func pendingHeader(tableNumber: Int, lines: [OrderLine]) -> some View {
+        HStack {
+            Text("Mesa \(tableNumber)").fontWeight(.semibold)
+            if lines.first?.status == .pending {
+                Text(lines.first!.createdAt, style: .relative)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button("Tomar pedido") {
+                Task {
+                    for line in lines {
+                        do {
+                            try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                        } catch CookError.fullGrill {
+                            showingPlanchaLlena = true
+                            return
+                        } catch {}
+                    }
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            
+        }
+        .listRowBackground(Color(.systemGray6))
+    }
+    
     @ViewBuilder func lineRow(_ line: OrderLine) -> some View {
+        let cookTime = service.products[line.productId]?.tiempoCoccionSeg ?? 0
+        let start = line.cookedAt ?? line.createdAt
+        let doneAt = start.addingTimeInterval(Double(cookTime))
+        
         VStack {
             HStack (spacing: 12){
                 RoundedRectangle(cornerRadius: 3)
                     .fill(line.status.color)
                     .frame(width: 5)
-//                Text("M\(line.tableNumber)").fontWeight(.bold).foregroundStyle(.secondary)
-                Text(service.products[line.productId]?.name ?? line.productId)
                 Text("\(line.amount)x")
+                Text(service.products[line.productId]?.name ?? line.productId)
                 Spacer()
                 
             }
-            HStack {
-                Text(line.status.label)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            if line.status == .pending {
                 Text(line.createdAt, style: .relative)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            } else {
+                TimelineView(.periodic(from: start, by:1 )) { context in
+                    let isDone = cookTime > 0 && context.date >= doneAt
+                    
+                    HStack {
+                        if cookTime > 0 {
+                            Spacer()
+                            if isDone {
+                                Text("Listo")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.green)
+                            } else {
+                                Text(line.status.label)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text(doneAt, style: .relative)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
             }
         }
         .swipeActions {
@@ -199,24 +263,21 @@ struct CookView: View {
     @ViewBuilder func grillRow(_ line: OrderLine) -> some View {
         let cookTime = service.products[line.productId]?.tiempoCoccionSeg ?? 0
         let start = line.cookedAt ?? line.createdAt
+        let doneAt = start.addingTimeInterval(Double(cookTime))
 
         VStack {
             HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.orange)
                     .frame(width: 5)
-                Text("M\(line.tableNumber)").fontWeight(.bold).foregroundStyle(.secondary)
-                Spacer()
-                Text(service.products[line.productId]?.name ?? line.productId)
                 Text("\(line.amount)x")
+                Text(service.products[line.productId]?.name ?? line.productId)
+                Spacer()
             }
-            TimelineView(.periodic(from: start , by: 10)) { context in
-                let elapsed =  context.date.timeIntervalSince(start)
-                let isDone = cookTime > 0 && elapsed >= Double()
+            TimelineView(.periodic(from: start, by: 1)) { context in
+                let isDone = cookTime > 0 && context.date >= doneAt
                 
                 HStack {
-                    Text(start, style: .relative)
-                        .font(.caption).foregroundStyle(.secondary)
                     if cookTime > 0 {
                         Spacer()
                         if isDone {
@@ -225,7 +286,7 @@ struct CookView: View {
                                 .fontWeight(.bold)
                                 .foregroundStyle(.green)
                         } else {
-                            Text("\(cookTime / 60) min")
+                            Text(doneAt, style: .relative)
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }

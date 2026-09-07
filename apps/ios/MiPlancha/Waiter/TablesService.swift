@@ -57,6 +57,13 @@ final class TablesService {
                         if let ts = doc?.data()?["abiertoEn"] as? Timestamp {
                             self.clientSatAt[table.id] = ts.dateValue()
                         }
+                        
+                        if table.status == .ocupada,
+                           self.tableOrderInfo[table.number] == nil,
+                           self.tablesAllDelivered[table.number] == nil {
+                            await self.backfillDeliveredIfNeeded(tableNumber: table.number, since: self.clientSatAt[table.id])
+                        }
+                            
                     }
                     
                     let libreNums = Set(parsed.filter { $0.status == .libre }.map { $0.number })
@@ -165,6 +172,27 @@ final class TablesService {
         
         for doc in snapshot.documents {
             try await doc.reference.updateData(["estado": LineStatus.ready.rawValue])
+        }
+    }
+    
+    private func backfillDeliveredIfNeeded(tableNumber: Int, since clientSatAt: Date?) async {
+        guard let snap = try? await Firestore.firestore()
+            .collectionGroup("lineas")
+            .whereField("empresaId", isEqualTo: companyId)
+            .whereField("mesaNumero", isEqualTo: tableNumber)
+            .whereField("estado", isEqualTo: LineStatus.ready.rawValue)
+            .getDocuments()
+        else { return }
+
+        let fechas = snap.documents.compactMap { doc -> Date? in
+            guard let createdAt = (doc.data()["pedidoCreadoEn"] as? Timestamp)?.dateValue() else { return nil }
+            if let clientSatAt, createdAt < clientSatAt { return nil }
+            return (doc.data()["colocadoEn"] as? Timestamp)?.dateValue() ?? createdAt
+        }
+        guard let ultima = fechas.max() else { return }
+
+        if tableOrderInfo[tableNumber] == nil {
+            tablesAllDelivered[tableNumber] = ultima
         }
     }
     

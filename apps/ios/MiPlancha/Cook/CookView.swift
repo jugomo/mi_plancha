@@ -132,11 +132,21 @@ struct CookView: View {
                     let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
                      return  aDate < bDate
                 }
+                
                 ForEach(cookingByOrder, id: \.key) { orderId, orderLines in
                     HStack {
                         let tableNumber = orderLines.first?.tableNumber ?? 0
                         Text("Mesa \(tableNumber)").fontWeight(.semibold)
                         Spacer()
+                        Button("Retirar de plancha") {
+                            Task {
+                                for line in orderLines {
+                                    try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                                }
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
                     }
                     .listRowBackground(Color(.systemGray6))
                     .padding(.vertical, 10)
@@ -160,15 +170,26 @@ struct CookView: View {
         HStack {
             Text("Mesa \(tableNumber)").fontWeight(.semibold)
             Spacer()
-            Button("Retirar de plancha") {
-                Task {
-                    for line in lines {
-                        try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let allReady = lines.allSatisfy { line in
+                    let cookTime = service.products[line.productId]?.tiempoCoccionSeg ?? 0
+                    guard cookTime > 0 else { return true }
+                    let start = line.cookedAt ?? line.createdAt
+                    return context.date >= start.addingTimeInterval(Double(cookTime))
+                }
+                
+                if allReady {
+                    Button("Retirar de plancha") {
+                        Task {
+                            for line in lines {
+                                try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                            }
+                        }
                     }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
             }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
         }
         .listRowBackground(Color(.systemGray6))
         .padding(.vertical, 10)
@@ -246,18 +267,18 @@ struct CookView: View {
                 }
             }
         }
-        .swipeActions {
-            Button(line.status == .pending ? "Cocinar" : "Listo") {
-                Task {
-                    do {
-                        try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
-                    } catch CookError.fullGrill {
-                        showingPlanchaLlena = true
-                    } catch {}
-                }
-            }
-            .tint(line.status == .pending ? .orange : .green)
-        }
+//        .swipeActions {
+//            Button(line.status == .pending ? "Cocinar" : "Listo") {
+//                Task {
+//                    do {
+//                        try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+//                    } catch CookError.fullGrill {
+//                        showingPlanchaLlena = true
+//                    } catch {}
+//                }
+//            }
+//            .tint(line.status == .pending ? .orange : .green)
+//        }
     }
     
     @ViewBuilder func grillRow(_ line: OrderLine) -> some View {

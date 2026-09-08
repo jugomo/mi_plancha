@@ -28,7 +28,7 @@ struct TableCardView: View {
             }
         }
     }
-    private var textColor: Color { cardColor == nil ? .primary : .primary }
+    private var textColor: Color { cardColor == nil ? .secondary : .primary }
     private var subtextColor: Color { cardColor == nil ? .secondary : .primary.opacity(0.7) }
 
     var body: some View {
@@ -37,10 +37,12 @@ struct TableCardView: View {
                 .font(.system(size: 40, weight: .bold))
                 .foregroundStyle(textColor)
             
-//            Text(table.status.rawValue)
-//                .font(.caption)
-//                .foregroundStyle(.white.opacity(0.85))
-    
+            if table.status == .libre {
+                Text("Libre")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            
             Text(clientName ?? " ")
                 .font(.caption)
                 .foregroundStyle(textColor)

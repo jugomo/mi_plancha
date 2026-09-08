@@ -126,8 +126,8 @@ pending  →  cooking  →  pendingDelivery  →  ready
 
 | Case | Firestore value | Actor | Meaning |
 |---|---|---|---|
-| `pending` | `"esperando"` | (waiter creates) | Waiting for cook |
-| `cooking` | `"cocinado"` | cook | On the grill |
+| `pending` | `"pendiente"` | (waiter creates) | Waiting for cook |
+| `cooking` | `"en_plancha"` | cook | On the grill |
 | `pendingDelivery` | `"pendiente_entrega"` | cook | Ready, waiter to deliver |
 | `ready` | `"listo"` | waiter | Delivered to client |
 
@@ -202,7 +202,7 @@ Example: user `maria` at company `V628` → `maria@v628.miplancha.local`
 | Service | Filter | Purpose |
 |---|---|---|
 | `TablesService` | `empresaId == X`, `estado != listo` | Compute order status summary per table |
-| `CookLinesService` | `empresaId == X`, `estado in [esperando, cocinado]` | Cook's pending/active lines across all tables |
+| `CookLinesService` | `empresaId == X`, `estado in [pendiente, en_plancha]` | Cook's pending/active lines across all tables |
 | `LinesService.fetchBillLines` | `mesaNumero == N`, `empresaId == X`, `pedidoCreadoEn >= abiertoEn` | Bill lines scoped to the current session only |
 
 `fetchBillLines` requires a composite index on `lineas`: `(mesaNumero ASC, empresaId ASC, pedidoCreadoEn ASC)`. Create it from the link Firestore logs on first query failure.

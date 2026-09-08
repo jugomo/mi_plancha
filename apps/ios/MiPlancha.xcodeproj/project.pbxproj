@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		431BFEB830505EB900CC5464 /* data_model.md in Resources */ = {isa = PBXBuildFile; fileRef = 431BFEB530505EB900CC5464 /* data_model.md */; };
+		431BFEB930505EB900CC5464 /* README.es.md in Resources */ = {isa = PBXBuildFile; fileRef = 431BFEB730505EB900CC5464 /* README.es.md */; };
+		431BFEBA30505EB900CC5464 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 431BFEB630505EB900CC5464 /* README.md */; };
+		431BFEBB30505EB900CC5464 /* architecture.md in Resources */ = {isa = PBXBuildFile; fileRef = 431BFEB430505EB900CC5464 /* architecture.md */; };
 		4326C9B1303869BA002469B6 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 4326C9B0303869BA002469B6 /* FirebaseAuth */; };
 		4326C9B3303869C5002469B6 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4326C9B2303869C5002469B6 /* FirebaseFirestore */; };
 		4326C9B630386C42002469B6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4326C9B430386AB2002469B6 /* GoogleService-Info.plist */; };
@@ -33,7 +37,11 @@
 /* Begin PBXFileReference section */
 		0AA2EB7F1AA7E95F5B5C7391 /* MiPlanchaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiPlanchaApp.swift; sourceTree = "<group>"; };
 		2DCAC5812AF44AE8A6659F86 /* MiPlancha.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MiPlancha.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		4326C9AD30386766002469B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		431BFEB430505EB900CC5464 /* architecture.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = architecture.md; sourceTree = "<group>"; };
+		431BFEB530505EB900CC5464 /* data_model.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = data_model.md; sourceTree = "<group>"; };
+		431BFEB630505EB900CC5464 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		431BFEB730505EB900CC5464 /* README.es.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.es.md; sourceTree = "<group>"; };
+		4326C9AD30386766002469B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4326C9B430386AB2002469B6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		4326C9B730386E67002469B6 /* UsernameEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameEmail.swift; sourceTree = "<group>"; };
 		4326C9B93038A59B002469B6 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -131,6 +139,10 @@
 			children = (
 				931A7E226C1E69257C86DDA0 /* MiPlancha */,
 				4326C9AF303869BA002469B6 /* Frameworks */,
+				431BFEB430505EB900CC5464 /* architecture.md */,
+				431BFEB530505EB900CC5464 /* data_model.md */,
+				431BFEB630505EB900CC5464 /* README.md */,
+				431BFEB730505EB900CC5464 /* README.es.md */,
 				6386F70C85D3BC835566FABE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -210,6 +222,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				431BFEB830505EB900CC5464 /* data_model.md in Resources */,
+				431BFEB930505EB900CC5464 /* README.es.md in Resources */,
+				431BFEBA30505EB900CC5464 /* README.md in Resources */,
+				431BFEBB30505EB900CC5464 /* architecture.md in Resources */,
 				4326C9B630386C42002469B6 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

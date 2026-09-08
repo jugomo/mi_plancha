@@ -29,17 +29,28 @@ the user document in Firestore. Implemented so far:
   opening the bill (`CuentaView`).
 - **Add order line** (`AddLineView`): a form with a picker of products in stock and a quantity
   stepper; creates the `pedido` and its line in Firestore.
-- **Bill and checkout** (`CuentaView`): lists every line for the table (`fetchBillLines`) with
-  price and computes the total; "Cobrar y cerrar" closes the table (back to `libre`, clears
-  `clienteId`).
+- **Bill and checkout** (`CuentaView`): lists every line for the current session
+  (`fetchBillLines`, filtered by `pedidoCreadoEn >= abiertoEn` to exclude lines from previous
+  sessions at the same table) with price and computes the total; "Cobrar y cerrar" closes the
+  table (back to `libre`, clears `clienteId`).
 - **Products** (`ProductUtils.swift`): `fetchProducts` fetches the catalog from
   `empresas/{companyId}/productos` (name, price, stock, grill-unit capacity and cooking time),
   used by both waiter and cook.
-- **Cook** (`CookView`, `CookLinesService`): real-time list of every pending or on-the-grill line
-  across the company (`collectionGroup("lineas")`), with table and product. Swipe to advance the
-  status (pending → on the grill → pending delivery), respecting the company's `capacidadPlancha`
-  against the capacity already in use by what's on the grill.
+- **Cook — orders tab** (`CookView`, `CookLinesService`): real-time list of every pending or
+  on-the-grill line across the company (`collectionGroup("lineas")`). At the top, a **suggestion
+  card** (`CookSuggestion.swift`) runs the greedy algorithm from `ALGORITHM.md` and proposes
+  which lines to place on the grill next — recalculated on every Firestore change and every 30 s
+  (for urgency threshold crossings). Below, lines grouped as "En curso" and "Pendientes" with
+  per-order advance buttons. Shows "plancha llena" alert if capacity is exceeded.
+- **Cook — grill tab** (`CookView`): capacity bar (used / total), manual overflow toggle, lines
+  currently on the grill with a per-product cook timer and per-order "Retirar de plancha" button.
+- **Suggestion algorithm** (`CookSuggestion.swift`): pure Swift implementation of the 4-step
+  greedy algorithm (urgency → candidate queue → greedy selection with auto/manual overflow →
+  product-type bonus pass). `SuggestionResult` carries suggested lines, projected capacity after
+  placement, and alerts for forced orders that don't fit even with overflow.
 - Admin (CMS) and superadmin: not implemented yet, show only a placeholder text.
+
+## Tech
 
 - SwiftUI, deployment target iOS 17
 - Bundle id: `com.jugomo.miplancha`
@@ -48,6 +59,19 @@ the user document in Firestore. Implemented so far:
   opened directly without having XcodeGen installed.
 - `MiPlancha/GoogleService-Info.plist` is already in the target (same Firebase project
   `mi-plancha` as the web app), with the Firebase SDK (Auth + Firestore) added via SPM.
+
+## Required Firestore indexes
+
+Beyond the indexes already needed for `TablesService` and `CookLinesService`, `fetchBillLines`
+requires a composite index on the `lineas` collection group:
+
+| Fields | Order |
+|---|---|
+| `mesaNumero` | ASC |
+| `empresaId` | ASC |
+| `pedidoCreadoEn` | ASC |
+
+Firestore will log a direct creation link the first time the query runs without it.
 
 ## Build
 

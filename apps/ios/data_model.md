@@ -22,7 +22,7 @@
 | `nombre` | String | Client name |
 | `camareroId` | String | UID of waiter who opened the table |
 | `mesaId` | String | Document ID of the table |
-| `abiertoEn` | Timestamp | When the table was opened |
+| `abiertoEn` | Timestamp | When the table was opened — used by `fetchBillLines` to scope lines to the current session |
 
 ### `/empresas/{empresaId}/productos/{productoId}`
 | Field | Type | Notes |
@@ -53,13 +53,16 @@
 | `estado` | String | See LineStatus below |
 | `mesaNumero` | Int | Denormalized for collectionGroup queries |
 | `empresaId` | String | Denormalized for collectionGroup queries |
-| `pedidoCreadoEn` | Timestamp | Copied from parent order creation time |
-| `colocadoEn` | Timestamp? | Set when cook moves to `cocinado` |
+| `pedidoCreadoEn` | Timestamp | Copied from parent order creation time — used to scope bill lines to current session |
+| `colocadoEn` | Timestamp? | Set when cook moves to `cooking` |
 
 ### `/empresas/{empresaId}/config/plancha`
 | Field | Type | Notes |
 |---|---|---|
 | `capacidadTotal` | Int | Max total grill capacity units |
+| `tiempoMaximoEspera` | Int | Max wait seconds before an order becomes forced (anti-starvation) |
+| `umbralDivision` | Int | Order line count above which subgroup logic applies (default 8) |
+| `tamañoSubgrupo` | Int | Number of lines per subgroup for large orders (default 4) |
 
 ### `/empresas/{empresaId}/config/overflow`
 | Field | Type | Notes |
@@ -153,6 +156,33 @@ worstStatus: LineStatus   // earliest-in-lifecycle status among active lines
 lastUpdate: Date
 ```
 
+### `SuggestionLine`
+A line recommended by `computeSuggestion` to place on the grill.
+```swift
+id: String         // lineId
+orderId: String
+tableNumber: Int
+productId: String
+amount: Int
+isForced: Bool     // the parent order exceeded maxWaitSeconds
+usingOverflow: Bool // this line pushes usage above grillCapacity base
+```
+
+### `SuggestionAlert`
+An order that is forced (urgent) but cannot fit even with overflow capacity.
+```swift
+id: String         // orderId
+tableNumber: Int
+```
+
+### `SuggestionResult`
+Output of `computeSuggestion`.
+```swift
+lines: [SuggestionLine]
+capacityAfter: Int    // total grill capacity used if suggestion is accepted (cooking + suggested)
+alerts: [SuggestionAlert]
+```
+
 ---
 
 ## Auth: Synthetic Email
@@ -169,11 +199,10 @@ Example: user `maria` at company `V628` → `maria@v628.miplancha.local`
 
 ## collectionGroup Queries
 
-Two collectionGroup queries on `lineas` are used to avoid per-table reads:
-
 | Service | Filter | Purpose |
 |---|---|---|
 | `TablesService` | `empresaId == X`, `estado != listo` | Compute order status summary per table |
 | `CookLinesService` | `empresaId == X`, `estado in [esperando, cocinado]` | Cook's pending/active lines across all tables |
+| `LinesService.fetchBillLines` | `mesaNumero == N`, `empresaId == X`, `pedidoCreadoEn >= abiertoEn` | Bill lines scoped to the current session only |
 
-Both require `empresaId` denormalized on each line document to satisfy Firestore's collectionGroup index requirements.
+`fetchBillLines` requires a composite index on `lineas`: `(mesaNumero ASC, empresaId ASC, pedidoCreadoEn ASC)`. Create it from the link Firestore logs on first query failure.

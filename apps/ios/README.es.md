@@ -30,17 +30,31 @@ el documento del usuario en Firestore. Implementado hasta ahora:
   (`AddLineView`) y abrir la cuenta (`CuentaView`).
 - **Añadir línea de pedido** (`AddLineView`): formulario con picker de productos con stock
   disponible y stepper de cantidad; crea el `pedido` y su línea en Firestore.
-- **Cuenta y cobro** (`CuentaView`): lista todas las líneas de la mesa (`fetchBillLines`) con
-  precio y calcula el total; "Cobrar y cerrar" cierra la mesa (vuelve a `libre`, limpia
-  `clienteId`).
+- **Cuenta y cobro** (`CuentaView`): lista todas las líneas de la sesión actual
+  (`fetchBillLines`, filtra por `pedidoCreadoEn >= abiertoEn` para excluir líneas de sesiones
+  anteriores en la misma mesa) con precio y calcula el total; "Cobrar y cerrar" cierra la mesa
+  (vuelve a `libre`, limpia `clienteId`).
 - **Productos** (`ProductUtils.swift`): `fetchProducts` trae el catálogo de
-  `empresas/{companyId}/productos` (nombre, precio, stock, capacidad de unidad en la plancha y
+  `empresas/{companyId}/productos` (nombre, precio, stock, capacidad de unidad en plancha y
   tiempo de cocción), usado por camarero y cocinero.
-- **Cocinero** (`CookView`, `CookLinesService`): lista en tiempo real de todas las líneas
-  pendientes o en plancha de la empresa (`collectionGroup("lineas")`), con mesa y producto.
-  Swipe para avanzar el estado (pendiente → en plancha → pendiente de entrega), respetando la
-  `capacidadPlancha` de la empresa frente a la capacidad ya ocupada por lo que está en plancha.
+- **Cocinero — tab Pedidos** (`CookView`, `CookLinesService`): lista en tiempo real de todas
+  las líneas pendientes o en plancha de la empresa (`collectionGroup("lineas")`). Arriba del
+  todo, un **card de sugerencia** (`CookSuggestion.swift`) ejecuta el algoritmo greedy de
+  `ALGORITHM.md` y propone qué líneas colocar en la plancha — se recalcula con cada cambio
+  de Firestore y cada 30 s (para que los cruces de umbral de urgencia se detecten a tiempo).
+  Debajo, líneas agrupadas en "En curso" y "Pendientes" con botones de avance por pedido.
+  Muestra alerta "plancha llena" si se supera la capacidad.
+- **Cocinero — tab Plancha** (`CookView`): barra de capacidad (usada / total), botón de
+  overflow manual, líneas en plancha con temporizador de cocción por producto y botón
+  "Retirar de plancha" por pedido.
+- **Algoritmo de sugerencia** (`CookSuggestion.swift`): implementación pura en Swift del
+  algoritmo greedy de 4 pasos (urgencia → cola de candidatos → selección greedy con
+  overflow auto/manual → bonificación por tipo de producto). `SuggestionResult` contiene las
+  líneas sugeridas, la capacidad proyectada tras colocarlas y alertas para pedidos forzados
+  que no caben ni con overflow.
 - Administrador (CMS) y superadmin: sin implementar, muestran solo un texto de placeholder.
+
+## Tecnología
 
 - SwiftUI, deployment target iOS 17
 - Bundle id: `com.jugomo.miplancha`
@@ -49,6 +63,19 @@ el documento del usuario en Firestore. Implementado hasta ahora:
   el proyecto directamente sin tener XcodeGen instalado.
 - `MiPlancha/GoogleService-Info.plist` ya está en el target (mismo proyecto Firebase
   `mi-plancha` que la web), con el Firebase SDK (Auth + Firestore) añadido vía SPM.
+
+## Índices de Firestore necesarios
+
+Además de los índices ya necesarios para `TablesService` y `CookLinesService`, `fetchBillLines`
+requiere un índice compuesto en el collection group `lineas`:
+
+| Campos | Orden |
+|---|---|
+| `mesaNumero` | ASC |
+| `empresaId` | ASC |
+| `pedidoCreadoEn` | ASC |
+
+Firestore logueará un enlace de creación directa la primera vez que la query falle sin él.
 
 ## Compilar
 

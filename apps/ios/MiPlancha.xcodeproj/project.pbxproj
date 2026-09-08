@@ -13,6 +13,7 @@
 		4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9B730386E67002469B6 /* UsernameEmail.swift */; };
 		4326C9BA3038A59E002469B6 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9B93038A59B002469B6 /* AuthService.swift */; };
 		4326C9BC3038B121002469B6 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4326C9BB3038B11D002469B6 /* LoginView.swift */; };
+		4327E66530500027000CBE03 /* CookSuggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327E66430500023000CBE03 /* CookSuggestion.swift */; };
 		4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */; };
 		4338DDD0303DB445004F39EE /* TablesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCF303DB440004F39EE /* TablesService.swift */; };
 		43A3D2D7303C51C50021724D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A3D2D6303C51C00021724D /* User.swift */; };
@@ -37,6 +38,7 @@
 		4326C9B730386E67002469B6 /* UsernameEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameEmail.swift; sourceTree = "<group>"; };
 		4326C9B93038A59B002469B6 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		4326C9BB3038B11D002469B6 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		4327E66430500023000CBE03 /* CookSuggestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookSuggestion.swift; sourceTree = "<group>"; };
 		4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleContainerView.swift; sourceTree = "<group>"; };
 		4338DDCF303DB440004F39EE /* TablesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TablesService.swift; sourceTree = "<group>"; };
 		43A3D2D6303C51C00021724D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
@@ -100,6 +102,7 @@
 		43A843673045980C00FC8836 /* Cook */ = {
 			isa = PBXGroup;
 			children = (
+				4327E66430500023000CBE03 /* CookSuggestion.swift */,
 				43EB207F304091CB00EB2FBE /* CookView.swift */,
 				43EB207D30408FBF00EB2FBE /* CookLinesService.swift */,
 			);
@@ -229,6 +232,7 @@
 				43A3D2D7303C51C50021724D /* User.swift in Sources */,
 				43AEB83830417E5800DEE2EB /* AddLineView.swift in Sources */,
 				43AEB8363041703400DEE2EB /* ProductUtils.swift in Sources */,
+				4327E66530500027000CBE03 /* CookSuggestion.swift in Sources */,
 				4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */,
 				4326C9BC3038B121002469B6 /* LoginView.swift in Sources */,
 				43EB2080304091D200EB2FBE /* CookView.swift in Sources */,

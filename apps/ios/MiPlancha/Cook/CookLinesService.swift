@@ -18,6 +18,9 @@ final class CookLinesService {
     private var listener: ListenerRegistration?
     private(set) var overflowPercent: Int?
     private(set) var overflowManualActive = false
+    private(set) var maxWaitSeconds: Int = 900
+    private(set) var thresoldDivision: Int = 8
+    private(set) var subgroupSize: Int = 4
     private var listenerStatus: ListenerRegistration?
     private var companyId = ""
     
@@ -41,7 +44,9 @@ final class CookLinesService {
                 .getDocument()
             
             self.grillCapacity = snap?.data()?["capacidadTotal"] as? Int
-            print("self.capacidadTotal::: \(self.grillCapacity)")
+            self.maxWaitSeconds = snap?.data()?["tiempoMaximoEspera"] as? Int ?? 900
+            self.thresoldDivision = snap?.data()?["umbralDivision"] as? Int ?? 8
+            self.subgroupSize = snap?.data()?["tamañoSubgrupo"] as? Int ?? 4
         }
 
         Task {

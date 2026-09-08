@@ -32,6 +32,31 @@ struct CookView: View {
         let cooking = service.lines.filter { $0.status == .cooking }
         
         List {
+            Section {
+                TimelineView(.periodic(from: .now, by: 30 )) { context in
+                    if let cap = service.grillCapacity,
+                       let displayCap = service.efectiveCapacity {
+                        let cooking = service.lines.filter {$0.status == .cooking }
+                        let pending = service.lines.filter {$0.status == .pending}
+                        let result = computeSuggestion(pendingLines: pending, cookingLines: cooking, products: service.products, grillCapacity: cap, overflowPercent: service.overflowPercent ?? 0, overflowManualActive: service.overflowManualActive, maxWaitSeconds: service.maxWaitSeconds, thresoldDivision: service.thresoldDivision, subgroupSize: service.subgroupSize, now: context.date)
+                        
+                        suggestionCard(result: result, capacity: displayCap, hasPending: !pending.isEmpty) { lines in
+                            Task {
+                                for line in lines {
+                                    do {
+                                        try await service.advance(lineId: line.id, currentStatus: .pending, userId: userId)
+                                    } catch CookError.fullGrill {
+                                        showingPlanchaLlena = true
+                                        return
+                                    } catch {}
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+            
             Section("En curso") {
                 let grouped: [String : [OrderLine]] = Dictionary(grouping: cooking, by: \.orderId)
                 let cookingByOrder = grouped.sorted { a,b in
@@ -323,6 +348,81 @@ struct CookView: View {
             .tint(.green)
         }
     }
+
+    func suggestionCard(result: SuggestionResult, capacity: Int, hasPending: Bool, onPlace: @escaping ([SugggestionLine]) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Sugerencia d e plancha", systemImage: "sparkles").font(.headline)
+            
+            if result.lines.isEmpty && result.alerts.isEmpty {
+                if hasPending {
+                    Text("La plancha esta llena, no hay espacio para sugerir pedidos ahora")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("No hay lineas pendientes que colocar")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                let byOrder = Dictionary(grouping: result.lines, by: \.orderId)
+                ForEach(byOrder.keys.sorted(), id: \.self) { orderId in
+                    let lines = byOrder[orderId]!
+                    let tableNumber = lines.first!.tableNumber
+                    let isForced = lines.contains {$0.isForced}
+                    HStack {
+                        Text("Mesa \(tableNumber)").fontWeight(.semibold)
+                        if isForced {
+                            Label("Urgente", systemImage: "exclamationmark.triangle")
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                    ForEach(lines) { line in
+                        HStack {
+                            Text("  \(line.amount)× \(service.products[line.productId]?.name ?? line.productId)")
+                                .font(.callout)
+                            if line.usingOverflow {
+                                Image(systemName: "flame.fill")
+                                    .foregroundStyle(.orange)
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Capacidad tras colocar")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(result.capacityAfter) / \(capacity)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    ProgressView(value: Double(result.capacityAfter), total: Double(max(capacity, 1)))
+                        .tint(result.capacityAfter > capacity ? .red : .orange)
+                }
+
+                ForEach(result.alerts) { alert in
+                    Label("Mesa \(alert.tableNumber): urgente, no cabe ni con overflow", systemImage: "exclamationmark.octagon.fill")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                if !result.lines.isEmpty {
+                    Button("Colocar en plancha") {
+                        onPlace(result.lines)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            }
+        }
+        .padding(.bottom, 8)
+    }
+    
 }
 
 #Preview {

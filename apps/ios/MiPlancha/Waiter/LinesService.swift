@@ -23,6 +23,7 @@ final class LinesService {
     private(set) var billLines: [OrderLine] = []
      var clientId: String?
      var clientName: String?
+    private(set) var tableOpenedAt: Date?
     
     var orders: [Order] {
         Dictionary(grouping: lines, by: \.orderId)
@@ -91,8 +92,10 @@ final class LinesService {
                             .collection("clientes").document(clienteId)
                             .getDocument()
                         self.clientName = doc?.data()?["nombre"] as? String
+                        self.tableOpenedAt = (doc?.data()?["abiertoEn"] as? Timestamp)?.dateValue()
                     } else {
                         self.clientName = nil
+                        self.tableOpenedAt = nil
                     }
                 }
             }
@@ -162,10 +165,22 @@ final class LinesService {
     }
     
     func fetchBillLines() async{
+        var openedAt = tableOpenedAt
+        if openedAt == nil, let cid = clientId {
+            let doc = try? await Firestore.firestore()
+                .collection("empresas").document(companyId)
+                .collection("clientes").document(cid)
+                .getDocument()
+            openedAt = (doc?.data()?["abiertoEn"] as? Timestamp)?.dateValue()
+        }
+        guard let openedAt else {return}
+        
+        
         guard let snapshot = try? await Firestore.firestore()
             .collectionGroup("lineas")
             .whereField("mesaNumero", isEqualTo: tableNumber)
             .whereField("empresaId", isEqualTo: companyId)
+           .whereField("pedidoCreadoEn", isGreaterThanOrEqualTo: Timestamp(date: openedAt))
             .getDocuments()
         else { return }
         

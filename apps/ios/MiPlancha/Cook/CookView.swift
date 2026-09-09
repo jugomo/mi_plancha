@@ -263,34 +263,42 @@ struct CookView: View {
                 Spacer()
                 
             }
-//            if line.status == .pending {
-//                Text(line.createdAt, style: .relative)
-//                    .font(.caption)
-//                    .foregroundStyle(.secondary)
-//            } else {
-//                TimelineView(.periodic(from: start, by:1 )) { context in
-//                    let isDone = cookTime > 0 && context.date >= doneAt
-//                    
-//                    HStack {
-//                        if cookTime > 0 {
-//                            Spacer()
-//                            if isDone {
-//                                Text("Listo")
-//                                    .font(.caption)
-//                                    .fontWeight(.bold)
-//                                    .foregroundStyle(.green)
-//                            } else {
-//                                Text(line.status.label)
-//                                    .font(.caption)
-//                                    .foregroundStyle(.secondary)
-//                                Text(doneAt, style: .relative)
-//                                    .font(.caption)
-//                                    .foregroundStyle(.secondary)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            if line.status == .pending {
+                HStack {
+                    Spacer()
+                    Text("Esperando")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.secondary)
+                    Text(line.createdAt, style: .relative)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                TimelineView(.periodic(from: start, by:1 )) { context in
+                    let isDone = cookTime > 0 && context.date >= doneAt
+                    
+                    HStack {
+                        if cookTime > 0 {
+                            Spacer()
+                            if isDone {
+                                Text("Listo")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.green)
+                            } else {
+                                Text(line.status.label)
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.secondary)
+                                Text(doneAt, style: .relative)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
         }
 //        .swipeActions {
 //            Button(line.status == .pending ? "Cocinar" : "Listo") {

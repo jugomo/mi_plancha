@@ -19,7 +19,7 @@ struct Usuario {
 }
 
 enum TableStatus: String {
-    case libre, ocupada, cobrar
+    case libre, ocupada
 }
 
 struct Table: Identifiable {

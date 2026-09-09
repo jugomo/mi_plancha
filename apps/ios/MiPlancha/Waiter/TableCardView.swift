@@ -15,7 +15,6 @@ struct TableCardView: View {
     private var cardColor: Color? {
         switch table.status {
         case .libre:    return nil
-        case .cobrar:   return .orange
         case .ocupada:
             switch summary?.worstStatus {
             case .pendingDelivery: return Color.orange.opacity(0.85)
@@ -82,7 +81,7 @@ struct TableCardView: View {
 
 #Preview {
     TableCardView(
-        table: Table(id: "1234", number: 1, status: .cobrar),
+        table: Table(id: "1234", number: 1, status: .ocupada),
         clientName: "rufus",
         summary: TableOrderSummary(worstStatus: .cooking, lastUpdate:    .now)
     )

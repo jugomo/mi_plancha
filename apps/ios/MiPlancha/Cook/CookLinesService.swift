@@ -106,32 +106,100 @@ final class CookLinesService {
         listenerStatus?.remove()
         listenerStatus = nil
     }
-
-    func advance(lineId: String, currentStatus: LineStatus, userId: String) async throws {
-        guard let ref = refs[lineId] else { return }
+    
+    func takeOrder(orderId: String, userId: String) async  throws{
+        let pedidoRef = Firestore.firestore()
+            .collection("empresas").document(self.companyId)
+            .collection("pedidos").document(orderId)
         
-        if currentStatus == .pending {
-            //  sum capacidad of current products in the grill
-            let inUse = lines
-                .filter{$0.status == .cooking }
-                .reduce(0) { sum, line in
-                    sum + (products[line.productId]?.capacidadUnidad ?? 0) * line.amount
-                }
-            let targetLine = lines.first {$0.id == lineId}
-            let needed = (products[lines.first {$0.id == lineId}?.productId ?? "" ]?.capacidadUnidad ?? 0) * (targetLine?.amount ?? 0)
+        let _ = try await Firestore.firestore().runTransaction { transaction, errorPointer in
+            let snap: DocumentSnapshot
             
-            guard let capacidad = efectiveCapacity else { return}
-            guard inUse  + needed <= capacidad else {
-                throw CookError.fullGrill
+            do{
+                snap = try transaction.getDocument(pedidoRef)
+            } catch let err as NSError {
+                errorPointer?.pointee = err
+                return nil
             }
+            
+            let cocineroActual = snap.data()?["cocineroId"] as? String
+            if cocineroActual == nil {
+                transaction.updateData(["cocineroId":userId], forDocument: pedidoRef)
+            } else if cocineroActual != userId {
+                errorPointer?.pointee = NSError(domain: "CookError", code: 1, userInfo: [NSLocalizedDescriptionKey: "pedido-ya-tomado"])
+                return nil
+            }
+            
+            return nil
         }
+    }
+    
+    func putInGrill(lineId: String, allowOverflow: Bool) async throws {
+        guard let ref = refs[lineId] else { return }
+        var willUseOverflow = false
         
-        let nextStatus: LineStatus = currentStatus == .pending ? .cooking : .pendingDelivery
-        try await ref.updateData(["estado": nextStatus.rawValue])
-        if currentStatus == .pending {
-            try await ref.updateData(["colocadoEn": FieldValue.serverTimestamp()])
-            try await ref.parent.parent?.updateData(["cocineroId": userId])
+        let inUse = lines
+            .filter{$0.status == .cooking }
+            .reduce(0) { sum, line in
+                sum + (products[line.productId]?.capacidadUnidad ?? 0) * line.amount
+            }
+        let targetLine = lines.first {$0.id == lineId}
+        let needed = (products[lines.first {$0.id == lineId}?.productId ?? "" ]?.capacidadUnidad ?? 0) * (targetLine?.amount ?? 0)
+        
+        
+        guard let base = grillCapacity else { return}
+        var capacidad: Int
+        if overflowManualActive || allowOverflow, let pct = overflowPercent {
+            capacidad = Int(Double(base) * (1 + Double(pct) / 100))
+        } else {
+            capacidad = base
         }
+        guard inUse  + needed <= capacidad else {
+            throw CookError.fullGrill
+        }
+        if inUse + needed > base {
+            willUseOverflow = true
+        }
+    
+        let _ = try await Firestore.firestore().runTransaction { transaction, errorPointer in
+            let productId = targetLine?.productId ?? ""
+            let amount = targetLine?.amount ?? 0
+            let productRef = Firestore.firestore()
+                .collection("empresas").document(self.companyId)
+                .collection("productos").document(productId)
+            
+            let productSnap: DocumentSnapshot
+            do {
+                productSnap = try transaction.getDocument(productRef)
+            } catch let err as NSError {
+                errorPointer?.pointee = err
+                return nil
+            }
+            let stockActual = productSnap.data()?["stock"] as? Int ?? 0
+            guard stockActual >= amount else {
+               errorPointer?.pointee = NSError(domain: "CookError", code: 2,
+                   userInfo: [NSLocalizedDescriptionKey: "stock-insuficiente"])
+               return nil
+            }
+            
+            var datosLinea: [String: Any] = [
+                "estado": LineStatus.cooking.rawValue,
+                "colocadoEn": FieldValue.serverTimestamp()
+            ]
+            if willUseOverflow { datosLinea["usandoOverflow"] = true }
+            transaction.updateData(datosLinea, forDocument: ref)
+            transaction.updateData(["stock": stockActual - amount], forDocument: productRef)
+            
+            return nil
+        }
+    }
+    
+    func takeFromGrill(lineId: String) async throws {
+        guard let ref = refs[lineId] else { return }
+        try await ref.updateData([
+            "estado": LineStatus.pendingDelivery.rawValue,
+            "retiradoEn": FieldValue.serverTimestamp()
+        ])
     }
     
     func toggleOverflow(uid: String) async throws {

@@ -42,16 +42,19 @@ struct CookView: View {
                         
                         suggestionCard(result: result, capacity: displayCap, hasPending: !pending.isEmpty) { lines in
                             Task {
-                                for line in lines {
-                                    do {
-                                        try await service.advance(lineId: line.id, currentStatus: .pending, userId: userId)
-                                    } catch CookError.fullGrill {
-                                        showingPlanchaLlena = true
-                                        return
-                                    } catch {}
-                                }
+                                do {
+                                    let porPedido = Dictionary(grouping: lines, by: \.orderId)
+                                    for orderId in porPedido.keys {
+                                        try await service.takeOrder(orderId: orderId, userId: userId)
+                                    }
+
+                                    for line in lines {
+                                        try await service.putInGrill(lineId: line.id, allowOverflow: line.usingOverflow)
+                                    }
+                                } catch CookError.fullGrill {
+                                    showingPlanchaLlena = true
+                                } catch {}
                             }
-                            
                         }
                     }
                 }
@@ -166,7 +169,7 @@ struct CookView: View {
                         Button("Retirar de plancha") {
                             Task {
                                 for line in orderLines {
-                                    try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                                    try? await service.takeFromGrill(lineId: line.id)
                                 }
                             }
                         }
@@ -207,7 +210,7 @@ struct CookView: View {
                     Button("Retirar de plancha") {
                         Task {
                             for line in lines {
-                                try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                                try? await service.takeFromGrill(lineId: line.id)
                             }
                         }
                     }
@@ -231,14 +234,16 @@ struct CookView: View {
             Spacer()
             Button("Tomar pedido") {
                 Task {
-                    for line in lines {
-                        do {
-                            try await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
-                        } catch CookError.fullGrill {
-                            showingPlanchaLlena = true
-                            return
-                        } catch {}
-                    }
+                    do {
+                       if let orderId = lines.first?.orderId {
+                           try await service.takeOrder(orderId: orderId, userId: userId)
+                       }
+                       for line in lines {
+                           try await service.putInGrill(lineId: line.id, allowOverflow: false)
+                       }
+                    } catch CookError.fullGrill {
+                       showingPlanchaLlena = true
+                    } catch {}
                 }
             }
             .buttonStyle(.bordered)
@@ -264,16 +269,16 @@ struct CookView: View {
                 
             }
             if line.status == .pending {
-                HStack {
-                    Spacer()
-                    Text("Esperando")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                    Text(line.createdAt, style: .relative)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+//                HStack {
+//                    Spacer()
+//                    Text("Esperando")
+//                        .font(.caption)
+//                        .fontWeight(.bold)
+//                        .foregroundStyle(.secondary)
+//                    Text(line.createdAt, style: .relative)
+//                        .font(.caption)
+//                        .foregroundStyle(.secondary)
+//                }
             } else {
                 TimelineView(.periodic(from: start, by:1 )) { context in
                     let isDone = cookTime > 0 && context.date >= doneAt
@@ -350,7 +355,7 @@ struct CookView: View {
         .swipeActions {
             Button("Listo") {
                 Task {
-                    try? await service.advance(lineId: line.id, currentStatus: line.status, userId: userId)
+                    try? await service.takeFromGrill(lineId: line.id)
                 }
             }
             .tint(.green)

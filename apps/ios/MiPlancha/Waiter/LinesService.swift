@@ -110,9 +110,10 @@ final class LinesService {
         listenerMesa = nil
     }
     
-    func markDelivered(lineId: String) async throws {
+    func markLineDelivered(lineId: String) async throws {
         guard let ref =  refs[lineId] else { return }
         try await ref.updateData(["estado":LineStatus.ready.rawValue])
+        try await ref.updateData(["listoEn" : FieldValue.serverTimestamp()])
     }
     
     func addOrder(lines: [(productId: String, amount: Int)]) async throws {
@@ -138,6 +139,8 @@ final class LinesService {
                 "productoId": line.productId,
                 "cantidad": line.amount,
                 "estado": LineStatus.pending.rawValue,
+                "subgrupo": 1,
+                "usandoOverflow": false,
                 "mesaNumero": tableNumber,
                 "empresaId": companyId,
                 "pedidoCreadoEn": FieldValue.serverTimestamp()
@@ -206,6 +209,7 @@ final class LinesService {
         for line in toDeliver {
             guard let ref = refs[line.id] else { continue}
             try await ref.updateData(["estado": LineStatus.ready.rawValue])
+            try await ref.updateData(["listoEn" : FieldValue.serverTimestamp()])
         }
     }
 }

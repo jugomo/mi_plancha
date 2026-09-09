@@ -35,7 +35,7 @@ struct TableDetailView: View {
 //                        .swipeActions {
 //                            if line.status == .pedingDelivery {
 //                                Button("Entregado") {
-//                                    Task { try? await service.markDelivered(lineId: line.id) }
+//                                    Task { try? await service.markLineDelivered(lineId: line.id) }
 //                                }
 //                                .tint(.green)
 //                            }

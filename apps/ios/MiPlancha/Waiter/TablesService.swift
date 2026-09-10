@@ -135,31 +135,43 @@ final class TablesService {
     }
     
     func openTable(_ table: Table, clientName: String) async throws {
-        guard let uid = Auth.auth().currentUser?.uid else {return}
-        
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
-        let clientRef = db.collection("empresas").document( companyId)
+        let tableRef = db.collection("empresas").document(companyId)
+            .collection("mesas").document(table.id)
+        let clientRef = db.collection("empresas").document(companyId)
             .collection("clientes").document()
+
+        try await _ = db.runTransaction { trn, errPtr in
+            let tableSnp: DocumentSnapshot
+            do {
+                tableSnp = try trn.getDocument(tableRef)
+            } catch let err as NSError {
+                errPtr?.pointee = err
+                return nil
+            }
+            guard tableSnp.exists, (tableSnp.data()?["estado"] as? String) == "libre" else {
+                errPtr?.pointee = NSError(domain: "TableError", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "mesa-no-libre"])
+                return nil
+            }
+
+            trn.setData([
+                "camareroId": uid,
+                "mesaId": table.id,
+                "nombre": clientName,
+                "abiertoEn": FieldValue.serverTimestamp()
+            ], forDocument: clientRef)
+
+            trn.updateData([
+                "estado": "ocupada",
+                "clienteId": clientRef.documentID
+            ], forDocument: tableRef)
+
+            return nil
+        }
         
-        try await clientRef.setData([
-            "camareroId": uid,
-            "mesaId": table.id,
-            "nombre": clientName,
-            "abiertoEn": FieldValue.serverTimestamp()
-        ])
         
-        try await db.collection("empresas").document(companyId)
-            .collection("mesas").document(table.id)
-            .updateData(["estado": "ocupada", "clienteId": clientRef.documentID])
-        
-        
-    }
-    
-    func closeTable(_ table: Table) async throws {
-        try await Firestore.firestore()
-            .collection("empresas").document(companyId)
-            .collection("mesas").document(table.id)
-            .updateData(["estado": "libre", "clienteId": NSNull()])
     }
     
     func deliverAllPending(tableNumber: Int) async throws {

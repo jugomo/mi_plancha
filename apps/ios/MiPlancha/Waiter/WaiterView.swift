@@ -15,6 +15,7 @@ struct WaiterView: View {
     @State private var clientName = ""
     @State private var linesService = LinesService()
     @State private var tableForCuenta: Table? = nil
+    @State private var errorMessage: String?
     
     var body: some View {
         ScrollView {
@@ -53,6 +54,12 @@ struct WaiterView: View {
             service.stopListening()
         }
          .navigationTitle("Mesas")
+         .alert(errorMessage ?? "", isPresented: Binding(
+             get: { errorMessage != nil },
+             set: { if !$0 { errorMessage = nil } }
+             )) {
+                 Button("OK") { errorMessage = nil }
+         }
          .alert("Nombre del cliente", isPresented: Binding(
             get: { tableToOpen != nil },
             set: { if !$0 { tableToOpen = nil } }
@@ -61,7 +68,13 @@ struct WaiterView: View {
              Button("Abrir") {
                  if let t = tableToOpen {
                      let name = clientName
-                     Task { try? await service.openTable(t, clientName: name) }
+                     Task {
+                         do {
+                             try await service.openTable(t, clientName: name)
+                         } catch {
+                             errorMessage = "Error al abrir la mesa: \(error.localizedDescription)"
+                         }
+                     }
                  }
                  tableToOpen = nil
                  clientName = ""

@@ -15,6 +15,7 @@ struct TableDetailView: View {
     @State private var showingOpenAlert = false
     @State private var clientName = ""
     @State private var showingCuenta = false
+    @State private var errorMessage: String?
     
     var body: some View {
         List {
@@ -74,7 +75,14 @@ struct TableDetailView: View {
             Button("Abrir") {
                 let name = clientName
                 clientName = ""
-                Task { try? await service.openTable(tableId: table.id, clientName: name) }
+                Task {
+                    do {
+                        try await service.openTable(tableId: table.id, clientName: name)
+                    } catch {
+                        errorMessage = "Error al abrir la mesa: \(error.localizedDescription)"
+                    }
+                }
+                    
             }
             Button("Cancelar", role: .cancel) { clientName = "" }
         }
@@ -103,6 +111,12 @@ struct TableDetailView: View {
         .sheet(isPresented: $showingCuenta, content: {
             CuentaView(tableId: table.id, service: service)
         })
+        .alert(errorMessage ?? "", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+            )) {
+                Button("OK") { errorMessage = nil }
+        }
     }
     
 }

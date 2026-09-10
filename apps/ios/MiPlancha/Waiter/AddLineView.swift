@@ -76,10 +76,12 @@ struct AddLineView: View {
                     Button("Cancelar") { dismiss() }
                 }
                 
-            }.alert(errorMessage ?? "", isPresented: Binding(
+            }
+            .alert(errorMessage ?? "", isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { if !$0 { errorMessage = nil } }
                 )) {
+                    Button("OK") { errorMessage = nil }
             }
         }
     }

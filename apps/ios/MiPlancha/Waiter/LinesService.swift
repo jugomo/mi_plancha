@@ -167,23 +167,43 @@ final class LinesService {
         }
     }
     
-    func openTable(tableId: String, clientName: String) async throws {
+    func openTable(tableId: String, clientName : String) async throws {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
-        let clientRef = db.collection("empresas").document(companyId)
-            .collection("clientes").document()
-        try await clientRef.setData(["camareroId": uid, "mesaId": tableId,
-                                     "nombre": clientName, "abiertoEn": FieldValue.serverTimestamp()])
-        try await db.collection("empresas").document(companyId)
-            .collection("mesas").document(tableId)
-            .updateData(["estado": "ocupada", "clienteId": clientRef.documentID])
-    }
-    
-    func closeTable(tableId: String) async throws {
-        try await Firestore.firestore()
+        let tableRef = db
             .collection("empresas").document(companyId)
             .collection("mesas").document(tableId)
-            .updateData(["estado": "libre", "clienteId": NSNull()])
+        let clientRef = db
+            .collection("empresas").document(companyId)
+            .collection("clientes").document()
+        
+        try await _ = db.runTransaction { trn, errPtr in
+            let tableSnp: DocumentSnapshot
+            do {
+                tableSnp = try trn.getDocument(tableRef)
+            } catch let err as NSError {
+                errPtr?.pointee = err
+                return nil
+            }
+            guard tableSnp.exists, (tableSnp.data()?["estado"] as? String) == "libre" else {
+                errPtr?.pointee = NSError(domain: "TableError", code: 1, userInfo: [NSLocalizedDescriptionKey: "mesa-no-libre"])
+                return nil
+            }
+            
+            trn.setData([
+                "camareroId" : uid,
+                "mesaId" : tableId,
+                "nombre" : clientName,
+                "abiertoEn" : FieldValue.serverTimestamp()
+            ], forDocument: clientRef)
+            
+            trn.updateData([
+                "estado" : "ocupada",
+                "clienteId" : clientRef.documentID
+            ], forDocument: tableRef)
+            
+            return nil
+        }
     }
     
     func fetchBillLines() async{
@@ -220,6 +240,103 @@ final class LinesService {
             return OrderLine(id: doc.documentID, amount: amount, status: status, productId: productId, tableNumber: tableNumber, orderId: orderId, createdAt: createdAt)
         }
         
+    }
+    
+    private func linesForBill() -> (lineas: [[String:Any]], total: Double) {
+        var total = 0.0
+        let lineas : [[String : Any ]] = billLines.map { line in
+            let precioUnidad = products[line.productId]?.price ?? 0
+            let subtotal = precioUnidad * Double(line.amount)
+            total += subtotal
+            return [
+                "pedidoId" : line.orderId,
+                "productoNombre" : products[line.productId]?.name ?? line.productId,
+                "cantidad" : line.amount,
+                "precioUnidad" : precioUnidad,
+                "subtotal" : subtotal
+            ]
+        }
+        return (lineas, total)
+    }
+    
+    func generateBill(tableId: String) async throws {
+        guard let clientId = clientId, let uid = Auth.auth().currentUser?.uid else  { return }
+        let clientRef = Firestore.firestore()
+            .collection("empresas").document(companyId)
+            .collection("clientes").document(clientId)
+        let tableRef = Firestore.firestore()
+            .collection("empresas").document(companyId)
+            .collection("mesas").document(tableId)
+        
+        if billLines.isEmpty {
+            try await _ = Firestore.firestore().runTransaction { transaction, errorPtr in
+                let snap : DocumentSnapshot
+                do {
+                    snap = try transaction.getDocument(clientRef)
+                } catch let err as NSError {
+                    errorPtr?.pointee = err
+                    return nil
+                }
+                guard snap.exists else {
+                    errorPtr?.pointee = NSError(domain: "CuentaError", code: 1, userInfo: [NSLocalizedDescriptionKey: "cliente-ya-cerrado"])
+                    return nil
+                    
+                }
+                transaction.deleteDocument(clientRef)
+                transaction.updateData([
+                    "estado" : "libre",
+                    "clienteId": NSNull()
+                ], forDocument: tableRef)
+                return nil
+            }
+            return
+        }
+        
+        let (lines, total) = linesForBill()
+        let orderIds = Array(Set(billLines.map(\.orderId)))
+        let cuentaRef = Firestore.firestore()
+            .collection("empresas").document(companyId)
+            .collection("cuentas").document()
+        
+        try await _ = Firestore.firestore().runTransaction { trans, errPtr in
+            let snapshot: DocumentSnapshot
+            do {
+                snapshot = try trans.getDocument(clientRef)
+            } catch let err as NSError {
+                errPtr?.pointee = err
+                return nil
+            }
+            guard snapshot.exists else {
+                errPtr?.pointee = NSError(domain: "CuentaError", code: 1, userInfo: [NSLocalizedDescriptionKey: "cliente-ya-cerrado"])
+                return nil
+            }
+            trans.setData([
+                "mesaNumero" : self.tableNumber,
+                "clienteNombre" : self.clientName ?? "",
+                "camareroId" : uid,
+                "pedidoIds" : orderIds,
+                "lineas" : lines,
+                "total" : total,
+                "generadaEn" : FieldValue.serverTimestamp()
+            ], forDocument: cuentaRef)
+            
+            for pedidoId in orderIds {
+                let pedidoRef = Firestore.firestore()
+                    .collection("empresas").document(self.companyId)
+                    .collection("pedidos").document(pedidoId)
+                trans.updateData([
+                    "cuentaId" : cuentaRef.documentID
+                ], forDocument: pedidoRef)
+            }
+            
+            trans.deleteDocument(clientRef)
+            trans.updateData([
+                "estado" : "libre",
+                "clienteId" : NSNull()
+            ], forDocument: tableRef)
+            
+            return nil
+        }
     }
     
     func markOrderDelivered(orderId: String) async throws {

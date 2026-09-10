@@ -44,7 +44,7 @@ struct CuentaView : View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Cobrar y cerrar") {
                         Task {
-                            try? await service.closeTable(tableId: tableId)
+                            try? await service.generateBill(tableId: tableId)
                             dismiss()
                         }
                     }

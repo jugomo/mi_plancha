@@ -24,6 +24,7 @@ final class LinesService {
      var clientId: String?
      var clientName: String?
     private(set) var tableOpenedAt: Date?
+    private(set) var grillCapacity: Int?
     
     var orders: [Order] {
         Dictionary(grouping: lines, by: \.orderId)
@@ -35,6 +36,14 @@ final class LinesService {
         self.tableNumber = tableNumber
         
         Task { self.products = await fetchProducts(companyId: companyId)}
+        
+        Task {
+            let snapshot = try? await Firestore.firestore()
+                .collection("empresas").document(companyId)
+                .collection("config").document("plancha")
+                .getDocument()
+            self.grillCapacity = snapshot?.data()?["capacidadTotal"] as? Int
+        }
         
         listenerLine = Firestore.firestore()
             .collectionGroup("lineas")
@@ -117,6 +126,16 @@ final class LinesService {
     }
     
     func addOrder(lines: [(productId: String, amount: Int)]) async throws {
+        if let capacity = grillCapacity {
+            for line in lines {
+                let needed = (products[line.productId]?.capacidadUnidad ?? 0) * line.amount
+                if needed > capacity {
+                    let name = products[line.productId]?.name ?? line.productId
+                    throw LinesError.lineExceeedsGrillCapacity(productName: name)
+                }
+            }
+        }
+        
         let pedidoRef = Firestore.firestore()
             .collection("empresas").document(companyId)
             .collection("pedidos").document()
@@ -212,4 +231,8 @@ final class LinesService {
             try await ref.updateData(["listoEn" : FieldValue.serverTimestamp()])
         }
     }
+}
+
+enum LinesError: Error {
+    case lineExceeedsGrillCapacity(productName: String)
 }

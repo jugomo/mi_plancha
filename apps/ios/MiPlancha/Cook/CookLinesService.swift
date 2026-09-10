@@ -138,11 +138,24 @@ final class CookLinesService {
         guard let ref = refs[lineId] else { return }
         var willUseOverflow = false
         
-        let inUse = lines
-            .filter{$0.status == .cooking }
-            .reduce(0) { sum, line in
-                sum + (products[line.productId]?.capacidadUnidad ?? 0) * line.amount
-            }
+//        let inUse = lines
+//            .filter{$0.status == .cooking }
+//            .reduce(0) { sum, line in
+//                sum + (products[line.productId]?.capacidadUnidad ?? 0) * line.amount
+//            }
+        let cookingSnap = try await Firestore.firestore()
+            .collectionGroup("lineas")
+            .whereField("empresaId", isEqualTo: companyId)
+            .whereField("estado", isEqualTo: LineStatus.cooking.rawValue)
+            .getDocuments()
+        
+        let inUse = cookingSnap.documents.reduce(0) { sum, doc in
+            let data = doc.data()
+            let productId = data["productoId"] as? String ?? ""
+            let amount = data["cantidad"] as? Int ?? 0
+            return sum + (products[productId]?.capacidadUnidad ?? 0) * amount
+        }
+        
         let targetLine = lines.first {$0.id == lineId}
         let needed = (products[lines.first {$0.id == lineId}?.productId ?? "" ]?.capacidadUnidad ?? 0) * (targetLine?.amount ?? 0)
         

@@ -11,11 +11,20 @@ struct AddLineView: View {
     @State private var amount = 1
     @Environment(\.dismiss) private var  dismiss
     @State private var quantities: [String : Int] = [:]
+    @State private var errorMessage: String?
 
     private var available: [(key: String, value: ProductInfo)] {
         service.products
             .filter { $0.value.stock > 0 }
             .sorted { $0.value.name < $1.value.name }
+    }
+    
+    private var overCapacityProduct: String? {
+        guard let capacity = service.grillCapacity else { return nil}
+        return quantities.first { entry in
+            let needed = (service.products[entry.key]?.capacidadUnidad ?? 0 ) * entry.value
+            return needed > capacity
+        }.flatMap  { service.products[$0.key]?.name }
     }
     
     var body: some View {
@@ -36,6 +45,10 @@ struct AddLineView: View {
                         ),
                         in: 0...item.value.stock
                     )
+                    if overCapacityProduct == item.value.name {
+                        Text("Supera la capacidad de la parrilla")
+                            .font(.caption).foregroundStyle(.red)
+                    }
                 }
             }
             .navigationTitle("Nuevo pedido")
@@ -46,17 +59,27 @@ struct AddLineView: View {
                             .filter { $0.value > 0 }
                             .map {(productId: $0.key, amount: $0.value)}
                         Task{
-                            try? await service.addOrder(lines: lines)
-                            dismiss()
+                            do {
+                                try await service.addOrder(lines: lines)
+                                dismiss()
+                            } catch LinesError.lineExceeedsGrillCapacity(let name) {
+                                errorMessage = "\(name) no cabe en la plancha"
+                            } catch {
+                                errorMessage = "Error al crear el pedido"
+                            }
                         }
                     }
-                    .disabled(!quantities.values.contains {$0 > 0})
+                    .disabled(!quantities.values.contains { $0 > 0} || overCapacityProduct != nil)
                 }
                 
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
                 }
                 
+            }.alert(errorMessage ?? "", isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+                )) {
             }
         }
     }

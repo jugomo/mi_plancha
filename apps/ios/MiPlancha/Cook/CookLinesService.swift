@@ -38,17 +38,31 @@ final class CookLinesService {
         self.companyId = companyId
         
         Task {
-            let snap = try? await Firestore.firestore()
+            let snapPlancha = try? await Firestore.firestore()
                 .collection("empresas").document(companyId)
                 .collection("config").document("plancha")
                 .getDocument()
-            
-            self.grillCapacity = snap?.data()?["capacidadTotal"] as? Int
-            self.maxWaitSeconds = snap?.data()?["tiempoMaximoEspera"] as? Int ?? 900
-            self.thresoldDivision = snap?.data()?["umbralDivision"] as? Int ?? 8
-            self.subgroupSize = snap?.data()?["tamañoSubgrupo"] as? Int ?? 4
+            self.grillCapacity = snapPlancha?.data()?["capacidadTotal"] as? Int
+        }
+        
+        Task {
+            let snapDivision = try? await Firestore.firestore()
+                .collection("empresas").document(companyId)
+                .collection("config").document("division")
+                .getDocument()
+            self.thresoldDivision = snapDivision?.data()?["umbral"] as? Int ?? 8
+            self.subgroupSize = snapDivision?.data()?["tamanoSubgrupo"] as? Int ?? 4
         }
 
+        Task {
+            let snapAntiinanicion = try? await Firestore.firestore()
+                .collection("empresas").document(companyId)
+                .collection("config").document("antiInanicion")
+                .getDocument()
+            let minutos  = snapAntiinanicion?.data()?["tiempoMaximoEsperaMin"] as? Int ?? 15
+            self.maxWaitSeconds = minutos * 60
+        }
+        
         Task {
             self.products = await fetchProducts(companyId: companyId)
         }

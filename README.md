@@ -40,3 +40,7 @@ Note: per-client Firebase config files (`google-services.json`, `GoogleService-I
 ## Resuming work
 
 This project is carried out in work sessions with Claude Code. If you're picking it back up after a while (with or without memory of the previous conversation), the starting point is always **`PROGRESS.md`**.
+
+## Ownership & contributing
+
+This project was created by [@jugomo](https://github.com/jugomo) and is licensed under the [MIT License](./LICENSE). Anyone is welcome to use this software at their own risk, copy or fork it as long as the original author is credited, and contribute back, whether that's opening a pull request or simply suggesting improvements via an issue. No warranty is provided.

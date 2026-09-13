@@ -40,3 +40,7 @@ Nota: los archivos de configuración de Firebase por cliente (`google-services.j
 ## Retomar el trabajo
 
 Este proyecto se lleva por sesiones de trabajo con Claude Code. Si retomas después de un tiempo (con o sin memoria de la conversación anterior), el punto de partida es siempre **`PROGRESS.md`**.
+
+## Titularidad y contribuciones
+
+Este proyecto fue creado por [@jugomo](https://github.com/jugomo) y está licenciado bajo la [Licencia MIT](./LICENSE). Cualquier persona puede usar este software bajo su propio riesgo, copiarlo o bifurcarlo (fork) siempre que se acredite al autor original, y contribuir de vuelta, ya sea abriendo un pull request o simplemente sugiriendo mejoras mediante un issue. No se ofrece garantía alguna.

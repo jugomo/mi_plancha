@@ -56,6 +56,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.11.2")
     testImplementation("junit:junit:4.13.2")

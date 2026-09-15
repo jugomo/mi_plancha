@@ -1,6 +1,5 @@
 package com.jugomo.miplancha
 
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -9,10 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
-class AuthService(
-//    val user: Usuario?,
-//    val isRestoringSession: Boolean
-) {
+class AuthService() {
     private var _mutableUser : MutableStateFlow<Usuario?>
     private var _mutableIsRestoring : MutableStateFlow<Boolean>
 
@@ -29,31 +25,47 @@ class AuthService(
 
     suspend fun startSession(companyId: String, username: String, password: String) {
         val syntheticEmail = UsernameEmail.syntheticEmail(companyId, username)
-        val res: AuthResult = FirebaseAuth.getInstance()
-            .signInWithEmailAndPassword(syntheticEmail, password).await()
+        val res: AuthResult
+
+        try {
+            res = FirebaseAuth.getInstance()
+                .signInWithEmailAndPassword(syntheticEmail, password).await()
+
+        } catch (e: Exception) {
+            throw AuthError()
+        }
 
         val uid = res.user?.uid
         if (uid != null) {
             _mutableUser.value = getUser(uid)
-
         }
-
     }
 
-    fun restaurarSesionSiHayUsuarioActivo() {
-
+    suspend fun restoreSessionIfActiveUser() {
+        val currUser =  FirebaseAuth.getInstance().currentUser
+        if(currUser != null) {
+            _mutableUser.value  = getUser(currUser.uid)
+        }
+        _mutableIsRestoring.value = false
     }
 
-    fun closeSession() {
-
+     fun closeSession() {
+        FirebaseAuth.getInstance().signOut()
+        _mutableUser.value = null
     }
 
-    private suspend fun getUser(uid: String): Usuario? {
+    private suspend fun getUser(uid: String): Usuario {
         val userSnapshot = FirebaseFirestore.getInstance()
             .collection("usuarios")
             .document(uid).get().await();
 
-        val user = userSnapshot.toObject(Usuario::class.java)
-        return user;
+        val user = userSnapshot.toUsuario(
+            uid = uid
+        )
+
+        return user
     }
+}
+
+class AuthError() : Exception("Auth Exception") {
 }

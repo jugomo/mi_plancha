@@ -31,22 +31,26 @@ class AuthService() {
             res = FirebaseAuth.getInstance()
                 .signInWithEmailAndPassword(syntheticEmail, password).await()
 
+            val uid = res.user?.uid
+            if (uid != null) {
+                _mutableUser.value = getUser(uid)
+            }
         } catch (e: Exception) {
             throw AuthError()
-        }
-
-        val uid = res.user?.uid
-        if (uid != null) {
-            _mutableUser.value = getUser(uid)
         }
     }
 
     suspend fun restoreSessionIfActiveUser() {
+        _mutableIsRestoring.value = false
+
         val currUser =  FirebaseAuth.getInstance().currentUser
         if(currUser != null) {
-            _mutableUser.value  = getUser(currUser.uid)
+            try {
+                _mutableUser.value  = getUser(currUser.uid)
+            } catch (e: Exception) {
+                throw AuthError()
+            }
         }
-        _mutableIsRestoring.value = false
     }
 
      fun closeSession() {

@@ -50,8 +50,16 @@ fun MiPlanchaPlaceholder() {
                             authService.startSession(   companyId,username,password)
                         }
                     )
-                } else {
+                } else if(usuario!!.rol == Rol.COCINERO) {
                     CookScreen(
+                        companyId = usuario!!.empresaId!!,
+                        onLogout = {
+                            authService.closeSession()
+                        }
+                    )
+                } else if(usuario!!.rol == Rol.CAMARERO) {
+                    WaiterScreen(
+                        companyId = usuario!!.empresaId!!,
                         onLogout = {
                             authService.closeSession()
                         }

@@ -8,11 +8,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun CookScreen(onLogout: suspend () -> Unit) {
+fun CookScreen(
+    companyId: String,
+    onLogout: suspend () -> Unit
+) {
     val scope = rememberCoroutineScope()
 
     Column {
-        Text("hello world")
+        Text("Cocinero")
 
         Button(
             onClick = {

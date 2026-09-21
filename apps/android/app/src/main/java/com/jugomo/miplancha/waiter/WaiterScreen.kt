@@ -26,10 +26,11 @@ fun WaiterScreen(
 
             mesas?.map { mesa ->
                 if(mesa.clienteId != null) {
-                    val client = tablesService.startListeningClient(companyId, mesa.clienteId!!).collect { clientes ->
-                        Log.e("MESAS", "***CLIENTES*****************************")
-                        Log.e("CLIENTE", clientes.toString())
-                    }
+                    val client = tablesService.cacheClient( mesa)
+                    Log.e("MESAS", "***CLIENTE: " + mesa.clienteId!! + "*****************************")
+                    Log.e("CLIENTE", client.toString())
+
+                    Log.e("CLIENTS", "*** CLIENTS " + tablesService.clientsCache.toString() + "************************")
                 }
 
             }

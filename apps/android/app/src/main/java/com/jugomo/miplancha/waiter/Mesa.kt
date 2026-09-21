@@ -3,6 +3,7 @@ package com.jugomo.miplancha.waiter
 import com.google.firebase.firestore.DocumentSnapshot
 
 data class Mesa(
+    var id: String,
     var numero: Int,
     var estado: TableStatus,
     var clienteId: String?
@@ -10,6 +11,7 @@ data class Mesa(
 }
 
 fun DocumentSnapshot.toMesa() : Mesa  = Mesa(
+    id = id,
     numero = getLong("numero")?.toInt() ?: 0,
     estado = TableStatus.valueOf((getString("estado") ?: "").uppercase()),
     clienteId = getString("clienteId")

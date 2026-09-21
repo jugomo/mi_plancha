@@ -1,6 +1,5 @@
-package com.jugomo.miplancha
+package com.jugomo.miplancha.auth
 
-import android.R.attr.enabled
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions

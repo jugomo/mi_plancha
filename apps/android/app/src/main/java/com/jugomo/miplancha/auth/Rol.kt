@@ -1,4 +1,4 @@
-package com.jugomo.miplancha
+package com.jugomo.miplancha.auth
 
 enum class Rol() {
     COCINERO,

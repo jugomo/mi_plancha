@@ -1,5 +1,6 @@
 package com.jugomo.miplancha
 
+import com.jugomo.miplancha.auth.UsernameEmail
 import org.junit.Assert.*
 import org.junit.Test
 

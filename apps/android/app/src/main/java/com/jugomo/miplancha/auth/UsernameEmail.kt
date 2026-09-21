@@ -1,4 +1,4 @@
-package com.jugomo.miplancha
+package com.jugomo.miplancha.auth
 
 object UsernameEmail {
 

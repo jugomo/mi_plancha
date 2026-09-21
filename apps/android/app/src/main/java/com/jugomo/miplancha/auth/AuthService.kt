@@ -1,4 +1,4 @@
-package com.jugomo.miplancha
+package com.jugomo.miplancha.auth
 
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth

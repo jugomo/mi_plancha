@@ -1,4 +1,4 @@
-package com.jugomo.miplancha
+package com.jugomo.miplancha.waiter
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot

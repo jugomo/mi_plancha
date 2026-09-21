@@ -1,4 +1,4 @@
-package com.jugomo.miplancha
+package com.jugomo.miplancha.cook
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -9,23 +9,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CookScreen(
-    companyId: String,
-    onLogout: suspend () -> Unit
+    companyId: String
 ) {
     val scope = rememberCoroutineScope()
 
     Column {
         Text("Cocinero")
 
-        Button(
-            onClick = {
-                scope.launch {
-                    onLogout()
-                }
-            }
-        ) {
-            Text("logut")
-        }
     }
 
 }

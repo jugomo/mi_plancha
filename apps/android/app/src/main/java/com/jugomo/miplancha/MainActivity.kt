@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -16,6 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.jugomo.miplancha.auth.AuthService
+import com.jugomo.miplancha.auth.LoginScreen
+import com.jugomo.miplancha.auth.Rol
+import com.jugomo.miplancha.auth.Usuario
+import com.jugomo.miplancha.cook.CookScreen
+import com.jugomo.miplancha.shared.RoleContainer
+import com.jugomo.miplancha.waiter.WaiterScreen
 
 /**
  * Placeholder de arranque. Sin lógica de negocio todavía: solo confirma que
@@ -46,24 +52,33 @@ fun MiPlanchaPlaceholder() {
                 if(usuario == null) {
                     LoginScreen(
                         onLogin = { companyId, username, password ->
-                            println("Login: $companyId, $username, $password")
-                            authService.startSession(   companyId,username,password)
+                            authService.startSession(companyId, username, password)
                         }
                     )
-                } else if(usuario!!.rol == Rol.COCINERO) {
-                    CookScreen(
-                        companyId = usuario!!.empresaId!!,
-                        onLogout = {
-                            authService.closeSession()
+                } else {
+                    if(usuario!!.rol == Rol.COCINERO) {
+                        RoleContainer(
+                            usuario = usuario!!,
+                            onLogout =  {
+                                authService.closeSession()
+                            }
+                        ){
+                            CookScreen(
+                                companyId = usuario!!.empresaId!!,
+                            )
                         }
-                    )
-                } else if(usuario!!.rol == Rol.CAMARERO) {
-                    WaiterScreen(
-                        companyId = usuario!!.empresaId!!,
-                        onLogout = {
-                            authService.closeSession()
+                    } else if(usuario!!.rol == Rol.CAMARERO) {
+                        RoleContainer (
+                            usuario = usuario!!,
+                            onLogout = {
+                                authService.closeSession()
+                            }
+                        ) {
+                            WaiterScreen(
+                                companyId = usuario!!.empresaId!!
+                            )
                         }
-                    )
+                    }
                 }
             }
         }

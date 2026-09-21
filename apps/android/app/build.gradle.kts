@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.jugomo.miplancha"
-    compileSdk = 36
+    compileSdk = 37
     buildToolsVersion = "36.0.0"
 
     defaultConfig {

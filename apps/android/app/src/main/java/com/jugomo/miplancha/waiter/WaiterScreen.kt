@@ -78,7 +78,6 @@ fun WaiterScreen(
 
     if (tables != null) {
         Content(tables!!,
-                ordersByTable,
                 tablesService
         )
     }
@@ -86,7 +85,6 @@ fun WaiterScreen(
 
 @Composable
 fun Content(mesas : List<Mesa>,
-            orders : Map<Int, List<LineStatus>>?,
             tablesService: TablesService
 ) {
     val scope = rememberCoroutineScope()
@@ -114,8 +112,15 @@ fun Content(mesas : List<Mesa>,
 
                 TableCard(
                     mesa = mesa,
-                    orderStatus =  worstStatus(orders?.get(mesa.numero)),
+
+                    orderSummary = tablesService.orderSummary(
+                        mesa = mesa,
+                        tableOrderInfo = tablesService.tableOrderInfo,
+                        tablesAllDelivered = tablesService.tablesAllDelivered,
+                        clientSatAt = tablesService.clientsCache[mesa.clienteId]?.abiertoEn,
+                    ),
                     clientName = clName?.value?.nombre
+
                 )
             }
         }

@@ -1,6 +1,5 @@
 package com.jugomo.miplancha.waiter
 
-import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -9,6 +8,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,11 +21,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.Timestamp
+import com.jugomo.miplancha.shared.timeLapsed
+import kotlinx.coroutines.delay
 
 @Composable
 fun TableCard(
     mesa: Mesa,
-    orderStatus: LineStatus?,
+    orderSummary: TableOrderSummary?,
     clientName: String?
 ) {
     Box(
@@ -35,22 +42,32 @@ fun TableCard(
                 shape = RoundedCornerShape(16.dp)
             )
             .let { modifier ->
-                when(orderStatus) {
-
-                }
-                if(mesa.estado != TableStatus.LIBRE) {
-                    modifier.background(Color.Green)
-                } else {
-                    modifier
+                when (orderSummary?.worstStatus) {
+                    LineStatus.PENDIENTE_ENTREGA ->
+                        modifier.background(Color(0xFFE65100).copy(alpha = 0.85f))
+                    LineStatus.PENDIENTE ->
+                        if (orderSummary.displayLabel != null)
+                            modifier.background(Color(0xFFE65100).copy(alpha =
+                                0.75f))
+                        else
+                            modifier.background(Color(0xFFE65100).copy(alpha =
+                                0.35f))
+                    LineStatus.EN_PLANCHA ->
+                        modifier.background(Color(0xFFE65100).copy(alpha = 0.35f))
+                    LineStatus.LISTO, null -> if (mesa.estado ==
+                        TableStatus.OCUPADA) modifier.background(Color(0xFF2E7D32))
+                    else modifier
                 }
             },
     ) {
-        Column() {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 mesa.numero.toString(),
                 textAlign = TextAlign.Center,
-                color = Color.LightGray,
-                fontSize = 24.sp,
+                color = if(mesa.estado == TableStatus.OCUPADA) Color.Black else Color.Gray,
+                fontSize = 50.sp,
                 fontWeight = FontWeight.Bold
             )
             if (mesa.estado == TableStatus.LIBRE) {
@@ -62,9 +79,30 @@ fun TableCard(
             if (clientName != null && mesa.estado != TableStatus.LIBRE) {
                 Text(clientName)
             }
-            if(orderStatus != null) {
-                Text(orderStatus.label)
+            if(orderSummary?.displayLabel != null) {
+                Text(orderSummary.displayLabel!!)
+            } else {
+                // TODO estados nosmales
+                Text(orderSummary?.worstStatus?.label ?: "")
+
+            }
+            if(orderSummary?.lastUpdate != null) {
+                TiempoTranscurrido(orderSummary.lastUpdate)
+//                Text(orderSummary.lastUpdate.timeLapsed(Timestamp.now().seconds * 1000))
             }
         }
     }
+}
+
+@Composable
+fun TiempoTranscurrido(desde: Timestamp) {
+    var ahora by remember { mutableStateOf(System.currentTimeMillis()) }
+
+    LaunchedEffect(desde) {
+        while (true) {
+            ahora = System.currentTimeMillis()
+            delay(1000)
+        }
+    }
+    Text(desde.timeLapsed(ahora))
 }

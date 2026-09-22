@@ -119,6 +119,34 @@ class TablesService {
         }
     }
 
+    fun orderSummary(
+        mesa: Mesa,
+        tableOrderInfo : Map<Int, TableOrderSummary>,
+        tablesAllDelivered: Map<Int, Timestamp>,
+        clientSatAt: Timestamp?
+    ) : TableOrderSummary?{
+        tableOrderInfo[mesa.numero]?.let { return it }
+
+        tablesAllDelivered[mesa.numero]?.let {
+            return TableOrderSummary(
+                worstStatus = LineStatus.LISTO,
+                lastUpdate = it,
+                displayLabel = null
+            )
+        }
+
+        if(clientSatAt != null) {
+            return TableOrderSummary(
+                worstStatus = LineStatus.PENDIENTE,
+                lastUpdate = clientSatAt,
+                displayLabel = "Esperando camarero"
+            )
+        }
+
+        return null
+    }
+
+
     suspend fun getClient(clientId: String): Cliente? {
         val docRef = db.collection("empresas")
             .document(companyId)

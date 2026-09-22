@@ -2,6 +2,7 @@ package com.jugomo.miplancha.waiter
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -29,11 +30,13 @@ import kotlinx.coroutines.delay
 fun TableCard(
     mesa: Mesa,
     orderSummary: TableOrderSummary?,
-    clientName: String?
+    clientName: String?,
+    onCLick: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
+            .clickable(enabled = mesa.estado == TableStatus.LIBRE, onClick = onCLick)
             .clip(RoundedCornerShape(16.dp))
             .height(200.dp)
             .border(

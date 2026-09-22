@@ -75,7 +75,8 @@ fun MiPlanchaPlaceholder() {
                             }
                         ) {
                             WaiterScreen(
-                                companyId = usuario!!.empresaId!!
+                                companyId = usuario!!.empresaId!!,
+                                waiterId = usuario!!.uid
                             )
                         }
                     }

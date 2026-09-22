@@ -6,9 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 
 class TablesService {
 
@@ -98,6 +97,41 @@ class TablesService {
         }
     }
 
+    suspend fun openTable(mesa: Mesa, waiterId: String, clientName: String) {
+        val tableRef = db.collection("empresas")
+            .document(companyId)
+            .collection("mesas")
+            .document(mesa.id)
+        val clientRef = db.collection("empresas")
+            .document(companyId)
+            .collection("clientes")
+            .document()
+
+        val docRef = db.runTransaction { trn ->
+            val tableSnp = trn.get(tableRef)
+            if(tableSnp.exists() && tableSnp.data!!["estado"] == "libre") {
+                trn.set(
+                    clientRef,
+                    mapOf(
+                        "mesaId" to mesa.id,
+                        "nombre" to clientName,
+                        "camareroId" to waiterId,
+                        "abiertoEn" to FieldValue.serverTimestamp()
+                    )
+                )
+                trn.update(
+                    tableRef,
+                    mapOf(
+                        "estado" to "ocupada",
+                        "clienteId" to clientRef.id
+                    )
+                )
+            } else {
+                throw MesaOcupadaError(msg = "no se pudo abrir la mesa")
+            }
+        }.await()
+    }
+
     suspend fun backfillDeliveredIfNeeded(tableNumber: Int, clientSatAt: Timestamp?) {
         val snap = db.collectionGroup("lineas")
             .whereEqualTo("empresaId", companyId)
@@ -169,4 +203,7 @@ class TablesService {
     fun cleanCacheClient(mesas: List<Mesa>) {
         clientsCache.keys.retainAll(mesas.mapNotNull { it.clienteId }.toSet())
     }
+}
+
+class MesaOcupadaError(msg: String) : Exception(msg) {
 }

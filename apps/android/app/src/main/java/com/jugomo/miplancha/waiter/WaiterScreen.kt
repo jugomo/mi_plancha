@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +32,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun WaiterScreen(
-    companyId: String
+    companyId: String,
+    waiterId: String
 ) {
 
     // reactive states
@@ -78,16 +82,21 @@ fun WaiterScreen(
 
     if (tables != null) {
         Content(tables!!,
-                tablesService
+                tablesService,
+                waiterId
         )
     }
 }
 
 @Composable
 fun Content(mesas : List<Mesa>,
-            tablesService: TablesService
+            tablesService: TablesService,
+            waiterId: String
 ) {
     val scope = rememberCoroutineScope()
+    var mesaParaAbrir by remember { mutableStateOf<Mesa?>(null) }
+    var nombreCliente by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
 
     Column(
         Modifier.padding(16.dp),
@@ -112,17 +121,69 @@ fun Content(mesas : List<Mesa>,
 
                 TableCard(
                     mesa = mesa,
-
                     orderSummary = tablesService.orderSummary(
                         mesa = mesa,
                         tableOrderInfo = tablesService.tableOrderInfo,
                         tablesAllDelivered = tablesService.tablesAllDelivered,
                         clientSatAt = tablesService.clientsCache[mesa.clienteId]?.abiertoEn,
                     ),
-                    clientName = clName?.value?.nombre
-
+                    clientName = clName?.value?.nombre,
+                    onCLick = {
+                        mesaParaAbrir = mesa
+                    }
                 )
             }
         }
+    }
+
+    val mesa = mesaParaAbrir
+    if (mesa != null) {
+        AlertDialog(
+            onDismissRequest = { mesaParaAbrir = null; nombreCliente = "" },
+            title = { Text("Abrir mesa ${mesa.numero}") },
+            text = {
+                TextField(
+                    value = nombreCliente,
+                    onValueChange = { nombreCliente = it },
+                    label = { Text("Nombre del cliente") }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = nombreCliente.isNotBlank(),
+                    onClick = {
+                        val nombre = nombreCliente
+                        scope.launch {
+                            try {
+                                tablesService.openTable(mesa, waiterId, nombre)
+                            } catch (e: MesaOcupadaError) {
+                                error = e.message
+                            }
+                        }
+                        mesaParaAbrir = null
+                        nombreCliente = ""
+                    }
+                ) { Text("Abrir") }
+            },
+            dismissButton = {
+                TextButton(onClick = { mesaParaAbrir = null; nombreCliente = "" }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+    if (error != null) {
+        AlertDialog(
+            onDismissRequest = { error = null },
+            title = { Text("Error al Abrir mesa") },
+            text = {
+                Text(error.toString())
+            },
+            confirmButton = {
+                TextButton(onClick = { error = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }

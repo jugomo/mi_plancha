@@ -10,9 +10,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -35,6 +37,14 @@ fun RoleContainer(
         topBar = {
             TopAppBar(
                 title = { Text(text = usuario.nombre) },
+                colors = TopAppBarColors(
+                    containerColor = Color.Gray,
+                    scrolledContainerColor = Color.Black,
+                    navigationIconContentColor = Color.Black,
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Black,
+                    subtitleContentColor = Color.Black
+                ),
                 navigationIcon = {
                     if (canNavigateBack) {
                         IconButton(

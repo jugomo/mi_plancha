@@ -13,11 +13,11 @@ class TablesService {
 
     private val db = FirebaseFirestore.getInstance()
     private var companyId: String = ""
-    var clientsCache = mutableStateMapOf<String, Cliente>()
+    var clientsCache = mutableStateMapOf<String, Client>()
     var tableOrderInfo = mutableStateMapOf<Int, TableOrderSummary>()
     var tablesAllDelivered = mutableStateMapOf<Int, Timestamp>()
 
-    fun startListeningTables(companyId: String): Flow<List<Mesa>?> {
+    fun startListeningTables(companyId: String): Flow<List<Table>?> {
         this@TablesService.companyId = companyId
 
         return callbackFlow {
@@ -32,7 +32,7 @@ class TablesService {
                 }
 
                 if (snapshot != null) {
-                    val mesas = snapshot.documents.map { it.toMesa() }
+                    val mesas = snapshot.documents.map { it.toTable() }
                     cleanCacheClient(mesas)
                     trySend(mesas)
                 } else {
@@ -97,11 +97,11 @@ class TablesService {
         }
     }
 
-    suspend fun openTable(mesa: Mesa, waiterId: String, clientName: String) {
+    suspend fun openTable(table: Table, waiterId: String, clientName: String) {
         val tableRef = db.collection("empresas")
             .document(companyId)
             .collection("mesas")
-            .document(mesa.id)
+            .document(table.id)
         val clientRef = db.collection("empresas")
             .document(companyId)
             .collection("clientes")
@@ -113,7 +113,7 @@ class TablesService {
                 trn.set(
                     clientRef,
                     mapOf(
-                        "mesaId" to mesa.id,
+                        "mesaId" to table.id,
                         "nombre" to clientName,
                         "camareroId" to waiterId,
                         "abiertoEn" to FieldValue.serverTimestamp()
@@ -154,14 +154,14 @@ class TablesService {
     }
 
     fun orderSummary(
-        mesa: Mesa,
+        table: Table,
         tableOrderInfo : Map<Int, TableOrderSummary>,
         tablesAllDelivered: Map<Int, Timestamp>,
         clientSatAt: Timestamp?
     ) : TableOrderSummary?{
-        tableOrderInfo[mesa.numero]?.let { return it }
+        tableOrderInfo[table.numero]?.let { return it }
 
-        tablesAllDelivered[mesa.numero]?.let {
+        tablesAllDelivered[table.numero]?.let {
             return TableOrderSummary(
                 worstStatus = LineStatus.LISTO,
                 lastUpdate = it,
@@ -181,18 +181,18 @@ class TablesService {
     }
 
 
-    suspend fun getClient(clientId: String): Cliente? {
+    suspend fun getClient(clientId: String): Client? {
         val docRef = db.collection("empresas")
             .document(companyId)
             .collection("clientes")
             .document(clientId)
 
         val snapshot = docRef.get().await()
-        return if (snapshot.exists()) snapshot.toCliente() else null
+        return if (snapshot.exists()) snapshot.toClient() else null
 
     }
 
-    suspend fun cacheClient(table: Mesa) {
+    suspend fun cacheClient(table: Table) {
         val clientId = table.clienteId ?: return
 
         if(clientId !in clientsCache ){
@@ -200,8 +200,8 @@ class TablesService {
         }
     }
 
-    fun cleanCacheClient(mesas: List<Mesa>) {
-        clientsCache.keys.retainAll(mesas.mapNotNull { it.clienteId }.toSet())
+    fun cleanCacheClient(tables: List<Table>) {
+        clientsCache.keys.retainAll(tables.mapNotNull { it.clienteId }.toSet())
     }
 }
 

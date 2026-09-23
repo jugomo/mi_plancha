@@ -3,7 +3,7 @@ package com.jugomo.miplancha.waiter
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
-data class Cliente(
+data class Client(
     var mesaId: String,
     var nombre: String,
     var camareroId: String,
@@ -11,7 +11,7 @@ data class Cliente(
 ) {
 }
 
-fun DocumentSnapshot.toCliente() : Cliente  = Cliente(
+fun DocumentSnapshot.toClient() : Client  = Client(
     mesaId = getString("mesaId") ?: "",
     nombre = getString("nombre") ?: "",
     camareroId = getString("camareroId") ?: "",

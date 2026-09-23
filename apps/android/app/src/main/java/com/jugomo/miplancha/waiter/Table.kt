@@ -3,7 +3,7 @@ package com.jugomo.miplancha.waiter
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
-data class Mesa(
+data class Table(
     var id: String,
     var numero: Int,
     var estado: TableStatus,
@@ -18,7 +18,7 @@ data class TableOrderSummary(
 ) {
 }
 
-fun DocumentSnapshot.toMesa() : Mesa  = Mesa(
+fun DocumentSnapshot.toTable() : Table  = Table(
     id = id,
     numero = getLong("numero")?.toInt() ?: 0,
     estado = TableStatus.valueOf((getString("estado") ?: "").uppercase()),

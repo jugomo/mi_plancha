@@ -3,14 +3,12 @@ package com.jugomo.miplancha.waiter
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -25,9 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jugomo.miplancha.auth.Usuario
-import com.jugomo.miplancha.shared.RoleContainer
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,7 +33,7 @@ fun WaiterScreen(
 
     // reactive states
     val tablesService = remember { TablesService() }
-    var tables by remember { mutableStateOf<List<Mesa>?>(null) }
+    var tables by remember { mutableStateOf<List<Table>?>(null) }
     var ordersByTable by remember { mutableStateOf<Map<Int, List<LineStatus>>?>(null) }
 
     // corroutine for listen tables
@@ -89,12 +84,12 @@ fun WaiterScreen(
 }
 
 @Composable
-fun Content(mesas : List<Mesa>,
+fun Content(tables : List<Table>,
             tablesService: TablesService,
             waiterId: String
 ) {
     val scope = rememberCoroutineScope()
-    var mesaParaAbrir by remember { mutableStateOf<Mesa?>(null) }
+    var tableParaAbrir by remember { mutableStateOf<Table?>(null) }
     var nombreCliente by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -114,32 +109,32 @@ fun Content(mesas : List<Mesa>,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(mesas) { mesa ->
+            items(tables) { mesa ->
                 val clName= tablesService.clientsCache.entries.firstOrNull {
                     it.value.mesaId == mesa.id
                 }
 
                 TableCard(
-                    mesa = mesa,
+                    table = mesa,
                     orderSummary = tablesService.orderSummary(
-                        mesa = mesa,
+                        table = mesa,
                         tableOrderInfo = tablesService.tableOrderInfo,
                         tablesAllDelivered = tablesService.tablesAllDelivered,
                         clientSatAt = tablesService.clientsCache[mesa.clienteId]?.abiertoEn,
                     ),
                     clientName = clName?.value?.nombre,
                     onCLick = {
-                        mesaParaAbrir = mesa
+                        tableParaAbrir = mesa
                     }
                 )
             }
         }
     }
 
-    val mesa = mesaParaAbrir
+    val mesa = tableParaAbrir
     if (mesa != null) {
         AlertDialog(
-            onDismissRequest = { mesaParaAbrir = null; nombreCliente = "" },
+            onDismissRequest = { tableParaAbrir = null; nombreCliente = "" },
             title = { Text("Abrir mesa ${mesa.numero}") },
             text = {
                 TextField(
@@ -160,13 +155,13 @@ fun Content(mesas : List<Mesa>,
                                 error = e.message
                             }
                         }
-                        mesaParaAbrir = null
+                        tableParaAbrir = null
                         nombreCliente = ""
                     }
                 ) { Text("Abrir") }
             },
             dismissButton = {
-                TextButton(onClick = { mesaParaAbrir = null; nombreCliente = "" }) {
+                TextButton(onClick = { tableParaAbrir = null; nombreCliente = "" }) {
                     Text("Cancelar")
                 }
             }

@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun TableCard(
-    mesa: Mesa,
+    table: Table,
     orderSummary: TableOrderSummary?,
     clientName: String?,
     onCLick: () -> Unit
@@ -36,7 +36,7 @@ fun TableCard(
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .clickable(enabled = mesa.estado == TableStatus.LIBRE, onClick = onCLick)
+            .clickable(enabled = table.estado == TableStatus.LIBRE, onClick = onCLick)
             .clip(RoundedCornerShape(16.dp))
             .height(200.dp)
             .border(
@@ -57,7 +57,7 @@ fun TableCard(
                                 0.35f))
                     LineStatus.EN_PLANCHA ->
                         modifier.background(Color(0xFFE65100).copy(alpha = 0.35f))
-                    LineStatus.LISTO, null -> if (mesa.estado ==
+                    LineStatus.LISTO, null -> if (table.estado ==
                         TableStatus.OCUPADA) modifier.background(Color(0xFF2E7D32))
                     else modifier
                 }
@@ -67,19 +67,19 @@ fun TableCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                mesa.numero.toString(),
+                table.numero.toString(),
                 textAlign = TextAlign.Center,
-                color = if(mesa.estado == TableStatus.OCUPADA) Color.Black else Color.Gray,
+                color = if(table.estado == TableStatus.OCUPADA) Color.Black else Color.Gray,
                 fontSize = 50.sp,
                 fontWeight = FontWeight.Bold
             )
-            if (mesa.estado == TableStatus.LIBRE) {
+            if (table.estado == TableStatus.LIBRE) {
                 Text(
                     "Libre",
                     fontSize = 10.sp,
                 )
             }
-            if (clientName != null && mesa.estado != TableStatus.LIBRE) {
+            if (clientName != null && table.estado != TableStatus.LIBRE) {
                 Text(clientName)
             }
             if(orderSummary?.displayLabel != null) {

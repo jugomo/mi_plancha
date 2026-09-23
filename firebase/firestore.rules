@@ -66,7 +66,7 @@ service cloud.firestore {
       // sesión); superadmin ve todos; el resto, solo los de su propia empresa
       // (para mostrar nombres/roles en la UI, ej. quién tomó un pedido).
       allow read: if autenticado()
-        && (esSuperadmin() || uid == request.auth.uid || usuarioDoc(uid).empresaId == miEmpresaId());
+        && (esSuperadmin() || uid == request.auth.uid || resource.data.empresaId == miEmpresaId());
 
       // Alta: el superadmin da de alta cualquier rol en cualquier empresa
       // (incluido el administrador dedicado al crear una empresa, ver

@@ -1,6 +1,5 @@
 package com.jugomo.miplancha.shared
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,8 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jugomo.miplancha.auth.Usuario
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 fun RoleContainer(
     usuario: Usuario,
     onLogout: suspend () -> Unit,
-    content: @Composable () -> Unit
+    graph: NavGraphBuilder.(NavController) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
@@ -77,15 +77,10 @@ fun RoleContainer(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "Home"
+            startDestination = "Home",
+            modifier = Modifier.padding(innerPadding)
         ) {
-            composable("Home") {
-                Box(
-                    modifier = Modifier.padding(innerPadding)
-                ) {
-                    content()
-                }
-            }
+            graph(navController)
         }
     }
 }

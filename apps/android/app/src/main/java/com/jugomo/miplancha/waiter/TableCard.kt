@@ -2,7 +2,7 @@ package com.jugomo.miplancha.waiter
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -31,12 +31,16 @@ fun TableCard(
     table: Table,
     orderSummary: TableOrderSummary?,
     clientName: String?,
-    onCLick: () -> Unit
+    onCLick: () -> Unit,
+    onLongCLick: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .clickable(enabled = table.estado == TableStatus.LIBRE, onClick = onCLick)
+            .combinedClickable(
+                onClick = onCLick,
+                onLongClick = onLongCLick
+            )
             .clip(RoundedCornerShape(16.dp))
             .height(200.dp)
             .border(

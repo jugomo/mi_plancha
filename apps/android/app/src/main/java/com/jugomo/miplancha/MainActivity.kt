@@ -1,10 +1,12 @@
 package com.jugomo.miplancha
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -15,12 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.navigation.compose.composable
 import com.jugomo.miplancha.auth.AuthService
 import com.jugomo.miplancha.auth.LoginScreen
 import com.jugomo.miplancha.auth.Rol
 import com.jugomo.miplancha.auth.Usuario
 import com.jugomo.miplancha.cook.CookScreen
 import com.jugomo.miplancha.shared.RoleContainer
+import com.jugomo.miplancha.waiter.TableDetailScreen
 import com.jugomo.miplancha.waiter.WaiterScreen
 
 /**
@@ -62,10 +66,12 @@ fun MiPlanchaPlaceholder() {
                             onLogout =  {
                                 authService.closeSession()
                             }
-                        ){
-                            CookScreen(
-                                companyId = usuario!!.empresaId!!,
-                            )
+                        ){ navController ->
+                            composable("Home") {
+                                CookScreen(
+                                    companyId = usuario!!.empresaId!!,
+                                )
+                            }
                         }
                     } else if(usuario!!.rol == Rol.CAMARERO) {
                         RoleContainer (
@@ -73,11 +79,23 @@ fun MiPlanchaPlaceholder() {
                             onLogout = {
                                 authService.closeSession()
                             }
-                        ) {
-                            WaiterScreen(
-                                companyId = usuario!!.empresaId!!,
-                                waiterId = usuario!!.uid
-                            )
+                        ) { navController ->
+                            composable("Home") {
+                                WaiterScreen(
+                                    companyId = usuario!!.empresaId!!,
+                                    waiterId = usuario!!.uid,
+                                    onTableCLick = { mesa ->
+                                        navController.navigate("table/${mesa.id}")
+                                    }
+                                )
+                            }
+                            composable("table/{tableId}") { backStackEntry ->
+                                val tableId = backStackEntry.arguments!!.getString("tableId")!!
+                                TableDetailScreen(
+                                    tableId = tableId,
+                                    companyId = usuario!!.empresaId!!
+                                )
+                            }
                         }
                     }
                 }

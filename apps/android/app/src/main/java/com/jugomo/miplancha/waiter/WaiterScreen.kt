@@ -28,7 +28,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun WaiterScreen(
     companyId: String,
-    waiterId: String
+    waiterId: String,
+    onTableCLick: (Table) -> Unit
 ) {
 
     // reactive states
@@ -78,7 +79,8 @@ fun WaiterScreen(
     if (tables != null) {
         Content(tables!!,
                 tablesService,
-                waiterId
+                waiterId,
+                onTableCLick
         )
     }
 }
@@ -86,7 +88,8 @@ fun WaiterScreen(
 @Composable
 fun Content(tables : List<Table>,
             tablesService: TablesService,
-            waiterId: String
+            waiterId: String,
+            onTableCLick: (Table) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var tableParaAbrir by remember { mutableStateOf<Table?>(null) }
@@ -99,7 +102,7 @@ fun Content(tables : List<Table>,
         Text(
             "Mesas",
             Modifier.padding(bottom = 16.dp),
-            fontSize = 30.sp,                  // Define el tamaño grande (usa .sp)
+            fontSize = 30.sp,
             fontWeight = FontWeight.Bold
         )
 
@@ -124,7 +127,12 @@ fun Content(tables : List<Table>,
                     ),
                     clientName = clName?.value?.nombre,
                     onCLick = {
-                        tableParaAbrir = mesa
+                        onTableCLick(mesa)
+                    },
+                    onLongCLick = {
+                        if(mesa.estado == TableStatus.LIBRE) {
+                            tableParaAbrir = mesa
+                        }
                     }
                 )
             }

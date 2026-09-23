@@ -1,0 +1,40 @@
+package com.jugomo.miplancha.waiter
+
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+
+class LinesService {
+    private val db = FirebaseFirestore.getInstance()
+    private var companyId: String = ""
+
+    fun startListeningTable(companyId: String, tableId: String): Flow<Table?> {
+        this@LinesService.companyId = companyId
+
+        return callbackFlow {
+            val docRef = db.collection("empresas")
+                .document(companyId)
+                .collection("mesas")
+                .document(tableId)
+
+            val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if(snapshot != null) {
+                    trySend(snapshot.toTable())
+                } else {
+                    trySend(null)
+                }
+
+            }
+
+            awaitClose {
+                listenerRegistration.remove()
+            }
+        }
+    }
+}

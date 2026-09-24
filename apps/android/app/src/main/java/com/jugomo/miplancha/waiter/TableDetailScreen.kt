@@ -9,6 +9,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.shared.ProductInfo
+import com.jugomo.miplancha.shared.fetchProducts
 
 @Composable
 fun TableDetailScreen(
@@ -17,11 +20,27 @@ fun TableDetailScreen(
 ) {
     val linesService = remember { LinesService() }
     var table by remember { mutableStateOf<Table?>(null) }
+    var lines by remember { mutableStateOf<List<OrderLine>>(emptyList()) }
+    var products by remember { mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
 
     LaunchedEffect(Unit) {
         linesService.startListeningTable(companyId, tableId).collect { gettable ->
             table = gettable
         }
+    }
+
+    LaunchedEffect(table?.numero) {
+        if(table?.numero == null) {
+            return@LaunchedEffect
+        } else {
+            linesService.startListeningLines(companyId, table!!.numero).collect { lineLst ->
+                lines = lineLst ?: emptyList()
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        products = fetchProducts(companyId)
     }
 
     Box {
@@ -30,6 +49,12 @@ fun TableDetailScreen(
             Column {
                 Text("numero: " + table!!.numero)
                 Text("estado: " + table!!.estado)
+
+
+                for (line in lines) {
+                    Text("${line.amount}x ${products[line.productId]?.name ?: line.productId} - ${line.status.label}")
+                }
+
             }
         }
     }

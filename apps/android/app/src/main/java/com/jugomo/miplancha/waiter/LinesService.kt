@@ -1,6 +1,8 @@
 package com.jugomo.miplancha.waiter
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.auth.toOrderLine
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -28,6 +30,34 @@ class LinesService {
                     trySend(snapshot.toTable())
                 } else {
                     trySend(null)
+                }
+
+            }
+
+            awaitClose {
+                listenerRegistration.remove()
+            }
+        }
+    }
+
+    fun startListeningLines(companyId: String, tableNumber: Int): Flow<List<OrderLine>?> {
+        return callbackFlow {
+            val docRef = db.collectionGroup("lineas")
+                .whereEqualTo("mesaNumero", tableNumber)
+                .whereEqualTo("empresaId", companyId)
+                .whereNotEqualTo("estado", "listo")
+
+             val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
+                if(error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if(snapshot != null) {
+                    trySend(snapshot.documents.mapNotNull { it.toOrderLine() })
+                } else {
+                    trySend(null)
+
                 }
 
             }

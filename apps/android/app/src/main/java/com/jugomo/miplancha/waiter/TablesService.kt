@@ -97,7 +97,7 @@ class TablesService {
         }
     }
 
-    suspend fun openTable(table: Table, waiterId: String, clientName: String) {
+    suspend fun openTable(table: Table, companyId: String, waiterId: String, clientName: String) {
         val tableRef = db.collection("empresas")
             .document(companyId)
             .collection("mesas")

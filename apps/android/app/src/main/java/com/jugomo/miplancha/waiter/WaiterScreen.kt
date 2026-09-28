@@ -80,6 +80,7 @@ fun WaiterScreen(
         Content(tables!!,
                 tablesService,
                 waiterId,
+                companyId,
                 onTableCLick
         )
     }
@@ -89,11 +90,11 @@ fun WaiterScreen(
 fun Content(tables : List<Table>,
             tablesService: TablesService,
             waiterId: String,
+            companyId: String,
             onTableCLick: (Table) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var tableParaAbrir by remember { mutableStateOf<Table?>(null) }
-    var nombreCliente by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -141,37 +142,20 @@ fun Content(tables : List<Table>,
 
     val mesa = tableParaAbrir
     if (mesa != null) {
-        AlertDialog(
-            onDismissRequest = { tableParaAbrir = null; nombreCliente = "" },
-            title = { Text("Abrir mesa ${mesa.numero}") },
-            text = {
-                TextField(
-                    value = nombreCliente,
-                    onValueChange = { nombreCliente = it },
-                    label = { Text("Nombre del cliente") }
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    enabled = nombreCliente.isNotBlank(),
-                    onClick = {
-                        val nombre = nombreCliente
-                        scope.launch {
-                            try {
-                                tablesService.openTable(mesa, waiterId, nombre)
-                            } catch (e: MesaOcupadaError) {
-                                error = e.message
-                            }
-                        }
-                        tableParaAbrir = null
-                        nombreCliente = ""
+        OpenTableDialog(
+            mesa.numero,
+            onConfirm = { clientName ->
+                scope.launch {
+                    try {
+                        tablesService.openTable(mesa, companyId, waiterId, clientName)
+                    } catch (e: MesaOcupadaError) {
+                        error = e.message
                     }
-                ) { Text("Abrir") }
-            },
-            dismissButton = {
-                TextButton(onClick = { tableParaAbrir = null; nombreCliente = "" }) {
-                    Text("Cancelar")
                 }
+                tableParaAbrir = null
+            },
+            onDismiss = {
+                tableParaAbrir = null
             }
         )
     }

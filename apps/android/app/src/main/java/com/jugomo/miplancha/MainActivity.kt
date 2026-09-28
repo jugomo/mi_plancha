@@ -93,7 +93,8 @@ fun MiPlanchaPlaceholder() {
                                 val tableId = backStackEntry.arguments!!.getString("tableId")!!
                                 TableDetailScreen(
                                     tableId = tableId,
-                                    companyId = usuario!!.empresaId!!
+                                    companyId = usuario!!.empresaId!!,
+                                    waiterId = usuario!!.uid
                                 )
                             }
                         }

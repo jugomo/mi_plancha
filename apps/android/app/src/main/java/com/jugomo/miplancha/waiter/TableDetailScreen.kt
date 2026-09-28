@@ -18,19 +18,23 @@ import com.jugomo.miplancha.shared.fetchProducts
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.log
 
 @Composable
 fun TableDetailScreen(
     tableId: String,
-    companyId: String
+    companyId: String,
+    waiterId: String
 ) {
     val scope = rememberCoroutineScope()
 
     val formatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val linesService = remember { LinesService() }
+    val tablesService = remember { TablesService() }
     var table by remember { mutableStateOf<Table?>(null) }
     var lines by remember { mutableStateOf<List<OrderLine>>(emptyList()) }
     var products by remember { mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
+    var showOpenDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         linesService.startListeningTable(companyId, tableId).collect { gettable ->
@@ -54,38 +58,68 @@ fun TableDetailScreen(
 
     Box {
         if(table != null ) {
+            if (showOpenDialog) {
+                OpenTableDialog(
+                    table!!.numero,
+                    onConfirm = { name ->
+                        scope.launch {
+                            try {
+                                tablesService.openTable(table!!, companyId, waiterId, name)
+                            } catch (e: MesaOcupadaError) {
+                                Log.e("TableDetailScreen", "la mesa ya estaba abierta: $e")
+                            } catch (e: Exception) {
+                                Log.e("TableDetailScreen", e.toString())
+                            }
+                        }
+                        showOpenDialog = false
+                    },
+                    onDismiss = {
+                        showOpenDialog = false
+                    }
+                )
+            }
 
             Column {
                 Text("numero: " + table!!.numero)
-                Text("estado: " + table!!.estado)
+//                Text("estado: " + table!!.estado)
 
-
-
-                for ( orderLines in lines.groupBy { it.orderId }.values.sortedBy { it.first().createdAt }) {
-                    Text(formatter.format(orderLines.first().createdAt.toDate()))
-                    orderLines.forEach { line ->
-                        Text("${line.amount}x ${products[line.productId]?.name ?: line.productId} - ${line.status.label}")
+                if(table!!.estado == TableStatus.LIBRE) {
+                    Text("Mesa cerrada")
+                    Button(
+                        onClick = {
+                            showOpenDialog = true
+                        }
+                    ){
+                        Text("Abrir mesa")
                     }
+                } else if(lines.isEmpty()) {
+                        Text("Sin pedidos")
+                } else {
+                    for ( orderLines in lines.groupBy { it.orderId }.values.sortedBy { it.first().createdAt }) {
+                        Text(formatter.format(orderLines.first().createdAt.toDate()))
+                        orderLines.forEach { line ->
+                            Text("${line.amount}x ${products[line.productId]?.name ?: line.productId} - ${line.status.label}")
+                        }
 
-                    if(orderLines.all { it.status == LineStatus.PENDIENTE_ENTREGA }) {
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    try {
-                                        linesService.markOrderDelivered(orderLines)
-                                    } catch(e: Exception) {
-                                        Log.e("LinesService", e.toString())
+                        if(orderLines.all { it.status == LineStatus.PENDIENTE_ENTREGA }) {
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        try {
+                                            linesService.markOrderDelivered(orderLines)
+                                        } catch(e: Exception) {
+                                            Log.e("LinesService", e.toString())
+                                        }
                                     }
                                 }
+                            ) {
+                                Text("Entregar pedido")
                             }
-                        ) {
-                            Text("Entregar pedido")
                         }
+
+                        Text("------")
                     }
-
-                    Text("------")
                 }
-
             }
         }
     }

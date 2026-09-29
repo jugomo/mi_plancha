@@ -12,13 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.fetchProducts
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.math.log
 
 @Composable
 fun TableDetailScreen(
@@ -34,7 +35,10 @@ fun TableDetailScreen(
     var table by remember { mutableStateOf<Table?>(null) }
     var lines by remember { mutableStateOf<List<OrderLine>>(emptyList()) }
     var products by remember { mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
+    var grillCapacity by remember { mutableStateOf<Int?>(null) }
     var showOpenDialog by remember { mutableStateOf(false) }
+    var showAddLine by remember { mutableStateOf(false) }
+    var clientName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         linesService.startListeningTable(companyId, tableId).collect { gettable ->
@@ -54,6 +58,24 @@ fun TableDetailScreen(
 
     LaunchedEffect(Unit) {
         products = fetchProducts(companyId)
+        grillCapacity = linesService.getTotalCapacity(companyId)
+    }
+
+    LaunchedEffect(table?.clienteId) {
+        val id = table?.clienteId
+
+        if(id == null) {
+            clientName = null
+        } else {
+            try {
+                clientName = tablesService.getClient(
+                    companyId,
+                    id
+                )?.nombre
+            } catch (e: Exception) {
+                Log.e("TableDetailScreen", e.toString())
+            }
+        }
     }
 
     Box {
@@ -79,8 +101,37 @@ fun TableDetailScreen(
                 )
             }
 
+            if(showAddLine){
+                AddLineSheet(
+                    products = products,
+                    grillCapacity = grillCapacity,
+                    onDismiss = {
+                        showAddLine = false
+                    }
+                )
+            }
+
             Column {
-                Text("numero: " + table!!.numero)
+                Text(
+                    "Mesa ${table!!.numero}",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                clientName?.let {
+                    Text(it)
+                }
+
+                if(table!!.estado == TableStatus.OCUPADA) {
+                    Button(
+                        onClick = {
+                            showAddLine = true
+                        }
+                    ){
+                        Text("Nuevo pedido")
+                    }
+                }
+
 //                Text("estado: " + table!!.estado)
 
                 if(table!!.estado == TableStatus.LIBRE) {

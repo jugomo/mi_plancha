@@ -43,6 +43,20 @@ class LinesService {
         }
     }
 
+    suspend fun getTotalCapacity(companyId: String): Int? {
+        try {
+            val snap = db.collection("empresas")
+                .document(companyId)
+                .collection("config")
+                .document("plancha").get().await()
+
+            return snap.getLong("capacidadTotal")?.toInt()
+        } catch (e: Exception) {
+            Log.e("LinesService", e.toString())
+            return null
+        }
+    }
+
     fun startListeningLines(companyId: String, tableNumber: Int): Flow<List<OrderLine>?> {
         return callbackFlow {
             val docRef = db.collectionGroup("lineas")

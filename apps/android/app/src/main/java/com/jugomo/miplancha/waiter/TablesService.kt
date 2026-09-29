@@ -181,7 +181,7 @@ class TablesService {
     }
 
 
-    suspend fun getClient(clientId: String): Client? {
+    suspend fun getClient(companyId: String, clientId: String): Client? {
         val docRef = db.collection("empresas")
             .document(companyId)
             .collection("clientes")
@@ -196,7 +196,7 @@ class TablesService {
         val clientId = table.clienteId ?: return
 
         if(clientId !in clientsCache ){
-            clientsCache[clientId] = getClient(clientId) ?: return
+            clientsCache[clientId] = getClient(companyId, clientId) ?: return
         }
     }
 

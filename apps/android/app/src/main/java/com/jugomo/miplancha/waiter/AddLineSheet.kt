@@ -22,12 +22,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import com.jugomo.miplancha.shared.ProductInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +38,11 @@ fun AddLineSheet(
 ) {
     val quantities = remember { mutableStateMapOf<String, Int>() }
     val available = products.filter { it.value.stock > 0 }.entries.sortedBy { it.value.name }
+
+    fun isOverCapacity(entry: Map.Entry<String, ProductInfo>)  : Boolean {
+        return grillCapacity != null &&
+                (entry.value.capacity * (quantities[entry.key] ?: 0)) > grillCapacity
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -60,8 +64,11 @@ fun AddLineSheet(
                 Spacer(Modifier.weight(1f))
 
                 Button(
-                    onClick = {},
-                    enabled = quantities.values.any { it > 0 }
+                    onClick = {
+                        // TODO()
+                    },
+                    enabled = quantities.values.any { it > 0 } &&
+                               available.none {isOverCapacity(it)}
                 ) {
                     Text("Enviar")
                 }
@@ -81,13 +88,14 @@ fun AddLineSheet(
                     .padding(horizontal = 16.dp)
             ) {
                 itemsIndexed(available, key = { _, entry -> entry.key }) { index, entry ->
-                    val overflowed = grillCapacity != null && (entry.value.capacity * (quantities[entry.key] ?: 0)) > (grillCapacity)
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(vertical = 16.dp)
                     ) {
-                        Column {
+                        // product name & availability
+                        Column(
+                            modifier = Modifier.weight(1f).padding(end = 16.dp)
+                        ) {
                             Text(
                                 entry.value.name,
                                 fontSize = 24.sp,
@@ -99,10 +107,11 @@ fun AddLineSheet(
                             )
                         }
 
-                        Spacer(Modifier.weight(1f))
-
-                        Column {
-                            Row() {
+                        // buttons select amount
+                        Column(
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Row {
                                 Button(
                                     onClick = {
                                         quantities[entry.key] = (quantities[entry.key] ?: 0) - 1
@@ -129,14 +138,15 @@ fun AddLineSheet(
                                     Text("+")
                                 }
                             }
-
-                            if(overflowed) {
-                                Text(
-                                    "Supera la capacidad de la parrilla",
-                                    color = Color.Red
-                                )
-                            }
                         }
+                    }
+
+                    if(isOverCapacity(entry)) {
+                        Text(
+                            "Supera la capacidad de la parrilla",
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.End
+                        )
                     }
 
                     if(index < available.lastIndex) {
@@ -148,15 +158,16 @@ fun AddLineSheet(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun AddLineSheetPreview() {
-//    AddLineSheet(
-//        products = mapOf(
-//            "p1" to ProductInfo("Chuletón", 32.5, 10, 2, 600),
-//            "p2" to ProductInfo("Secreto ibérico", 18.0, 4, 1, 300),
-//            "p3" to ProductInfo("Pimientos", 6.0, 0, 1, 240)
-//        ),
-//        onDismiss = {}
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun AddLineSheetPreview() {
+    AddLineSheet(
+        products = mapOf(
+            "p1" to ProductInfo("Chuletón", 32.5, 10, 2, 600),
+            "p2" to ProductInfo("Secreto ibérico", 18.0, 4, 1, 300),
+            "p3" to ProductInfo("Pimientos", 6.0, 0, 1, 240)
+        ),
+        grillCapacity = 20,
+        onDismiss = {}
+    )
+}

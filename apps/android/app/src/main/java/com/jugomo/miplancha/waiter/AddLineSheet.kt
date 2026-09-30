@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +35,8 @@ import com.jugomo.miplancha.shared.ProductInfo
 fun AddLineSheet(
     products: Map<String, ProductInfo>,
     grillCapacity: Int?,
+    sending: Boolean,
+    onSend: (Map<String, Int>) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val quantities = remember { mutableStateMapOf<String, Int>() }
@@ -65,10 +68,13 @@ fun AddLineSheet(
 
                 Button(
                     onClick = {
-                        // TODO()
+                        onSend(quantities.filter {  (productId, amount) ->
+                            amount > 0
+                        })
                     },
-                    enabled = quantities.values.any { it > 0 } &&
-                               available.none {isOverCapacity(it)}
+                    enabled = !sending &&
+                                 quantities.values.any { it > 0 } &&
+                                    available.none {isOverCapacity(it)}
                 ) {
                     Text("Enviar")
                 }
@@ -111,7 +117,9 @@ fun AddLineSheet(
                         Column(
                             horizontalAlignment = Alignment.End
                         ) {
-                            Row {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Button(
                                     onClick = {
                                         quantities[entry.key] = (quantities[entry.key] ?: 0) - 1
@@ -145,7 +153,8 @@ fun AddLineSheet(
                         Text(
                             "Supera la capacidad de la parrilla",
                             color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.End
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
 
@@ -168,6 +177,8 @@ fun AddLineSheetPreview() {
             "p3" to ProductInfo("Pimientos", 6.0, 0, 1, 240)
         ),
         grillCapacity = 20,
+        onSend = {},
+        sending = false,
         onDismiss = {}
     )
 }

@@ -101,4 +101,47 @@ class LinesService {
                     ).await()
         }
     }
+
+    suspend fun addOrder(
+        companyId: String,
+        tableNumber: Int,
+        waiterId: String,
+        clientId: String?,
+        clientName: String?,
+        lines: Map<String, Int>) {
+
+        val pedidoRef = db.collection("empresas")
+            .document(companyId)
+            .collection("pedidos")
+            .document()
+
+        pedidoRef.set(
+            mapOf(
+                "mesaNumero" to tableNumber,
+                "empresaId" to companyId,
+                "camareroId" to waiterId,
+                "cocineroId" to null,
+                "cuentaId" to null,
+                "creadoEn" to FieldValue.serverTimestamp(),
+                "clienteId" to clientId,
+                "clienteNombre" to clientName
+            )
+        ).await()
+
+        for ((productId, amount) in lines) {
+            pedidoRef.collection("lineas")
+                .add(
+                    mapOf(
+                        "productoId" to productId,
+                        "cantidad" to amount,
+                        "estado" to LineStatus.PENDIENTE.name.lowercase(),
+                        "subgrupo" to 1,
+                        "usandoOverflow" to false,
+                        "mesaNumero" to tableNumber,
+                        "empresaId" to companyId,
+                        "pedidoCreadoEn" to FieldValue.serverTimestamp()
+                    )
+                ).await()
+        }
+    }
 }

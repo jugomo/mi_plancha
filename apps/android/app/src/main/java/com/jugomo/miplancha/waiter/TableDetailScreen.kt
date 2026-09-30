@@ -3,8 +3,10 @@ package com.jugomo.miplancha.waiter
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +40,8 @@ fun TableDetailScreen(
     var grillCapacity by remember { mutableStateOf<Int?>(null) }
     var showOpenDialog by remember { mutableStateOf(false) }
     var showAddLine by remember { mutableStateOf(false) }
+    var sendingOrder by remember { mutableStateOf(false) }
+    var sendOrderError by remember {mutableStateOf<String?>(null)}
     var clientName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -105,8 +109,50 @@ fun TableDetailScreen(
                 AddLineSheet(
                     products = products,
                     grillCapacity = grillCapacity,
+                    sending = sendingOrder,
+                    onSend = { lines ->
+                        if(!sendingOrder) {
+                            sendingOrder = true
+
+                            scope.launch {
+                                try {
+                                    linesService.addOrder(
+                                        companyId = companyId,
+                                        tableNumber =  table!!.numero,
+                                        waiterId = waiterId,
+                                        clientId = table!!.clienteId,
+                                        clientName = clientName,
+                                        lines = lines
+                                    )
+
+                                    showAddLine = false
+                                } catch (e: Exception) {
+                                    Log.e("TableDetailScreen", e.toString())
+                                    sendOrderError = "Error al crear pedido"
+                                } finally {
+                                    sendingOrder = false
+                                }
+                            }
+                        }
+                    },
                     onDismiss = {
                         showAddLine = false
+                    }
+                )
+            }
+
+            sendOrderError?.let { message ->
+                AlertDialog(
+                    onDismissRequest = { sendOrderError = null },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { sendOrderError = null }
+                        ) {
+                            Text("Aceptar")
+                        }
+                    },
+                    text = {
+                        Text(message)
                     }
                 )
             }
@@ -131,8 +177,6 @@ fun TableDetailScreen(
                         Text("Nuevo pedido")
                     }
                 }
-
-//                Text("estado: " + table!!.estado)
 
                 if(table!!.estado == TableStatus.LIBRE) {
                     Text("Mesa cerrada")

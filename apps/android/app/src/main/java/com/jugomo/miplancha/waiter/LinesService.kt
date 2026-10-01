@@ -1,6 +1,7 @@
 package com.jugomo.miplancha.waiter
 
 import android.util.Log
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jugomo.miplancha.auth.OrderLine
@@ -144,4 +145,19 @@ class LinesService {
                 ).await()
         }
     }
+
+    suspend fun fetchBillLines(
+        companyId: String,
+        tableNumber: Int,
+        openedAt: Timestamp
+    ) : List< OrderLine> {
+        val snapshot = db.collectionGroup("lineas")
+            .whereEqualTo("mesaNumero", tableNumber)
+            .whereEqualTo("empresaId", companyId)
+            .whereGreaterThanOrEqualTo("pedidoCreadoEn", openedAt)
+            .get().await()
+
+        return snapshot.documents.mapNotNull { it.toOrderLine() }
+    }
+
 }

@@ -3,6 +3,7 @@ package com.jugomo.miplancha.waiter
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -41,8 +42,10 @@ fun TableDetailScreen(
     var showOpenDialog by remember { mutableStateOf(false) }
     var showAddLine by remember { mutableStateOf(false) }
     var sendingOrder by remember { mutableStateOf(false) }
-    var sendOrderError by remember {mutableStateOf<String?>(null)}
-    var clientName by remember { mutableStateOf<String?>(null) }
+    var displayError by remember {mutableStateOf<String?>(null)}
+    var client by remember { mutableStateOf<Client?>(null) }
+    var showBillSheet by remember { mutableStateOf(false) }
+    var billLines by remember { mutableStateOf<List<OrderLine>?>(null) }
 
     LaunchedEffect(Unit) {
         linesService.startListeningTable(companyId, tableId).collect { gettable ->
@@ -69,13 +72,13 @@ fun TableDetailScreen(
         val id = table?.clienteId
 
         if(id == null) {
-            clientName = null
+            client = null
         } else {
             try {
-                clientName = tablesService.getClient(
+                client = tablesService.getClient(
                     companyId,
                     id
-                )?.nombre
+                )
             } catch (e: Exception) {
                 Log.e("TableDetailScreen", e.toString())
             }
@@ -91,10 +94,9 @@ fun TableDetailScreen(
                         scope.launch {
                             try {
                                 tablesService.openTable(table!!, companyId, waiterId, name)
-                            } catch (e: MesaOcupadaError) {
-                                Log.e("TableDetailScreen", "la mesa ya estaba abierta: $e")
                             } catch (e: Exception) {
                                 Log.e("TableDetailScreen", e.toString())
+                                displayError = "Error al abrir mesa"
                             }
                         }
                         showOpenDialog = false
@@ -121,14 +123,14 @@ fun TableDetailScreen(
                                         tableNumber =  table!!.numero,
                                         waiterId = waiterId,
                                         clientId = table!!.clienteId,
-                                        clientName = clientName,
+                                        clientName = client?.nombre,
                                         lines = lines
                                     )
 
                                     showAddLine = false
                                 } catch (e: Exception) {
                                     Log.e("TableDetailScreen", e.toString())
-                                    sendOrderError = "Error al crear pedido"
+                                    displayError = "Error al crear pedido"
                                 } finally {
                                     sendingOrder = false
                                 }
@@ -141,12 +143,26 @@ fun TableDetailScreen(
                 )
             }
 
-            sendOrderError?.let { message ->
+            if(showBillSheet) {
+                BillSheet(
+                    tableNumber = table!!.numero,
+                    lines = billLines!!,
+                    products = products,
+                    onConfirm = {
+                        TODO()
+                    },
+                    onDismiss = {
+                        showBillSheet = false
+                    }
+                )
+            }
+
+            displayError?.let { message ->
                 AlertDialog(
-                    onDismissRequest = { sendOrderError = null },
+                    onDismissRequest = { displayError = null },
                     confirmButton = {
                         TextButton(
-                            onClick = { sendOrderError = null }
+                            onClick = { displayError = null }
                         ) {
                             Text("Aceptar")
                         }
@@ -164,17 +180,45 @@ fun TableDetailScreen(
                     fontWeight = FontWeight.Bold
                 )
 
-                clientName?.let {
+                client?.nombre?.let {
                     Text(it)
                 }
 
+                /* new order and collect payment buttons */
                 if(table!!.estado == TableStatus.OCUPADA) {
-                    Button(
-                        onClick = {
-                            showAddLine = true
+                    Row() {
+                        Button(
+                            onClick = {
+                                showAddLine = true
+                            }
+                        ){
+                            Text("Nuevo pedido")
                         }
-                    ){
-                        Text("Nuevo pedido")
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    val tableNumber = table?.numero ?: return@launch
+                                    val openedAt = client?.abiertoEn ?: return@launch
+
+                                    try {
+                                        billLines = linesService.fetchBillLines(
+                                            companyId = companyId,
+                                            tableNumber = tableNumber,
+                                            openedAt = openedAt
+                                        )
+
+                                        showBillSheet = true
+                                    } catch (e: Exception) {
+                                        Log.e("TableDetailScreen", e.toString())
+                                        displayError = "Error al cargar la cuenta"
+                                    }
+                                }
+                            },
+                            enabled = client != null
+                        ) {
+                            Text("Cobrar")
+                        }
                     }
                 }
 
@@ -204,6 +248,7 @@ fun TableDetailScreen(
                                             linesService.markOrderDelivered(orderLines)
                                         } catch(e: Exception) {
                                             Log.e("LinesService", e.toString())
+                                            displayError = "Error al entregar pedido"
                                         }
                                     }
                                 }

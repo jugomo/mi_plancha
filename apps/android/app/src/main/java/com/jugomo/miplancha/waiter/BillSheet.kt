@@ -29,6 +29,7 @@ fun BillSheet(
     tableNumber: Int,
     lines: List<OrderLine>,
     products: Map<String, ProductInfo>,
+    payingBill: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () ->Unit
 ) {
@@ -50,7 +51,8 @@ fun BillSheet(
                 Spacer(Modifier.weight(1f))
 
                 Button(
-                    onClick = {onConfirm()}
+                    onClick = {onConfirm()},
+                    enabled = !payingBill
                 ) { Text("Cobrar y cerrar") }
             }
 

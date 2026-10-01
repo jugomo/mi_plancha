@@ -6,6 +6,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.auth.toOrderLine
+import com.jugomo.miplancha.shared.ProductInfo
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -160,4 +161,108 @@ class LinesService {
         return snapshot.documents.mapNotNull { it.toOrderLine() }
     }
 
+    private fun linesForBill(
+        billLines: List<OrderLine>,
+        products: Map<String, ProductInfo>
+    ) : Pair<List<Map<String, Any>>, Double> {
+        val lineas = billLines.map { line ->
+            val precioUnidad = products[line.productId]?.price ?: 0.0
+            val subtotal = precioUnidad * line.amount
+            mapOf(
+                "pedidoId" to line.orderId,
+                "productoNombre" to (products[line.productId]?.name ?: line.productId),
+                "cantidad" to line.amount,
+                "precioUnidad" to precioUnidad,
+                "subtotal" to subtotal
+            )
+        }
+
+        val total = billLines.sumOf {
+            (products[it.productId]?.price ?: 0.0) * it.amount
+        }
+
+        return lineas to total  // == Pair(lineas,total)
+    }
+
+    suspend fun generateBill(
+        companyId: String,
+        tableId: String,
+        tableNumber: Int,
+        clientId: String,
+        clientName: String,
+        waiterId: String,
+        billLines: List<OrderLine>,
+        products: Map<String, ProductInfo>
+    ) {
+        val (lineas,total) = linesForBill(
+            billLines = billLines, products = products
+        )
+
+        val orderIds = billLines.map { it.orderId }.distinct()
+
+        val clientRef = db.collection("empresas")
+            .document(companyId)
+            .collection("clientes")
+            .document(clientId)
+
+        val tableRef = db.collection("empresas")
+            .document(companyId)
+            .collection("mesas")
+            .document(tableId)
+
+        val billRef = db.collection("empresas")
+            .document(companyId)
+            .collection("cuentas")
+            .document() // create new bill
+
+        db.runTransaction { trn ->
+            val client = trn.get(clientRef)
+
+            if(client.exists()) {
+
+                if (lineas.isNotEmpty()) {
+                    trn.set(
+                        billRef,
+                        mapOf(
+                            "mesaNumero" to tableNumber,
+                            "clienteNombre" to clientName,
+                            "camareroId" to waiterId,
+                            "pedidoIds" to orderIds,
+                            "lineas" to lineas,
+                            "total" to total,
+                            "generadaEn" to FieldValue.serverTimestamp()
+                        )
+                    )
+
+                    orderIds.forEach { orderId ->
+                        val orderRef = db.collection("empresas")
+                            .document(companyId)
+                            .collection("pedidos")
+                            .document(orderId)
+
+                        trn.update(
+                            orderRef,
+                            mapOf(
+                                "cuentaId" to billRef.id
+                            )
+                        )
+                    }
+                }
+
+                trn.delete(clientRef)
+
+                trn.update(
+                    tableRef,
+                    mapOf(
+                        "estado" to "libre",
+                        "clienteId" to null
+                    )
+                )
+            } else {
+                throw ClientNotExists(msg = "El cliente no existe")
+            }
+        }.await()
+    }
 }
+
+class ClientNotExists(msg: String) : Exception(msg) { }

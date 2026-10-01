@@ -46,6 +46,7 @@ fun TableDetailScreen(
     var client by remember { mutableStateOf<Client?>(null) }
     var showBillSheet by remember { mutableStateOf(false) }
     var billLines by remember { mutableStateOf<List<OrderLine>?>(null) }
+    var payingBill by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         linesService.startListeningTable(companyId, tableId).collect { gettable ->
@@ -143,13 +144,45 @@ fun TableDetailScreen(
                 )
             }
 
-            if(showBillSheet) {
+            if(showBillSheet && billLines != null) {
                 BillSheet(
                     tableNumber = table!!.numero,
                     lines = billLines!!,
                     products = products,
+                    payingBill = payingBill,
                     onConfirm = {
-                        TODO()
+                        if (!payingBill) {
+                            payingBill = true
+
+                            scope.launch {
+                                try {
+                                    val table = table ?: return@launch
+                                    val clientId = table.clienteId ?: return@launch
+                                    val client = client ?: return@launch
+                                    val billLines = billLines ?: return@launch
+
+                                    linesService.generateBill(
+                                        companyId = companyId,
+                                        tableId = table.id,
+                                        tableNumber = table.numero,
+                                        clientId = clientId,
+                                        clientName = client.nombre,
+                                        waiterId = waiterId,
+                                        billLines = billLines,
+                                        products = products
+                                    )
+
+                                    showBillSheet = false
+                                }catch (e: ClientNotExists) {
+                                  displayError = "La mesa ya fue cobrada"
+                                } catch (e: Exception){
+                                    Log.e("TableDetailScreen", e.toString())
+                                    displayError = "Error al generar cuenta"
+                                } finally {
+                                    payingBill = false
+                                }
+                            }
+                        }
                     },
                     onDismiss = {
                         showBillSheet = false

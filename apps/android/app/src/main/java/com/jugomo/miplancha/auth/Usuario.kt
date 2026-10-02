@@ -48,6 +48,7 @@ fun DocumentSnapshot.toOrderLine(): OrderLine? {
     val tableNumber = getLong("mesaNumero")?.toInt() ?: return null
     val orderId = reference.parent.parent?.id ?: return null
     val createdAt = getTimestamp("pedidoCreadoEn") ?: return null
+    val cookedAt = getTimestamp("colocadoEn")
 
     return OrderLine(
         id = id ,
@@ -57,6 +58,6 @@ fun DocumentSnapshot.toOrderLine(): OrderLine? {
         tableNumber = tableNumber,
         orderId = orderId,
         createdAt = createdAt,
-        cookedAt =  null
+        cookedAt =  cookedAt
     )
 }

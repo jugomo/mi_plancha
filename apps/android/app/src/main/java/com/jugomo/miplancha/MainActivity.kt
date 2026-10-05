@@ -70,6 +70,7 @@ fun MiPlanchaPlaceholder() {
                             composable("Home") {
                                 CookScreen(
                                     companyId = usuario!!.empresaId!!,
+                                    userId = usuario!!.uid
                                 )
                             }
                         }

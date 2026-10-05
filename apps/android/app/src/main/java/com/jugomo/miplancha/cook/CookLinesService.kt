@@ -158,7 +158,7 @@ class CookLinesService {
         }
 
         if((inUse + needed) > capacity) {
-            throw Exception("Full grill")
+            throw FullGrillException()
         }
         val willUseOverflow = (inUse + needed) > base
 
@@ -227,3 +227,5 @@ data class CookConfig (
     var maxWaitSeconds: Int,
     var overflowPercent: Int? = null
 )
+
+class FullGrillException() : Exception("Full grill")

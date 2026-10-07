@@ -21,8 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -46,13 +48,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Timestamp
 import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.fetchProducts
+import com.jugomo.miplancha.shared.formatDuration
 import com.jugomo.miplancha.waiter.LineStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -240,7 +245,8 @@ fun CookScreen(
                         }
                     }
                 },
-                now = now
+                now = now,
+                maxWaitSeconds = cfg?.maxWaitSeconds ?: 900
             )
             1 -> CookGrillTab(
                 lines,
@@ -270,7 +276,8 @@ fun CookScreen(
                             Log.e("CookScreen", e.toString())
                         }
                     }
-                }
+                },
+                now = now
             )
         }
 
@@ -287,7 +294,8 @@ fun CookOrdersTab(
     onTakeOrder : (List<OrderLine>) -> Unit,
     onPlaceSuggestion: (List<SuggestionLine>) -> Unit,
     now: Timestamp,
-    onTakeFromGrill: (List<OrderLine>) -> Unit
+    onTakeFromGrill: (List<OrderLine>) -> Unit,
+    maxWaitSeconds: Int
 ) {
     val cooking = lines.filter { it.status == LineStatus.EN_PLANCHA }
         .groupBy { it.orderId }
@@ -322,10 +330,7 @@ fun CookOrdersTab(
             if (lines.isNotEmpty()) {
                 /* ORDERS BEING COOKED */
                 item {
-                    Text(
-                        "En curso",
-                        fontWeight = FontWeight.Bold
-                    )
+                    SectionHeader("En curso")
                 }
                 cooking.forEach { group ->
                     item(key = "cooking-header-${group.key}") {
@@ -353,32 +358,28 @@ fun CookOrdersTab(
                     }
 
                     items(group.value, key = { it.id }) { line ->
-                        CookLineRow(line, products)
+                        CookLineRow(line, products, now)
                     }
                 }
 
 
                 /* ORDERS WAITING */
                 item {
-                    Text(
-                        "Pendientes",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(top = 20.dp)
-                    )
+                    SectionHeader("Pendientes")
                 }
                 pending.forEach { group ->
                     item(key = "pending-header-${group.key}") {
                         CookPendingHeader(
-                            group.value.first().tableNumber,
-                            onTakeOrder = {
-                                onTakeOrder(group.value)
-                            }
+                            tableNumber = group.value.first().tableNumber,
+                            onTakeOrder = { onTakeOrder(group.value) },
+                            createdAt = group.value.minOf { it.createdAt },
+                            now = now,
+                            maxWaitSeconds =  maxWaitSeconds
                         )
                     }
 
                     items(group.value, key = { it.id }) { line ->
-                        CookLineRow(line, products)
+                        CookLineRow(line, products, now)
                     }
                 }
             }
@@ -393,22 +394,64 @@ fun CookOrdersTab(
 @Composable
 fun CookLineRow(
     line: OrderLine,
-    products: Map<String, ProductInfo>
+    products: Map<String, ProductInfo>,
+    now:  Timestamp
 ) {
 
-    Text("${line.amount}x ${products[line.productId]?.name ?: ""}")
+    Row {
+        Text("${line.amount}x ${products[line.productId]?.name ?: ""}")
+
+        Spacer(Modifier.weight(1f))
+
+        if(line.status == LineStatus.EN_PLANCHA) {
+            val cooktime = products[line.productId]?.cookTimeSecs ?: 0
+            val start = line.cookedAt ?: line.createdAt
+            val remaining = start.seconds + cooktime - now.seconds
+            if (cooktime > 0) {
+                if(remaining <= 0) {
+                    Text(
+                        "Listo",
+                        color = Color(0xFF2E7D32),
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
+                    Text(
+                        "${line.status.label} · ${formatDuration(remaining)}",
+                        color =  MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
 fun CookPendingHeader(
     tableNumber: Int,
-    onTakeOrder: () -> Unit
+    onTakeOrder: () -> Unit,
+    createdAt: Timestamp,
+    now: Timestamp,
+    maxWaitSeconds: Int
 ) {
-    Row {
-        Text("Mesa ${tableNumber}")
+    val waited = now.seconds - createdAt.seconds
 
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Mesa ${tableNumber}",
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            formatDuration(waited),
+            color = if(waited >= maxWaitSeconds)
+                        MaterialTheme.colorScheme.error
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelSmall,
+        )
         Spacer(Modifier.weight(1f))
-
         Button(
             onClick = { onTakeOrder() }
         ) {
@@ -425,7 +468,8 @@ fun CookGrillTab(
     capacity: Int?,
     overflowPercent: Int?,
     overflowManualActive: Boolean,
-    onToggleOverflow: () -> Unit
+    onToggleOverflow: () -> Unit,
+    now:  Timestamp
 ) {
     val cookingLines = lines.filter { it.status == LineStatus.EN_PLANCHA }
     val inUse = cookingLines.sumOf { line ->
@@ -456,10 +500,7 @@ fun CookGrillTab(
 
             if (cooking.isNotEmpty()) {
                 item {
-                    Text(
-                        "En plancha",
-                        fontWeight = FontWeight.Bold
-                    )
+                    SectionHeader("En plancha")
                 }
 
                 cooking.forEach { group ->
@@ -473,7 +514,7 @@ fun CookGrillTab(
                     }
 
                     items(group.value, key = { it.id }) { line ->
-                        CookLineRow(line, products)
+                        CookLineRow(line, products, now)
                     }
                 }
             }
@@ -525,7 +566,8 @@ fun SuggestionCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 12.dp),
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -564,6 +606,13 @@ fun SuggestionCard(
                         )
                         if (isForced) {
                             Spacer(Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.Outlined.WarningAmber,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
                             Text(
                                 "Urgente",
                                 style = MaterialTheme.typography.labelSmall,
@@ -581,36 +630,56 @@ fun SuggestionCard(
                                 Icon(
                                     imageVector = Icons.Filled.LocalFireDepartment,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color(0xFFFF9800)
                                 )
                             }
                         }
                     }
                 }
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Row() {
+                        Text("Capacidad tras colocar", style =
+                            MaterialTheme.typography.bodySmall, color =
+                            MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.weight(1f))
+                        Text("${result.capacityAfter} / $capacity", style =
+                            MaterialTheme.typography.bodySmall, color =
+                            MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
 
-                Row() {
-                    Text("Capacidad tras colocar")
-                    Spacer(Modifier.weight(1f))
-                    Text("${result.capacityAfter} / $capacity")
+                    LinearProgressIndicator(
+                        progress = { result.capacityAfter.toFloat() / capacity.coerceAtLeast(1) },
+                        modifier = Modifier.fillMaxWidth(),
+                        trackColor = MaterialTheme.colorScheme.outlineVariant,
+                        gapSize = 0.dp,
+                        drawStopIndicator = {},
+                        color = if (result.capacityAfter
+                            > capacity
+                        ) MaterialTheme.colorScheme.error else
+                            MaterialTheme.colorScheme.primary
+                    )
                 }
 
-                LinearProgressIndicator(
-                    progress = { result.capacityAfter.toFloat() / capacity.coerceAtLeast(1) },
-                    modifier = Modifier.fillMaxWidth(),
-                    trackColor = MaterialTheme.colorScheme.outlineVariant,
-                    gapSize = 0.dp,
-                    drawStopIndicator = {},
-                    color = if (result.capacityAfter
-                        > capacity
-                    ) MaterialTheme.colorScheme.error else
-                        MaterialTheme.colorScheme.primary
-                )
-
                 result.alerts.distinctBy { it.id }.forEach {
-                    Text(
-                        "Mesa ${it.tableNumber}: urgente, no cabe ni con overflow",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Report,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Mesa ${it.tableNumber}: urgente, no cabe ni con overflow",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
 
                 if (result.lines.isNotEmpty()) {
@@ -715,4 +784,15 @@ fun EmptyState(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom =
+            4.dp)
+    )
 }

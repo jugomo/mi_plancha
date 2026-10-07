@@ -10,3 +10,9 @@ fun Timestamp.timeLapsed(nowMillis: Long): String {
         else -> "${segundos / 3600}h ${(segundos % 3600) / 60}min"
     }
 }
+
+fun formatDuration(totalSeconds: Long): String {
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return if (minutes > 0) "$minutes min ${seconds} s" else "$seconds s"
+}

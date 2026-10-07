@@ -27,8 +27,10 @@ import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -249,8 +251,8 @@ fun CookScreen(
                 maxWaitSeconds = cfg?.maxWaitSeconds ?: 900
             )
             1 -> CookGrillTab(
-                lines,
-                products,
+                lines = lines,
+                products = products,
                 onTakeFromGrill = { orderLines ->
                     scope.launch {
                         try {
@@ -333,32 +335,47 @@ fun CookOrdersTab(
                     SectionHeader("En curso")
                 }
                 cooking.forEach { group ->
-                    item(key = "cooking-header-${group.key}") {
-                        val allReady = group.value.all { line ->
-                            val cookTime = products[line.productId]?.cookTimeSecs ?: 0
-                            val start = line.cookedAt ?: line.createdAt
-                            cookTime <= 0 || now.seconds >= start.seconds + cookTime
-                        }
-
-                        Row {
-                            Text("Mesa ${group.value.first().tableNumber}")
-
-                            Spacer(Modifier.weight(1f))
-
-                            if (allReady) {
-                                Button(
-                                    onClick = {
-                                        onTakeFromGrill(group.value)
-                                    }
+                    item(key = "cooking-${group.key}") {
+                        Card (
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor =
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                            )
+                        ) {
+                            val allReady = group.value.all { line ->
+                                val cookTime = products[line.productId]?.cookTimeSecs ?: 0
+                                val start = line.cookedAt ?: line.createdAt
+                                cookTime <= 0 || now.seconds >= start.seconds + cookTime
+                            }
+                            Column (
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Retirar de plancha")
+                                    Text(
+                                        "Mesa ${group.value.first().tableNumber}",
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Spacer(Modifier.weight(1f))
+
+                                    if (allReady) {
+                                        SmallTonalButton(
+                                            "Retirar de plancha",
+                                            onClick = { onTakeFromGrill(group.value) },
+                                        )
+                                    }
+                                }
+
+                                group.value.forEach { line ->
+                                    CookLineRow(line, products, now)
                                 }
                             }
                         }
-                    }
-
-                    items(group.value, key = { it.id }) { line ->
-                        CookLineRow(line, products, now)
                     }
                 }
 
@@ -368,18 +385,32 @@ fun CookOrdersTab(
                     SectionHeader("Pendientes")
                 }
                 pending.forEach { group ->
-                    item(key = "pending-header-${group.key}") {
-                        CookPendingHeader(
-                            tableNumber = group.value.first().tableNumber,
-                            onTakeOrder = { onTakeOrder(group.value) },
-                            createdAt = group.value.minOf { it.createdAt },
-                            now = now,
-                            maxWaitSeconds =  maxWaitSeconds
-                        )
-                    }
+                    item(key = "pending-${group.key}") {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor =
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                            )
+                        ) {
+                            Column (
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            ) {
+                                CookPendingHeader(
+                                    tableNumber = group.value.first().tableNumber,
+                                    onTakeOrder = { onTakeOrder(group.value) },
+                                    createdAt = group.value.minOf { it.createdAt },
+                                    now = now,
+                                    maxWaitSeconds =  maxWaitSeconds
+                                )
 
-                    items(group.value, key = { it.id }) { line ->
-                        CookLineRow(line, products, now)
+                                group.value.forEach { line ->
+                                    CookLineRow(line, products, now)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -452,11 +483,10 @@ fun CookPendingHeader(
             style = MaterialTheme.typography.labelSmall,
         )
         Spacer(Modifier.weight(1f))
-        Button(
+        SmallTonalButton(
+            "Tomar pedido",
             onClick = { onTakeOrder() }
-        ) {
-            Text("Tomar pedido")
-        }
+        )
     }
 }
 
@@ -504,17 +534,31 @@ fun CookGrillTab(
                 }
 
                 cooking.forEach { group ->
-                    item(key = "cooking-header-${group.key}") {
-                        CookGrillHeader(
-                            tableNumber = group.value.first().tableNumber,
-                            onTakeFromGrill = {
-                                onTakeFromGrill(group.value)
-                            }
-                        )
-                    }
+                    item(key = "cooking-${group.key}") {
+                        Card (
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor =
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            ) {
+                                CookGrillHeader(
+                                    tableNumber = group.value.first().tableNumber,
+                                    onTakeFromGrill = {
+                                        onTakeFromGrill(group.value)
+                                    }
+                                )
 
-                    items(group.value, key = { it.id }) { line ->
-                        CookLineRow(line, products, now)
+                                group.value.forEach { line ->
+                                    CookLineRow(line, products, now)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -532,18 +576,20 @@ fun CookGrillHeader(
     tableNumber: Int,
     onTakeFromGrill: () -> Unit
 ) {
-    Row() {
-        Text("Mesa $tableNumber")
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Mesa $tableNumber",
+            fontWeight = FontWeight.Bold
+        )
 
         Spacer(Modifier.weight(1f))
 
-        Button(
-            onClick = {
-                onTakeFromGrill()
-            }
-        ) {
-            Text("Retirar de plancha")
-        }
+        SmallTonalButton(
+            "Retirar de plancha",
+            onClick = { onTakeFromGrill() }
+        )
     }
 }
 
@@ -560,7 +606,8 @@ fun SuggestionCard(
             .fillMaxWidth()
             .padding(vertical = 6.dp, horizontal = 6.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor =
+                MaterialTheme.colorScheme.surfaceContainerHigh
         )
     ) {
         Column(
@@ -683,12 +730,11 @@ fun SuggestionCard(
                 }
 
                 if (result.lines.isNotEmpty()) {
-                    Button(
+                    SmallTonalButton(
+                        "Colocar en plancha",
                         onClick = { onPlace(result.lines) },
                         modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text("Colocar en plancha")
-                    }
+                    )
                 }
 
             }
@@ -709,7 +755,8 @@ fun GrillCapacityCard(
             .fillMaxWidth()
             .padding(vertical = 6.dp, horizontal = 6.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor =
+                MaterialTheme.colorScheme.surfaceContainerHigh
         )
     ) {
         Column(
@@ -795,4 +842,24 @@ fun SectionHeader(title: String) {
         modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom =
             4.dp)
     )
+}
+
+@Composable
+fun SmallTonalButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier.height(32.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha =
+                0.15f),
+            contentColor = MaterialTheme.colorScheme.primary
+        )
+    ) {
+        Text(text, style = MaterialTheme.typography.labelMedium)
+    }
 }

@@ -3,17 +3,31 @@ package com.jugomo.miplancha.cook
 import android.icu.text.CaseMap
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
@@ -33,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Timestamp
 import com.jugomo.miplancha.auth.OrderLine
@@ -41,6 +56,7 @@ import com.jugomo.miplancha.shared.fetchProducts
 import com.jugomo.miplancha.waiter.LineStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun CookScreen(
@@ -69,7 +85,7 @@ fun CookScreen(
     var now by remember { mutableStateOf(Timestamp.now()) }
     LaunchedEffect(Unit) {
         while (true) {
-            delay(30_000)
+            delay(1_000.milliseconds)
             now = Timestamp.now()
         }
     }
@@ -148,6 +164,20 @@ fun CookScreen(
             0 -> CookOrdersTab(
                 lines = lines,
                 products = products,
+                onTakeFromGrill = { orderLines ->
+                    scope.launch {
+                        try {
+                            orderLines.forEach { line ->
+                                service.takeFromGrill(
+                                    companyId,
+                                    line
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e("CookScreen", e.toString())
+                        }
+                    }
+                },
                 suggestion = suggestion,
                 capacity = effectiveCapacity,
                 onTakeOrder = { orderLines ->
@@ -209,7 +239,8 @@ fun CookScreen(
                             Log.e("CookScreen", e.toString())
                         }
                     }
-                }
+                },
+                now = now
             )
             1 -> CookGrillTab(
                 lines,
@@ -254,7 +285,9 @@ fun CookOrdersTab(
     suggestion: SuggestionResult?,
     capacity: Int?,
     onTakeOrder : (List<OrderLine>) -> Unit,
-    onPlaceSuggestion: (List<SuggestionLine>) -> Unit
+    onPlaceSuggestion: (List<SuggestionLine>) -> Unit,
+    now: Timestamp,
+    onTakeFromGrill: (List<OrderLine>) -> Unit
 ) {
     val cooking = lines.filter { it.status == LineStatus.EN_PLANCHA }
         .groupBy { it.orderId }
@@ -266,69 +299,93 @@ fun CookOrdersTab(
         .entries
         .sortedBy { it.value.minOf { l -> l.createdAt } }
 
-    LazyColumn(
-        modifier = Modifier
-            .padding(top = 24.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 16.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (suggestion != null && capacity != null) {
-            item(key = "suggestion") {
-                SuggestionCard(
-                    result = suggestion,
-                    capacity = capacity,
-                    hasPending = pending.isNotEmpty(),
-                    products = products,
-                    onPlace = onPlaceSuggestion
-                )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp, start = 16.dp, end = 16.dp)
+        ) {
+            if (suggestion != null && capacity != null) {
+                item(key = "suggestion") {
+                    SuggestionCard(
+                        result = suggestion,
+                        capacity = capacity,
+                        hasPending = pending.isNotEmpty(),
+                        products = products,
+                        onPlace = onPlaceSuggestion
+                    )
+                }
+            }
+
+            if (lines.isNotEmpty()) {
+                /* ORDERS BEING COOKED */
+                item {
+                    Text(
+                        "En curso",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                cooking.forEach { group ->
+                    item(key = "cooking-header-${group.key}") {
+                        val allReady = group.value.all { line ->
+                            val cookTime = products[line.productId]?.cookTimeSecs ?: 0
+                            val start = line.cookedAt ?: line.createdAt
+                            cookTime <= 0 || now.seconds >= start.seconds + cookTime
+                        }
+
+                        Row {
+                            Text("Mesa ${group.value.first().tableNumber}")
+
+                            Spacer(Modifier.weight(1f))
+
+                            if (allReady) {
+                                Button(
+                                    onClick = {
+                                        onTakeFromGrill(group.value)
+                                    }
+                                ) {
+                                    Text("Retirar de plancha")
+                                }
+                            }
+                        }
+                    }
+
+                    items(group.value, key = { it.id }) { line ->
+                        CookLineRow(line, products)
+                    }
+                }
+
+
+                /* ORDERS WAITING */
+                item {
+                    Text(
+                        "Pendientes",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(top = 20.dp)
+                    )
+                }
+                pending.forEach { group ->
+                    item(key = "pending-header-${group.key}") {
+                        CookPendingHeader(
+                            group.value.first().tableNumber,
+                            onTakeOrder = {
+                                onTakeOrder(group.value)
+                            }
+                        )
+                    }
+
+                    items(group.value, key = { it.id }) { line ->
+                        CookLineRow(line, products)
+                    }
+                }
             }
         }
 
         if (lines.isEmpty()) {
-            item { Text("Sin pedidos") }
-        }
-
-        /* ORDERS BEING COOKED */
-        item {
-            Text(
-                "En curso",
-                fontWeight = FontWeight.Bold
-            )
-        }
-        cooking.forEach { group ->
-            item(key = "cooking-header-${group.key}") {
-                Text("Mesa ${group.value.first().tableNumber}")
-            }
-
-            items(group.value, key = { it.id }) { line ->
-                CookLineRow(line, products)
-            }
-        }
-
-
-        /* ORDERS WAITING */
-        item {
-            Text(
-                "Pendientes",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(top = 20.dp)
-            )
-        }
-        pending.forEach { group ->
-            item(key = "pending-header-${group.key}") {
-                CookPendingHeader(
-                    group.value.first().tableNumber,
-                    onTakeOrder = {
-                        onTakeOrder(group.value)
-                    }
-                )
-            }
-
-            items(group.value, key = {it.id}) { line ->
-                CookLineRow(line, products)
-            }
+           EmptyState("Sin pedidos", Modifier.align(Alignment.Center))
         }
     }
 }
@@ -379,71 +436,51 @@ fun CookGrillTab(
         .entries
         .sortedBy { it.value.minOf { l -> l.createdAt } }
 
-    LazyColumn(
-        modifier = Modifier
-            .padding(top = 24.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 16.dp)
-    ) {
-        item {
-            Column(
-                modifier = Modifier.padding(bottom = 16.dp)
-            )  {
-                Row{
-                    Text("Capacidad")
-                    Spacer(Modifier.weight(1f))
-                    Text("$inUse / ${capacity ?: 0}")
-                }
-
-                if (capacity != null) {
-                    LinearProgressIndicator(
-                        progress = { inUse.toFloat() / capacity.coerceAtLeast(1) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                if (overflowPercent != null && overflowPercent > 0) {
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = onToggleOverflow,
-
-                    ) {
-                        Text(if (overflowManualActive) "Overflow activo " +
-                                "(+$overflowPercent)%" else "Activar overflow (+$overflowPercent)%",
-                            color = if(overflowManualActive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-
-        item {
-            Text(
-                "En plancha",
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        if(cooking.isEmpty()) {
+    Box (
+        modifier = Modifier.fillMaxSize()
+    ){
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp, start = 16.dp, end = 16.dp)
+        ) {
             item {
-                Text("Plancha vacía")
-            }
-        }
-
-        cooking.forEach { group ->
-            item(key = "cooking-header-${group.key}") {
-                CookGrillHeader(
-                    tableNumber = group.value.first().tableNumber,
-                    onTakeFromGrill = {
-                        onTakeFromGrill(group.value)
-                    }
+                GrillCapacityCard(
+                    inUse = inUse,
+                    capacity = capacity,
+                    overflowPercent = overflowPercent,
+                    onToggleOverflow = onToggleOverflow,
+                    overflowManualActive = overflowManualActive
                 )
             }
 
-            items(group.value, key = {it.id}) { line ->
-                CookLineRow(line, products)
+            if (cooking.isNotEmpty()) {
+                item {
+                    Text(
+                        "En plancha",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                cooking.forEach { group ->
+                    item(key = "cooking-header-${group.key}") {
+                        CookGrillHeader(
+                            tableNumber = group.value.first().tableNumber,
+                            onTakeFromGrill = {
+                                onTakeFromGrill(group.value)
+                            }
+                        )
+                    }
+
+                    items(group.value, key = { it.id }) { line ->
+                        CookLineRow(line, products)
+                    }
+                }
             }
+        }
+
+        if(cooking.isEmpty()) {
+            EmptyState("Plancha vacía", Modifier.align(Alignment.Center))
         }
     }
 
@@ -477,86 +514,205 @@ fun SuggestionCard(
     products: Map<String, ProductInfo>,
     onPlace: (List<SuggestionLine>) -> Unit
 ) {
-    Column() {
-        Text(
-            "Sugerencia d e plancha",
-            fontWeight = FontWeight.Bold
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
         )
-        if(result.lines.isEmpty() && result.alerts.isEmpty()) {
-            Text(
-                if(hasPending) "La plancha está llena, no hay espacio para sugerir pedidos ahora"
-                else "No hay líneas pendientes que colocar",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            val byOrder = result.lines.groupBy { it.orderId }
-            byOrder.forEach { (_, lines) ->
-                val tableNumber = lines.first().tableNumber
-                val isForced = lines.any {it.isForced}
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Mesa $tableNumber",
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if(isForced) {
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Urgente",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                lines.forEach { line ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("${line.amount}x ${products[line.productId]?.name ?: ""}")
-                        if(line.usingOverflow) {
-                            Text(
-                                "\uD83D\uDD25",
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
-                }
-            }
-
-            Row() {
-                Text("Capacidad tras colocar")
-                Spacer(Modifier.weight(1f))
-                Text("${result.capacityAfter} / $capacity")
-            }
-
-            LinearProgressIndicator(
-                progress = { result.capacityAfter.toFloat() / capacity.coerceAtLeast(1) },
-                modifier = Modifier.fillMaxWidth(),
-                color = if (result.capacityAfter
-                    > capacity) MaterialTheme.colorScheme.error else
-                    MaterialTheme.colorScheme.primary
-            )
-
-            result.alerts.distinctBy { it.id }.forEach {
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
                 Text(
-                    "Mesa ${it.tableNumber}: urgente, no cabe ni con overflow",
-                    color = MaterialTheme.colorScheme.error
+                    "Sugerencia d e plancha",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            if(result.lines.isNotEmpty()) {
-                Button(
-                    onClick =  { onPlace(result.lines) },
-                    modifier = Modifier.align( Alignment.End )
-                ) {
-                    Text("Colocar en plancha")
+            if (result.lines.isEmpty() && result.alerts.isEmpty()) {
+                Text(
+                    if (hasPending) "La plancha está llena, no hay espacio para sugerir pedidos ahora"
+                    else "No hay líneas pendientes que colocar",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                val byOrder = result.lines.groupBy { it.orderId }
+                byOrder.forEach { (_, lines) ->
+                    val tableNumber = lines.first().tableNumber
+                    val isForced = lines.any { it.isForced }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Mesa $tableNumber",
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        if (isForced) {
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "Urgente",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+
+                    lines.forEach { line ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("${line.amount}x ${products[line.productId]?.name ?: ""}")
+                            if (line.usingOverflow) {
+                                Icon(
+                                    imageVector = Icons.Filled.LocalFireDepartment,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
                 }
+
+                Row() {
+                    Text("Capacidad tras colocar")
+                    Spacer(Modifier.weight(1f))
+                    Text("${result.capacityAfter} / $capacity")
+                }
+
+                LinearProgressIndicator(
+                    progress = { result.capacityAfter.toFloat() / capacity.coerceAtLeast(1) },
+                    modifier = Modifier.fillMaxWidth(),
+                    trackColor = MaterialTheme.colorScheme.outlineVariant,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {},
+                    color = if (result.capacityAfter
+                        > capacity
+                    ) MaterialTheme.colorScheme.error else
+                        MaterialTheme.colorScheme.primary
+                )
+
+                result.alerts.distinctBy { it.id }.forEach {
+                    Text(
+                        "Mesa ${it.tableNumber}: urgente, no cabe ni con overflow",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+
+                if (result.lines.isNotEmpty()) {
+                    Button(
+                        onClick = { onPlace(result.lines) },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Colocar en plancha")
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+@Composable
+fun GrillCapacityCard(
+    inUse: Int,
+    capacity: Int?,
+    overflowPercent: Int?,
+    onToggleOverflow: () -> Unit,
+    overflowManualActive: Boolean
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 12.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Row {
+                Text("Capacidad")
+                Spacer(Modifier.weight(1f))
+                Text("$inUse / ${capacity ?: 0}")
             }
 
+            if (capacity != null) {
+                LinearProgressIndicator(
+                    progress = { inUse.toFloat() / capacity.coerceAtLeast(1) },
+                    modifier = Modifier.fillMaxWidth(),
+                    trackColor = MaterialTheme.colorScheme.outlineVariant,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
+                )
+            }
+
+            if (overflowPercent != null && overflowPercent > 0) {
+                TextButton(
+                    onClick = onToggleOverflow,
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    val color = if (overflowManualActive) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+
+                    Icon(
+                        imageVector = if (overflowManualActive) Icons.Filled.LocalFireDepartment
+                        else Icons.Outlined.LocalFireDepartment,
+                        contentDescription = null,
+                        tint = color,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        if (overflowManualActive) "Overflow activo (+$overflowPercent)%"
+                        else "Activar overflow (+$overflowPercent)%",
+                        color = color
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun EmptyState(
+    message: String,
+    modifier: Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.CheckCircle,
+            contentDescription = null,
+            modifier = Modifier.size(56.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(12.dp))
+        Text(
+            message,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

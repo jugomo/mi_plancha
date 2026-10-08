@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.DoorFront
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.shared.EmptyState
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.SectionHeader
 import com.jugomo.miplancha.shared.SmallTonalButton
@@ -165,7 +167,9 @@ fun TableDetailScreen(
         }
     ) { innerPadding ->
         Box(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
             if (table != null) {
                 if (showOpenDialog) {
@@ -292,18 +296,7 @@ fun TableDetailScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
                 ) {
-                    if (table!!.estado == TableStatus.LIBRE) {
-                        Text("Mesa cerrada")
-                        Button(
-                            onClick = {
-                                showOpenDialog = true
-                            }
-                        ) {
-                            Text("Abrir mesa")
-                        }
-                    } else if (lines.isEmpty()) {
-                        Text("Sin pedidos")
-                    } else {
+                     if(table!!.estado != TableStatus.LIBRE) {
                         for (orderLines in lines.groupBy { it.orderId }.values.sortedBy { it.first().createdAt } ) {
                             Column {
                                 SectionHeader(formatter.format(orderLines.first().createdAt.toDate()))
@@ -378,6 +371,24 @@ fun TableDetailScreen(
                             }
                         }
                     }
+                }
+
+                if (table!!.estado == TableStatus.LIBRE) {
+                    EmptyState(
+                        message = "Mesa cerrada",
+                        icon = Icons.Outlined.DoorFront,
+                        description = "Abre la mesa para empezar a tomar pedidos",
+                        modifier = Modifier.align(Alignment.Center).padding(horizontal = 32.dp),
+                        action = {
+                            Button(onClick = { showOpenDialog = true }) { Text("Abrir mesa") }
+                        }
+                    )
+
+                } else if (lines.isEmpty()) {
+                    EmptyState(
+                        message = "Sin pedidos",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }

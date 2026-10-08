@@ -1,20 +1,17 @@
 package com.jugomo.miplancha.waiter
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -32,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,12 +38,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
+import com.jugomo.miplancha.shared.SectionHeader
+import com.jugomo.miplancha.shared.SmallTonalButton
 import com.jugomo.miplancha.shared.StatusBar
 import com.jugomo.miplancha.shared.fetchProducts
 import kotlinx.coroutines.launch
@@ -293,8 +289,8 @@ fun TableDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 24.dp, start = 16.dp, end = 16.dp)
                         .verticalScroll(rememberScrollState())
+                        .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
                 ) {
                     if (table!!.estado == TableStatus.LIBRE) {
                         Text("Mesa cerrada")
@@ -308,14 +304,9 @@ fun TableDetailScreen(
                     } else if (lines.isEmpty()) {
                         Text("Sin pedidos")
                     } else {
-                        for ((index, orderLines) in lines.groupBy { it.orderId }.values.sortedBy { it.first().createdAt }.withIndex()) {
+                        for (orderLines in lines.groupBy { it.orderId }.values.sortedBy { it.first().createdAt } ) {
                             Column {
-                                Text(
-                                    formatter.format(orderLines.first().createdAt.toDate()),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.outlineVariant,
-                                    modifier = Modifier.padding(top = if (index != 0) 12.dp else 0.dp)
-                                )
+                                SectionHeader(formatter.format(orderLines.first().createdAt.toDate()))
 
                                 Card(
                                     modifier = Modifier
@@ -364,7 +355,9 @@ fun TableDetailScreen(
                                         }
 
                                         if (orderLines.all { it.status == LineStatus.PENDIENTE_ENTREGA }) {
-                                            Button(
+                                            SmallTonalButton(
+                                                text = "Entregar pedido",
+                                                modifier = Modifier.align(Alignment.End).padding(top = 12.dp),
                                                 onClick = {
                                                     scope.launch {
                                                         try {
@@ -378,9 +371,7 @@ fun TableDetailScreen(
                                                         }
                                                     }
                                                 }
-                                            ) {
-                                                Text("Entregar pedido")
-                                            }
+                                            )
                                         }
                                     }
                                 }

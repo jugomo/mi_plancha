@@ -1,5 +1,6 @@
 package com.jugomo.miplancha.waiter
 
+import androidx.compose.ui.graphics.Color
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
@@ -41,6 +42,13 @@ enum class LineStatus {
         EN_PLANCHA -> "Cocinando"
         PENDIENTE_ENTREGA -> "Para entregar"
         LISTO -> "Entregado"
+    }
+
+    val color get() = when (this) {
+        PENDIENTE -> Color(0xFFFFCC00)
+        EN_PLANCHA -> Color(0xFFFF9500)
+        PENDIENTE_ENTREGA -> Color(0xFF007AFF)
+        LISTO -> Color(0xFF34C759)
     }
 }
 

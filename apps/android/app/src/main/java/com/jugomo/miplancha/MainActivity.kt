@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import com.jugomo.miplancha.auth.Rol
 import com.jugomo.miplancha.auth.Usuario
 import com.jugomo.miplancha.cook.CookScreen
 import com.jugomo.miplancha.shared.RoleContainer
+import com.jugomo.miplancha.shared.RoleScaffold
 import com.jugomo.miplancha.waiter.TableDetailScreen
 import com.jugomo.miplancha.waiter.WaiterScreen
 
@@ -45,15 +47,20 @@ class MainActivity : ComponentActivity() {
 fun MiPlanchaPlaceholder() {
     val authService = remember { AuthService() }
     val usuario: Usuario? by authService.mutableUser.collectAsState()
+    val isRestoring by authService.mutableIsRestoring.collectAsState()
 
     LaunchedEffect(Unit) {
-        authService.restoreSessionIfActiveUser()
+        try {
+            authService.restoreSessionIfActiveUser()
+        } catch (_: Exception) {}
     }
 
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if(usuario == null) {
+                if(isRestoring) {
+                    CircularProgressIndicator()
+                }else if(usuario == null) {
                     LoginScreen(
                         onLogin = { companyId, username, password ->
                             authService.startSession(companyId, username, password)
@@ -61,41 +68,45 @@ fun MiPlanchaPlaceholder() {
                     )
                 } else {
                     if(usuario!!.rol == Rol.COCINERO) {
-                        RoleContainer(
-                            usuario = usuario!!,
-                            onLogout =  {
-                                authService.closeSession()
-                            }
-                        ){ navController ->
+                        RoleContainer { navController ->
                             composable("Home") {
-                                CookScreen(
-                                    companyId = usuario!!.empresaId!!,
-                                    userId = usuario!!.uid
-                                )
+                                RoleScaffold(
+                                    usuario = usuario!!,
+                                    onLogout = { authService.closeSession() }
+                                ) { padding ->
+                                    CookScreen(
+                                        companyId = usuario!!.empresaId!!,
+                                        userId = usuario!!.uid,
+                                        modifier = Modifier.padding(padding)
+                                    )
+                                }
                             }
                         }
                     } else if(usuario!!.rol == Rol.CAMARERO) {
-                        RoleContainer (
-                            usuario = usuario!!,
-                            onLogout = {
-                                authService.closeSession()
-                            }
-                        ) { navController ->
+                        RoleContainer  { navController ->
                             composable("Home") {
-                                WaiterScreen(
-                                    companyId = usuario!!.empresaId!!,
-                                    waiterId = usuario!!.uid,
-                                    onTableCLick = { mesa ->
-                                        navController.navigate("table/${mesa.id}")
-                                    }
-                                )
+                                RoleScaffold(
+                                    usuario = usuario!!,
+                                    onLogout = { authService.closeSession() }
+                                ) { padding ->
+                                    WaiterScreen(
+                                        companyId = usuario!!.empresaId!!,
+                                        waiterId = usuario!!.uid,
+                                        onTableCLick = { mesa ->
+                                            navController.navigate("table/${mesa.id}")
+                                        },
+                                        modifier = Modifier.padding(padding)
+                                    )
+                                }
                             }
                             composable("table/{tableId}") { backStackEntry ->
                                 val tableId = backStackEntry.arguments!!.getString("tableId")!!
+
                                 TableDetailScreen(
                                     tableId = tableId,
                                     companyId = usuario!!.empresaId!!,
-                                    waiterId = usuario!!.uid
+                                    waiterId = usuario!!.uid,
+                                    onBack = { navController.popBackStack() }
                                 )
                             }
                         }

@@ -41,15 +41,15 @@ class AuthService() {
     }
 
     suspend fun restoreSessionIfActiveUser() {
-        _mutableIsRestoring.value = false
-
-        val currUser =  FirebaseAuth.getInstance().currentUser
-        if(currUser != null) {
-            try {
+        try {
+            val currUser =  FirebaseAuth.getInstance().currentUser
+            if(currUser != null) {
                 _mutableUser.value  = getUser(currUser.uid)
-            } catch (e: Exception) {
-                throw AuthError()
             }
+        } catch (e: Exception) {
+            throw AuthError()
+        } finally {
+            _mutableIsRestoring.value = false
         }
     }
 

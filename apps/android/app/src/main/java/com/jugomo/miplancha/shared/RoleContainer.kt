@@ -1,5 +1,6 @@
 package com.jugomo.miplancha.shared
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,41 +25,30 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RoleContainer(
-    usuario: Usuario,
-    onLogout: suspend () -> Unit,
     graph: NavGraphBuilder.(NavController) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
     val navController = rememberNavController()
-    val currEntry = navController.currentBackStackEntryAsState().value // fires recomposition
-    val canNavigateBack =  navController.previousBackStackEntry != null
+
+    NavHost(
+        navController = navController,
+        startDestination = "Home"
+    ) {
+        graph(navController)
+    }
+}
+
+@Composable
+fun RoleScaffold(
+    usuario: Usuario,
+    onLogout: suspend () -> Unit,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = usuario.nombre) },
-                colors = TopAppBarColors(
-                    containerColor = Color.Gray,
-                    scrolledContainerColor = Color.Black,
-                    navigationIconContentColor = Color.Black,
-                    titleContentColor = Color.Black,
-                    actionIconContentColor = Color.Black,
-                    subtitleContentColor = Color.Black
-                ),
-                navigationIcon = {
-                    if (canNavigateBack) {
-                        IconButton(
-                            onClick = {
-                                navController.popBackStack()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Regresar"
-                            )
-                        }
-                    }
-                },
                 actions = {
                     IconButton(
                         onClick = {
@@ -73,14 +63,7 @@ fun RoleContainer(
                     }
                 }
             )
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = "Home",
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            graph(navController)
-        }
-    }
+        },
+        content = content
+    )
 }

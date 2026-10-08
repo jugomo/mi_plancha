@@ -6,9 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +33,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.Timestamp
 import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
+import com.jugomo.miplancha.shared.StatusBar
 import com.jugomo.miplancha.shared.fetchProducts
 import com.jugomo.miplancha.shared.formatDuration
 import com.jugomo.miplancha.waiter.LineStatus
@@ -68,7 +72,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun CookScreen(
     companyId: String,
-    userId: String
+    userId: String,
+    modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -134,7 +139,9 @@ fun CookScreen(
         products = fetchProducts(companyId)
     }
 
-    Column {
+    Column (
+        modifier = modifier
+    ) {
         if(showFullGrill) {
             AlertDialog(
                 onDismissRequest = { showFullGrill = false },
@@ -354,11 +361,12 @@ fun CookOrdersTab(
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(bottom = 20.dp)
                                 ) {
                                     Text(
                                         "Mesa ${group.value.first().tableNumber}",
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
                                     )
 
                                     Spacer(Modifier.weight(1f))
@@ -371,7 +379,14 @@ fun CookOrdersTab(
                                     }
                                 }
 
-                                group.value.forEach { line ->
+                                group.value.forEachIndexed { index, line ->
+                                    if(index > 0 ) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(start = 17.dp,
+                                                top = 12.dp, bottom = 12.dp),
+                                            color = MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    }
                                     CookLineRow(line, products, now)
                                 }
                             }
@@ -406,7 +421,14 @@ fun CookOrdersTab(
                                     maxWaitSeconds =  maxWaitSeconds
                                 )
 
-                                group.value.forEach { line ->
+                                group.value.forEachIndexed { index, line ->
+                                    if(index > 0) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(start = 17.dp,
+                                                top = 12.dp, bottom = 12.dp),
+                                            color = MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    }
                                     CookLineRow(line, products, now)
                                 }
                             }
@@ -429,9 +451,18 @@ fun CookLineRow(
     now:  Timestamp
 ) {
 
-    Row {
-        Text("${line.amount}x ${products[line.productId]?.name ?: ""}")
-
+    Row(
+        modifier = Modifier.height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        StatusBar(line.status)
+        Spacer(Modifier.width(12.dp))
+        Text(
+            "${line.amount}x",
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(products[line.productId]?.name ?: "")
         Spacer(Modifier.weight(1f))
 
         if(line.status == LineStatus.EN_PLANCHA) {
@@ -467,7 +498,8 @@ fun CookPendingHeader(
     val waited = now.seconds - createdAt.seconds
 
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(bottom = 20.dp)
     ) {
         Text(
             "Mesa ${tableNumber}",
@@ -554,7 +586,14 @@ fun CookGrillTab(
                                     }
                                 )
 
-                                group.value.forEach { line ->
+                                group.value.forEachIndexed { index, line ->
+                                    if(index > 0){
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(start = 17.dp,
+                                                top = 12.dp, bottom = 12.dp),
+                                            color = MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                    }
                                     CookLineRow(line, products, now)
                                 }
                             }
@@ -577,7 +616,8 @@ fun CookGrillHeader(
     onTakeFromGrill: () -> Unit
 ) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(bottom = 20.dp)
     ) {
         Text(
             "Mesa $tableNumber",
@@ -730,11 +770,12 @@ fun SuggestionCard(
                 }
 
                 if (result.lines.isNotEmpty()) {
-                    SmallTonalButton(
-                        "Colocar en plancha",
+                    Button(
                         onClick = { onPlace(result.lines) },
                         modifier = Modifier.align(Alignment.End)
-                    )
+                    ) {
+                        Text( "Colocar en plancha")
+                    }
                 }
 
             }

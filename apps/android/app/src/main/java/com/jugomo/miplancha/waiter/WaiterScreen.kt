@@ -29,7 +29,8 @@ import kotlinx.coroutines.launch
 fun WaiterScreen(
     companyId: String,
     waiterId: String,
-    onTableCLick: (Table) -> Unit
+    onTableCLick: (Table) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     // reactive states
@@ -81,7 +82,8 @@ fun WaiterScreen(
                 tablesService,
                 waiterId,
                 companyId,
-                onTableCLick
+                onTableCLick,
+                modifier
         )
     }
 }
@@ -91,14 +93,15 @@ fun Content(tables : List<Table>,
             tablesService: TablesService,
             waiterId: String,
             companyId: String,
-            onTableCLick: (Table) -> Unit
+            onTableCLick: (Table) -> Unit,
+            modifier: Modifier
 ) {
     val scope = rememberCoroutineScope()
     var tableParaAbrir by remember { mutableStateOf<Table?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
     Column(
-        Modifier.padding(16.dp),
+        modifier.padding(16.dp),
     ) {
         Text(
             "Mesas",

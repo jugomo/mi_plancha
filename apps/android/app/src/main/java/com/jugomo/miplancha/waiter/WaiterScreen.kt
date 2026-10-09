@@ -9,6 +9,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -23,6 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.shared.ProductInfo
+import com.jugomo.miplancha.shared.fetchProducts
 import kotlinx.coroutines.launch
 
 @Composable
@@ -88,6 +94,7 @@ fun WaiterScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Content(tables : List<Table>,
             tablesService: TablesService,
@@ -98,7 +105,38 @@ fun Content(tables : List<Table>,
 ) {
     val scope = rememberCoroutineScope()
     var tableParaAbrir by remember { mutableStateOf<Table?>(null) }
+    var tableParaPedir by remember { mutableStateOf<Table?>(null) }
+    var tableParaCobrar by remember { mutableStateOf<Table?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    val linesService = remember { LinesService() }
+    var billLines by remember { mutableStateOf<List<OrderLine>?>(null) }
+    var products by remember {  mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
+    var payingBill by remember { mutableStateOf(false) }
+
+    LaunchedEffect(tableParaCobrar) {
+        val mesa = tableParaCobrar
+        if (mesa == null) {
+            billLines = null
+            return@LaunchedEffect
+        }
+
+        val clientId = mesa.clienteId ?: return@LaunchedEffect
+        val client = tablesService.clientsCache[clientId] ?: return@LaunchedEffect
+
+        try {
+            products = fetchProducts(companyId)
+
+            billLines = linesService.fetchBillLines(
+                companyId = companyId,
+                tableNumber = mesa.numero,
+                openedAt = client.abiertoEn
+            )
+        } catch (e: Exception) {
+            error = "Error al cargar la cuenta"
+            tableParaCobrar = null
+        }
+
+    }
 
     Column(
         modifier.padding(16.dp),
@@ -136,6 +174,8 @@ fun Content(tables : List<Table>,
                     onLongCLick = {
                         if(mesa.estado == TableStatus.LIBRE) {
                             tableParaAbrir = mesa
+                        } else {
+                            tableParaPedir = mesa
                         }
                     }
                 )
@@ -162,10 +202,84 @@ fun Content(tables : List<Table>,
             }
         )
     }
+
+    val mesaPedir = tableParaPedir
+    if(mesaPedir != null) {
+        ModalBottomSheet(onDismissRequest = {tableParaPedir = null}) {
+            if (tablesService.tableOrderInfo[mesaPedir.numero]?.worstStatus ==
+                LineStatus.PENDIENTE_ENTREGA) {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                tablesService.deliverAllPending(companyId, mesaPedir.numero)
+                            } catch (e: Exception) {
+                                error = e.message
+                            }
+                        }
+                        tableParaPedir = null
+                    }
+                ) {
+                    Text("Entregar pedidos pendientes")
+                }
+            }
+            TextButton(
+                onClick = {
+                    tableParaCobrar = mesaPedir
+                    tableParaPedir = null
+                }
+            ) {
+                Text("Cobrar")
+            }
+
+        }
+    }
+
+    val mesaCobrar = tableParaCobrar
+    val lineasCuenta = billLines
+    if(mesaCobrar != null && lineasCuenta != null) {
+        BillSheet(
+            tableNumber = mesaCobrar.numero,
+            lines = lineasCuenta,
+            products = products,
+            payingBill = payingBill,
+            onConfirm = {
+                if(!payingBill) {
+                    payingBill = true
+                    scope.launch {
+                        try {
+                            val clientId = mesaCobrar.clienteId ?: return@launch
+                            val client = tablesService.clientsCache[clientId] ?: return@launch
+
+                            linesService.generateBill(
+                                companyId = companyId,
+                                tableId = mesaCobrar.id,
+                                tableNumber = mesaCobrar.numero,
+                                clientId = clientId,
+                                clientName = client.nombre,
+                                waiterId = waiterId,
+                                billLines = lineasCuenta,
+                                products = products
+                            )
+                            tableParaCobrar = null
+                        } catch (e: ClientNotExists) {
+                            error = "La mesa ya fue cobrada"
+                        } catch(e: Exception) {
+                            error = "Error al generar cuenta"
+                        } finally {
+                            payingBill = false
+                        }
+                    }
+                }
+            },
+            onDismiss =  { tableParaCobrar = null}
+        )
+    }
+
     if (error != null) {
         AlertDialog(
             onDismissRequest = { error = null },
-            title = { Text("Error al Abrir mesa") },
+            title = { Text("Error   ") },
             text = {
                 Text(error.toString())
             },

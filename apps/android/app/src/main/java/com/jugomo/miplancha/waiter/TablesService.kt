@@ -203,6 +203,20 @@ class TablesService {
     fun cleanCacheClient(tables: List<Table>) {
         clientsCache.keys.retainAll(tables.mapNotNull { it.clienteId }.toSet())
     }
+
+    suspend fun deliverAllPending(companyId: String, tableNumber: Int) {
+        val snap = db.collectionGroup("lineas")
+            .whereEqualTo("empresaId", companyId)
+            .whereEqualTo("mesaNumero", tableNumber)
+            .whereEqualTo("estado", LineStatus.PENDIENTE_ENTREGA.name.lowercase())
+            .get().await()
+
+        val batch = db.batch()
+        snap.documents.forEach { doc ->
+            batch.update(doc.reference, "estado", LineStatus.LISTO.name.lowercase())
+        }
+        batch.commit().await()
+    }
 }
 
 class MesaOcupadaError(msg: String) : Exception(msg) {

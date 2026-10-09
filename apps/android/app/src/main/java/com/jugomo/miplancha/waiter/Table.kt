@@ -1,6 +1,12 @@
 package com.jugomo.miplancha.waiter
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
@@ -49,6 +55,13 @@ enum class LineStatus {
         EN_PLANCHA -> Color(0xFFFF9500)
         PENDIENTE_ENTREGA -> Color(0xFF007AFF)
         LISTO -> Color(0xFF34C759)
+    }
+
+    val icon: ImageVector get() = when(this) {
+        PENDIENTE -> Icons.Outlined.Schedule
+        EN_PLANCHA -> Icons.Filled.LocalFireDepartment
+        PENDIENTE_ENTREGA -> Icons.Outlined.Notifications
+        LISTO -> Icons.Outlined.CheckCircle
     }
 }
 

@@ -5,8 +5,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -86,12 +91,17 @@ fun TableCard(
             if (clientName != null && table.estado != TableStatus.LIBRE) {
                 Text(clientName)
             }
-            if(orderSummary?.displayLabel != null) {
-                Text(orderSummary.displayLabel!!)
-            } else {
-                // TODO estados nosmales
-                Text(orderSummary?.worstStatus?.label ?: "")
-
+            val status = orderSummary?.worstStatus
+            if(status != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        status.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(orderSummary.displayLabel ?: status.label)
+                }
             }
             if(orderSummary?.lastUpdate != null) {
                 TiempoTranscurrido(orderSummary.lastUpdate)

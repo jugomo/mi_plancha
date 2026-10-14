@@ -4,22 +4,72 @@ Checklist de implementación. Se actualiza en cada sesión de trabajo — es la 
 
 **Cómo usarlo**: marca `[x]` una historia cuando su código cumple sus criterios de aceptación (`USER_STORIES.md`) y está commiteado. Si una sesión se corta a media historia, dejar una nota bajo "En curso ahora mismo" en vez de marcarla hecha a medias.
 
+Las secciones P0–P3 de más abajo describen la implementación **web** (`apps/web`), que es
+la de referencia para dominio y reglas de negocio. El estado de las apps móviles
+(`apps/ios`, `apps/android`) está en "Apps móviles — cobertura por historia".
+
+_Última actualización: 14 oct 2026._
+
 ## Estado actual
 
-**Fase**: implementación en curso. El 19 ago se hizo el retrofit **multi-empresa**
-(`empresas/{codigo}` por encima de todo, rol `superadmin` sobre el `administrador` ahora
-acotado a una empresa, login de camarero/cocinero por código+usuario — ver DOMAIN.md /
-DATA_MODEL.md / USER_STORIES.md `SA-*`). Código y reglas escritos y compilando; **falta**:
-desplegar `firestore:rules,firestore:indexes`, ejecutar el script de migración que
-elimina los datos de prueba viejos (single-tenant) y convierte la cuenta de Julio a
-superadmin, y confirmar el flujo completo en el navegador contra Firestore real (no
-Admin SDK — ver la lección del bug de collectionGroup más abajo). Antes de este cambio,
-todas las historias de P0/P1/P2 ya estaban construidas (varias con confirmación
-pendiente del usuario en el navegador, como se detalla fila por fila más abajo).
+**Web** — todas las historias de P0/P1/P2 y CAM-08 construidas, incluido el retrofit
+**multi-empresa** del 19 ago (`empresas/{codigo}` por encima de todo, rol `superadmin`
+sobre el `administrador` ahora acotado a una empresa, login de camarero/cocinero por
+código+usuario — ver DOMAIN.md / DATA_MODEL.md / USER_STORIES.md `SA-*`). Después de eso:
+la topbar muestra la empresa del usuario (21 ago), el guion `scripts/demo` (20 ago)
+ejercita el flujo P0 camarero+cocinero contra las reglas reales con el SDK cliente, y se
+corrigieron las reglas de acceso del CMS a `usuarios` (23 sep). Sigue pendiente la
+confirmación del usuario en el navegador de varias historias (fila por fila más abajo) y
+el script de migración de la cuenta de Julio a superadmin (ver Datos del proyecto).
+
+**iOS** — (25 ago → 11 sep) roles camarero y cocinero completos para P0/P1 y casi todo
+P2; administrador/superadmin solo tienen un placeholder (el CMS es solo web por diseño).
+Los últimos commits alinearon la lógica con la web: abrir/cerrar mesa, límites de
+capacidad de la plancha al crear pedidos y al colocar en plancha, y la carga de la config
+de la plancha.
+
+**Android** — (sep → 9 oct) en paridad funcional con iOS en camarero y cocinero, con la
+misma estructura `auth/ cook/ waiter/ shared/`. Lo último fue pulido de UI: componentes
+compartidos (`EmptyState`, `SectionHeader`, `StatusBar`, `SmallTonalButton`), la cuenta
+en el resumen de la mesa y el estado de la mesa. Huecos frente a iOS/web en la tabla de
+abajo (sobre todo CAM-06 sin pedidos).
 
 ## En curso ahora mismo
 
-_(vacío — nada a medias todavía)_
+- **Android**: revisar si los fixes de lógica que se hicieron en iOS después de escribirla
+  (`ca73ec0` capacidad de la plancha, `6e36a1c` abrir/cerrar mesa, `c59a6ad` config de la
+  plancha) aplican también a Android.
+
+## Apps móviles — cobertura por historia
+
+Las apps móviles solo cubren los roles operativos (camarero y cocinero); el CMS
+(ADM-*, SA-*) es solo web. `✓` = construida, `~` = parcial, `—` = no construida.
+Ninguna tiene todavía confirmación formal del usuario en dispositivo.
+
+| Historia | Web | iOS | Android | Notas móvil |
+|---|---|---|---|---|
+| GEN-01 Iniciar sesión | ✓ | ✓ | ✓ | Solo el login de empresa (código+usuario); con restauración de sesión. Admin/superadmin entran a un placeholder. |
+| CAM-01 Abrir mesa | ✓ | ✓ | ✓ | |
+| CAM-02 Mesas en tiempo real | ✓ | ✓ | ✓ | Android: estado y cuenta visibles en el resumen de cada mesa. |
+| CAM-03 Crear pedido | ✓ | ✓ | ✓ | Con límite de capacidad de la plancha (iOS `ca73ec0`; Android por verificar). |
+| CAM-04 Estado del pedido | ✓ | ✓ | ✓ | |
+| CAM-05 Alerta de stock bajo/agotado | ✓ | ~ | ~ | Solo al añadir línea: muestra stock disponible y oculta agotados. Sin alerta en el tablero ni en el detalle. |
+| CAM-06 Generar cuenta | ✓ | ✓ | ~ | Android no tiene la rama "sin pedidos → cerrar mesa" (iOS sí, en `generateBill`); hoy generaría una cuenta vacía. |
+| CAM-07 Confirmar entrega | ✓ | ✓ | ✓ | Por línea y por pedido completo. |
+| CAM-08 Pedidos completados | ✓ | — | — | |
+| COC-01 Pedidos pendientes | ✓ | ~ | ~ | "En curso" + "Pendientes"; sin pantalla de completados ni borrado de pedidos facturados. |
+| COC-02 Sugerencia activa | ✓ | ✓ | ✓ | |
+| COC-03 Tomar pedido | ✓ | ✓ | ✓ | |
+| COC-04 Colocar en plancha | ✓ | ✓ | ✓ | Respeta la capacidad (iOS `ca73ec0`; Android por verificar). |
+| COC-05 Plancha en tiempo real | ✓ | ✓ | ✓ | Capacidad + temporizadores. |
+| COC-06 Retirar de la plancha | ✓ | ✓ | ✓ | |
+| COC-07 Toggle de overflow | ✓ | ✓ | ✓ | |
+| COC-08 Alerta de pedido forzado | ✓ | ✓ | ✓ | |
+| GEN-02 Ver como otro rol | — | — | — | |
+
+Pendientes transversales de móvil:
+- Acercar la arquitectura de Android a la de iOS donde todavía difiera.
+- Pasar a inglés los comentarios en español (Android hecho el 14 oct; falta iOS).
 
 ## Datos del proyecto Firebase (referencia rápida)
 
@@ -99,8 +149,8 @@ depender de scripts manuales cada vez.
 
 - [x] Proyecto Firebase creado (plan Spark) — `mi-plancha`
 - [x] Firestore creado (región `eur3`)
-- [ ] Reglas e índices del modelo multi-empresa desplegados (reescritos en esta sesión —
-      `firebase deploy --only firestore:rules,firestore:indexes`, pendiente de ejecutar)
+- [x] Reglas e índices del modelo multi-empresa desplegados (`scripts/demo` y las tres
+      apps funcionan contra las reglas reales; repetir el deploy tras cada cambio de reglas)
 - [x] Authentication activado (email/contraseña; camarero/cocinero usan un email sintético
       por debajo, ver DATA_MODEL.md — sigue siendo email/contraseña de cara a Firebase Auth)
 - [x] Apps Web/iOS/Android registradas y configs descargadas a `apps/*`
@@ -109,6 +159,6 @@ depender de scripts manuales cada vez.
       real (el `seed.js` viejo ya no aplica, ver `firebase/README.md`; se hace desde el
       propio CMS de cada administrador, no por seed)
 - [x] `apps/web` inicializado (Angular CLI 22.1.4 — standalone, zone.js, Vitest, SCSS, sin SSR, prefijo `mp`)
-- [ ] `apps/ios` inicializado (proyecto Xcode)
-- [ ] `apps/android` inicializado (proyecto Gradle)
+- [x] `apps/ios` inicializado (proyecto Xcode, SwiftUI + Firebase SDK)
+- [x] `apps/android` inicializado (proyecto Gradle, Jetpack Compose + Firebase SDK)
 - [x] Firebase conectado en `apps/web` (SDK modular `firebase`, no `@angular/fire` — sin soporte aún para Angular 22; Firestore/Auth expuestos como `InjectionToken`s en `src/app/core/firebase.providers.ts`)

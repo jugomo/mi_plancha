@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +37,7 @@ import kotlinx.coroutines.delay
 fun TableCard(
     table: Table,
     orderSummary: TableOrderSummary?,
+    lowStock: Boolean = false,
     clientName: String?,
     onCLick: () -> Unit,
     onLongCLick: () -> Unit
@@ -106,6 +109,23 @@ fun TableCard(
             if(orderSummary?.lastUpdate != null) {
                 TiempoTranscurrido(orderSummary.lastUpdate)
 //                Text(orderSummary.lastUpdate.timeLapsed(Timestamp.now().seconds * 1000))
+            }
+            if (lowStock) {
+                Row(
+                    verticalAlignment =  Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Outlined.Warning,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "Stock bajo",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

@@ -31,14 +31,12 @@ de la plancha.
 **Android** — (sep → 9 oct) en paridad funcional con iOS en camarero y cocinero, con la
 misma estructura `auth/ cook/ waiter/ shared/`. Lo último fue pulido de UI: componentes
 compartidos (`EmptyState`, `SectionHeader`, `StatusBar`, `SmallTonalButton`), la cuenta
-en el resumen de la mesa y el estado de la mesa. Huecos frente a iOS/web en la tabla de
-abajo (sobre todo CAM-06 sin pedidos).
+en el resumen de la mesa y el estado de la mesa. Huecos frente a la web en la tabla de
+abajo.
 
 ## En curso ahora mismo
 
-- **Android**: revisar si los fixes de lógica que se hicieron en iOS después de escribirla
-  (`ca73ec0` capacidad de la plancha, `6e36a1c` abrir/cerrar mesa, `c59a6ad` config de la
-  plancha) aplican también a Android.
+_(vacío — los fixes de iOS `ca73ec0`, `6e36a1c` y `c59a6ad` ya están en Android)_
 
 ## Apps móviles — cobertura por historia
 
@@ -51,16 +49,16 @@ Ninguna tiene todavía confirmación formal del usuario en dispositivo.
 | GEN-01 Iniciar sesión | ✓ | ✓ | ✓ | Solo el login de empresa (código+usuario); con restauración de sesión. Admin/superadmin entran a un placeholder. |
 | CAM-01 Abrir mesa | ✓ | ✓ | ✓ | |
 | CAM-02 Mesas en tiempo real | ✓ | ✓ | ✓ | Android: estado y cuenta visibles en el resumen de cada mesa. |
-| CAM-03 Crear pedido | ✓ | ✓ | ✓ | Con límite de capacidad de la plancha (iOS `ca73ec0`; Android por verificar). |
+| CAM-03 Crear pedido | ✓ | ✓ | ✓ | Con límite de capacidad de la plancha (en la UI; iOS además lo valida en `addOrder`). |
 | CAM-04 Estado del pedido | ✓ | ✓ | ✓ | |
-| CAM-05 Alerta de stock bajo/agotado | ✓ | ~ | ~ | Solo al añadir línea: muestra stock disponible y oculta agotados. Sin alerta en el tablero ni en el detalle. |
-| CAM-06 Generar cuenta | ✓ | ✓ | ~ | Android no tiene la rama "sin pedidos → cerrar mesa" (iOS sí, en `generateBill`); hoy generaría una cuenta vacía. |
+| CAM-05 Alerta de stock bajo/agotado | ✓ | ~ | ✓ | Android: productos en tiempo real (`startListeningProducts`), aviso en la tarjeta de mesa y por línea en el detalle (umbral `LOW_STOCK_THRESHOLD = 5`, solo líneas no entregadas). iOS: solo al añadir línea (muestra stock y oculta agotados). |
+| CAM-06 Generar cuenta | ✓ | ✓ | ✓ | Sin pedidos, cierra la mesa sin crear documento en `cuentas/`. |
 | CAM-07 Confirmar entrega | ✓ | ✓ | ✓ | Por línea y por pedido completo. |
 | CAM-08 Pedidos completados | ✓ | — | — | |
 | COC-01 Pedidos pendientes | ✓ | ~ | ~ | "En curso" + "Pendientes"; sin pantalla de completados ni borrado de pedidos facturados. |
 | COC-02 Sugerencia activa | ✓ | ✓ | ✓ | |
 | COC-03 Tomar pedido | ✓ | ✓ | ✓ | |
-| COC-04 Colocar en plancha | ✓ | ✓ | ✓ | Respeta la capacidad (iOS `ca73ec0`; Android por verificar). |
+| COC-04 Colocar en plancha | ✓ | ✓ | ✓ | Respeta la capacidad, contando lo que hay en plancha de toda la empresa. |
 | COC-05 Plancha en tiempo real | ✓ | ✓ | ✓ | Capacidad + temporizadores. |
 | COC-06 Retirar de la plancha | ✓ | ✓ | ✓ | |
 | COC-07 Toggle de overflow | ✓ | ✓ | ✓ | |

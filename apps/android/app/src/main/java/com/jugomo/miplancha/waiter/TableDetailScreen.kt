@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.DoorFront
 import androidx.compose.material.icons.outlined.Payments
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -43,11 +45,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.shared.EmptyState
+import com.jugomo.miplancha.shared.LOW_STOCK_THRESHOLD
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.SectionHeader
 import com.jugomo.miplancha.shared.SmallTonalButton
 import com.jugomo.miplancha.shared.StatusBar
 import com.jugomo.miplancha.shared.fetchProducts
+import com.jugomo.miplancha.shared.startListeningProducts
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -94,8 +98,13 @@ fun TableDetailScreen(
     }
 
     LaunchedEffect(Unit) {
-        products = fetchProducts(companyId)
         grillCapacity = linesService.getTotalCapacity(companyId)
+    }
+
+    LaunchedEffect(Unit) {
+        startListeningProducts(companyId).collect { prod ->
+            products = prod
+        }
     }
 
     LaunchedEffect(table?.clienteId) {
@@ -324,6 +333,10 @@ fun TableDetailScreen(
                                                 )
                                             }
 
+
+                                            val lowStock = line.status != LineStatus.LISTO &&
+                                                    (products[line.productId]?.stock ?: Int.MAX_VALUE) <= LOW_STOCK_THRESHOLD
+
                                             Row(
                                                 modifier = Modifier.height(IntrinsicSize.Min),
                                                 verticalAlignment = Alignment.CenterVertically
@@ -338,6 +351,21 @@ fun TableDetailScreen(
                                                 Text(
                                                     products[line.productId]?.name ?: line.productId
                                                 )
+                                                if(lowStock) {
+                                                    Spacer(Modifier.width(8.dp))
+                                                    Icon(
+                                                        Icons.Outlined.Warning,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(14.dp),
+                                                        tint = MaterialTheme.colorScheme.error
+                                                    )
+                                                    Spacer(Modifier.width(4.dp))
+                                                    Text(
+                                                        "Stock bajo",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.error
+                                                    )
+                                                }
                                                 Spacer(Modifier.weight(1f))
                                                 Text(
                                                     line.status.label,

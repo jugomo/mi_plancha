@@ -27,8 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.shared.LOW_STOCK_THRESHOLD
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.fetchProducts
+import com.jugomo.miplancha.shared.startListeningProducts
 import kotlinx.coroutines.launch
 
 @Composable
@@ -43,6 +45,7 @@ fun WaiterScreen(
     val tablesService = remember { TablesService() }
     var tables by remember { mutableStateOf<List<Table>?>(null) }
     var ordersByTable by remember { mutableStateOf<Map<Int, List<LineStatus>>?>(null) }
+    var liveProducts by remember { mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
 
     // corroutine for listen tables
     LaunchedEffect(Unit) {
@@ -83,12 +86,27 @@ fun WaiterScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        startListeningProducts(companyId).collect { products ->
+            liveProducts = products
+        }
+    }
+
+    val tablesWithLowStock:  Set <Int> = tablesService.tableProductIds
+        .filterValues { ids ->
+            ids.any { id ->
+                val stock = liveProducts[id]?.stock
+                stock != null && stock <= LOW_STOCK_THRESHOLD
+            }
+        }.keys
+
     if (tables != null) {
         Content(tables!!,
                 tablesService,
                 waiterId,
                 companyId,
                 onTableCLick,
+                tablesWithLowStock,
                 modifier
         )
     }
@@ -101,6 +119,7 @@ fun Content(tables : List<Table>,
             waiterId: String,
             companyId: String,
             onTableCLick: (Table) -> Unit,
+            tablesWithLowStock: Set<Int>,
             modifier: Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -167,6 +186,7 @@ fun Content(tables : List<Table>,
                         tablesAllDelivered = tablesService.tablesAllDelivered,
                         clientSatAt = tablesService.clientsCache[mesa.clienteId]?.abiertoEn,
                     ),
+                    lowStock = mesa.numero in tablesWithLowStock,
                     clientName = clName?.value?.nombre,
                     onCLick = {
                         onTableCLick(mesa)

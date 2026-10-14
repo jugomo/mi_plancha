@@ -15,6 +15,7 @@ class TablesService {
     private var companyId: String = ""
     var clientsCache = mutableStateMapOf<String, Client>()
     var tableOrderInfo = mutableStateMapOf<Int, TableOrderSummary>()
+    var tableProductIds = mutableStateMapOf<Int, Set<String>>()
     var tablesAllDelivered = mutableStateMapOf<Int, Timestamp>()
 
     fun startListeningTables(companyId: String): Flow<List<Table>?> {
@@ -69,6 +70,18 @@ class TablesService {
                                 mesa to LineStatus.valueOf(estado.uppercase())
                             }
                             .groupBy({ it.first }, { it.second })
+
+                    val productIdsByTable : Map<Int, Set<String>> =
+                        snapshot.documents
+                            .mapNotNull { doc ->
+                                val mesa = doc.getLong("mesaNumero")?.toInt() ?: return@mapNotNull null
+                                val producto = doc.getString("productoId") ?: return@mapNotNull null
+                                mesa to producto
+                            }
+                            .groupBy ( {it.first}, {it.second}  )
+                            .mapValues { it.value.toSet() }
+                    tableProductIds.clear()
+                    tableProductIds.putAll(productIdsByTable)
 
                     val previas = tableOrderInfo.keys.toSet()
 

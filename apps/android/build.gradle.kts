@@ -1,6 +1,6 @@
-// Declara los plugins una vez aquí (versión centralizada) y se aplican sin
-// versión en app/build.gradle.kts — mismo criterio que el resto del repo de
-// mantener una única fuente de verdad (ver ../../ARCHITECTURE.md).
+// Plugins are declared once here (centralized versions) and applied without
+// a version in app/build.gradle.kts — same approach as the rest of the repo
+// to keep a single source of truth (see ../../ARCHITECTURE.md).
 plugins {
     id("com.android.application") version "9.3.3" apply false
     id("org.jetbrains.kotlin.android") version "2.4.0" apply false

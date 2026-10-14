@@ -30,8 +30,8 @@ import com.jugomo.miplancha.waiter.TableDetailScreen
 import com.jugomo.miplancha.waiter.WaiterScreen
 
 /**
- * Placeholder de arranque. Sin lógica de negocio todavía: solo confirma que
- * el proyecto nativo está inicializado y compila.
+ * App entry point. Restores the session if there is an active user, shows
+ * the login otherwise, and routes to the cook or waiter screens by role.
  */
 class MainActivity : ComponentActivity() {
 

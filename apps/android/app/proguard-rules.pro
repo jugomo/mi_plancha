@@ -1,2 +1,3 @@
-# Reglas ProGuard/R8 del módulo app.
-# Vacío por ahora: la app aún no tiene lógica que requiera reglas específicas.
+# ProGuard/R8 rules for the app module.
+# Empty for now: minification is disabled and Firestore documents are mapped
+# manually (no reflection), so no specific rules are needed yet.

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -47,14 +48,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Timestamp
-import com.jugomo.miplancha.shared.CookOrder
 import com.jugomo.miplancha.shared.EmptyState
 import com.jugomo.miplancha.shared.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.SectionHeader
 import com.jugomo.miplancha.shared.SmallTonalButton
 import com.jugomo.miplancha.shared.StatusBar
-import com.jugomo.miplancha.shared.completedOrders
 import com.jugomo.miplancha.shared.fetchProducts
 import com.jugomo.miplancha.shared.formatDuration
 import com.jugomo.miplancha.waiter.LineStatus
@@ -66,7 +65,8 @@ import kotlin.time.Duration.Companion.milliseconds
 fun CookScreen(
     companyId: String,
     userId: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCompletedClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -77,8 +77,6 @@ fun CookScreen(
     var config by remember { mutableStateOf<CookConfig?>(null) }
     var products by remember { mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
     var showFullGrill by remember { mutableStateOf(false) }
-    var cookOrders by remember { mutableStateOf<List<CookOrder>?>(null) }
-    var allLines by remember { mutableStateOf< List<OrderLine>?>(null) }
 
     val effectiveCapacity: Int? = config?.grillCapacity?.let { base ->
         val pct = config?.overflowPercent
@@ -115,12 +113,6 @@ fun CookScreen(
             now = now
         )
 
-    val completed = remember(cookOrders, allLines) {
-        val tmp = completedOrders(cookOrders ?: emptyList(), allLines ?: emptyList())
-        Log.e("---", "----- COMPLETED: $tmp")
-        tmp
-    }
-
     LaunchedEffect(Unit) {
         service.startListeningLines(companyId).collect {
             if(it != null) {
@@ -132,18 +124,6 @@ fun CookScreen(
     LaunchedEffect(Unit) {
         service.startListeningOverflow(companyId).collect {
             overflowManualActive = it
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        service.startListeningOrders(companyId, userId).collect {
-            cookOrders = it
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        service.startListeningAllLines( companyId).collect {
-            allLines = it
         }
     }
 
@@ -170,21 +150,32 @@ fun CookScreen(
             )
         }
 
-        PrimaryTabRow(
-            selectedTabIndex = selectedTab,
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Tab(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 }
+            PrimaryTabRow(
+                selectedTabIndex = selectedTab,
+                modifier = Modifier.weight(1f)
             ) {
-                Text("Pedidos")
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 }
+                ) {
+                    Text("Pedidos")
+                }
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 }
+                ) {
+                    Text("Plancha")
+                }
             }
-            Tab(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 }
-            ) {
-                Text("Plancha")
-            }
+            SmallTonalButton(
+                "Completados",
+                onClick = onCompletedClick,
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
         }
 
         when(selectedTab) {

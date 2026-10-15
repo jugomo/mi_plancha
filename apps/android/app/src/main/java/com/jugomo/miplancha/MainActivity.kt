@@ -23,6 +23,7 @@ import com.jugomo.miplancha.auth.AuthService
 import com.jugomo.miplancha.auth.LoginScreen
 import com.jugomo.miplancha.auth.Rol
 import com.jugomo.miplancha.auth.Usuario
+import com.jugomo.miplancha.cook.CookCompletedScreen
 import com.jugomo.miplancha.cook.CookScreen
 import com.jugomo.miplancha.shared.RoleContainer
 import com.jugomo.miplancha.shared.RoleScaffold
@@ -77,9 +78,17 @@ fun MiPlanchaPlaceholder() {
                                     CookScreen(
                                         companyId = usuario!!.empresaId!!,
                                         userId = usuario!!.uid,
-                                        modifier = Modifier.padding(padding)
+                                        modifier = Modifier.padding(padding),
+                                        onCompletedClick = { navController.navigate("completed") }
                                     )
                                 }
+                            }
+                            composable("completed") {
+                                CookCompletedScreen(
+                                    companyId = usuario!!.empresaId!!,
+                                    userId = usuario!!.uid,
+                                    onBack = { navController.popBackStack() }
+                                )
                             }
                         }
                     } else if(usuario!!.rol == Rol.CAMARERO) {

@@ -2,7 +2,11 @@ package com.jugomo.miplancha.shared
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.jugomo.miplancha.waiter.LineStatus
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 data class OrderLine(
     val id: String,
@@ -35,4 +39,28 @@ fun DocumentSnapshot.toOrderLine(): OrderLine? {
         createdAt = createdAt,
         cookedAt =  cookedAt
     )
+}
+
+fun startListeningAllLines(companyId: String): Flow<List<OrderLine>?> {
+    return callbackFlow {
+        val docRef = FirebaseFirestore.getInstance().collectionGroup("lineas")
+            .whereEqualTo("empresaId", companyId)
+
+        val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
+            if(error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            if(snapshot != null) {
+                trySend(snapshot.documents.mapNotNull { it.toOrderLine() })
+            } else {
+                trySend(null)
+            }
+        }
+
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
 }

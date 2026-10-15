@@ -1,13 +1,13 @@
 package com.jugomo.miplancha.cook
 
-import androidx.compose.ui.text.toLowerCase
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.jugomo.miplancha.auth.OrderLine
-import com.jugomo.miplancha.auth.toOrderLine
+import com.jugomo.miplancha.shared.CookOrder
+import com.jugomo.miplancha.shared.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
+import com.jugomo.miplancha.shared.toCookOrder
+import com.jugomo.miplancha.shared.toOrderLine
 import com.jugomo.miplancha.waiter.LineStatus
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +37,56 @@ class CookLinesService {
 
                 if(snapshot != null) {
                     trySend(snapshot.documents.mapNotNull { it.toOrderLine() })
+                } else {
+                    trySend(null)
+                }
+            }
+
+            awaitClose {
+                listenerRegistration.remove()
+            }
+        }
+    }
+
+    fun startListeningAllLines(companyId: String): Flow<List<OrderLine>?> {
+        return callbackFlow {
+            val docRef = db.collectionGroup("lineas")
+                .whereEqualTo("empresaId", companyId)
+
+            val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
+                if(error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if(snapshot != null) {
+                    trySend(snapshot.documents.mapNotNull { it.toOrderLine() })
+                } else {
+                    trySend(null)
+                }
+            }
+
+            awaitClose {
+                listenerRegistration.remove()
+            }
+        }
+    }
+
+    fun startListeningOrders(companyId: String, userId: String) : Flow<List<CookOrder>?> {
+        return callbackFlow {
+            val docRef = db.collection("empresas")
+                .document(companyId)
+                .collection("pedidos")
+                .whereEqualTo("cocineroId", userId)
+
+            val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
+                if(error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if(snapshot != null) {
+                    trySend(snapshot.documents.mapNotNull { it.toCookOrder() })
                 } else {
                     trySend(null)
                 }

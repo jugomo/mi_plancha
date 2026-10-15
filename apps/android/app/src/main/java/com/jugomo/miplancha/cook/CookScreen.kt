@@ -47,12 +47,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Timestamp
-import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.shared.CookOrder
 import com.jugomo.miplancha.shared.EmptyState
+import com.jugomo.miplancha.shared.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.SectionHeader
 import com.jugomo.miplancha.shared.SmallTonalButton
 import com.jugomo.miplancha.shared.StatusBar
+import com.jugomo.miplancha.shared.completedOrders
 import com.jugomo.miplancha.shared.fetchProducts
 import com.jugomo.miplancha.shared.formatDuration
 import com.jugomo.miplancha.waiter.LineStatus
@@ -75,6 +77,8 @@ fun CookScreen(
     var config by remember { mutableStateOf<CookConfig?>(null) }
     var products by remember { mutableStateOf<Map<String, ProductInfo>>(emptyMap()) }
     var showFullGrill by remember { mutableStateOf(false) }
+    var cookOrders by remember { mutableStateOf<List<CookOrder>?>(null) }
+    var allLines by remember { mutableStateOf< List<OrderLine>?>(null) }
 
     val effectiveCapacity: Int? = config?.grillCapacity?.let { base ->
         val pct = config?.overflowPercent
@@ -111,6 +115,12 @@ fun CookScreen(
             now = now
         )
 
+    val completed = remember(cookOrders, allLines) {
+        val tmp = completedOrders(cookOrders ?: emptyList(), allLines ?: emptyList())
+        Log.e("---", "----- COMPLETED: $tmp")
+        tmp
+    }
+
     LaunchedEffect(Unit) {
         service.startListeningLines(companyId).collect {
             if(it != null) {
@@ -122,6 +132,18 @@ fun CookScreen(
     LaunchedEffect(Unit) {
         service.startListeningOverflow(companyId).collect {
             overflowManualActive = it
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        service.startListeningOrders(companyId, userId).collect {
+            cookOrders = it
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        service.startListeningAllLines( companyId).collect {
+            allLines = it
         }
     }
 

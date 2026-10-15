@@ -1,7 +1,7 @@
 package com.jugomo.miplancha.cook
 
 import com.google.firebase.Timestamp
-import com.jugomo.miplancha.auth.OrderLine
+import com.jugomo.miplancha.shared.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
 import kotlin.collections.emptyList
 

@@ -43,14 +43,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.jugomo.miplancha.auth.OrderLine
 import com.jugomo.miplancha.shared.EmptyState
 import com.jugomo.miplancha.shared.LOW_STOCK_THRESHOLD
+import com.jugomo.miplancha.shared.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
 import com.jugomo.miplancha.shared.SectionHeader
 import com.jugomo.miplancha.shared.SmallTonalButton
 import com.jugomo.miplancha.shared.StatusBar
-import com.jugomo.miplancha.shared.fetchProducts
 import com.jugomo.miplancha.shared.startListeningProducts
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

@@ -28,6 +28,7 @@ import com.jugomo.miplancha.cook.CookScreen
 import com.jugomo.miplancha.shared.RoleContainer
 import com.jugomo.miplancha.shared.RoleScaffold
 import com.jugomo.miplancha.waiter.TableDetailScreen
+import com.jugomo.miplancha.waiter.WaiterCompletedScreen
 import com.jugomo.miplancha.waiter.WaiterScreen
 
 /**
@@ -104,7 +105,8 @@ fun MiPlanchaPlaceholder() {
                                         onTableCLick = { mesa ->
                                             navController.navigate("table/${mesa.id}")
                                         },
-                                        modifier = Modifier.padding(padding)
+                                        modifier = Modifier.padding(padding),
+                                        onCompletedClick = { navController.navigate("completed") }
                                     )
                                 }
                             }
@@ -115,6 +117,13 @@ fun MiPlanchaPlaceholder() {
                                     tableId = tableId,
                                     companyId = usuario!!.empresaId!!,
                                     waiterId = usuario!!.uid,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable("completed") {
+                                WaiterCompletedScreen(
+                                    companyId = usuario!!.empresaId!!,
+                                    userId = usuario!!.uid,
                                     onBack = { navController.popBackStack() }
                                 )
                             }

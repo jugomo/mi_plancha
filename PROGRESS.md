@@ -8,7 +8,7 @@ Las secciones P0–P3 de más abajo describen la implementación **web** (`apps/
 la de referencia para dominio y reglas de negocio. El estado de las apps móviles
 (`apps/ios`, `apps/android`) está en "Apps móviles — cobertura por historia".
 
-_Última actualización: 14 oct 2026._
+_Última actualización: 16 oct 2026._
 
 ## Estado actual
 
@@ -54,8 +54,8 @@ Ninguna tiene todavía confirmación formal del usuario en dispositivo.
 | CAM-05 Alerta de stock bajo/agotado | ✓ | ~ | ✓ | Android: productos en tiempo real (`startListeningProducts`), aviso en la tarjeta de mesa y por línea en el detalle (umbral `LOW_STOCK_THRESHOLD = 5`, solo líneas no entregadas). iOS: solo al añadir línea (muestra stock y oculta agotados). |
 | CAM-06 Generar cuenta | ✓ | ✓ | ✓ | Sin pedidos, cierra la mesa sin crear documento en `cuentas/`. |
 | CAM-07 Confirmar entrega | ✓ | ✓ | ✓ | Por línea y por pedido completo. |
-| CAM-08 Pedidos completados | ✓ | — | — | |
-| COC-01 Pedidos pendientes | ✓ | ~ | ~ | "En curso" + "Pendientes"; sin pantalla de completados ni borrado de pedidos facturados. |
+| CAM-08 Pedidos completados | ✓ | — | ✓ | Android: el camarero también puede borrar los ya facturados (TODO en web/iOS, ver abajo). |
+| COC-01 Pedidos pendientes | ✓ | ~ | ✓ | "En curso" + "Pendientes"; Android además con pantalla de completados y borrado de facturados (iOS sin ella). |
 | COC-02 Sugerencia activa | ✓ | ✓ | ✓ | |
 | COC-03 Tomar pedido | ✓ | ✓ | ✓ | |
 | COC-04 Colocar en plancha | ✓ | ✓ | ✓ | Respeta la capacidad, contando lo que hay en plancha de toda la empresa. |
@@ -68,6 +68,15 @@ Ninguna tiene todavía confirmación formal del usuario en dispositivo.
 Pendientes transversales de móvil:
 - Acercar la arquitectura de Android a la de iOS donde todavía difiera.
 - Pasar a inglés los comentarios en español (Android hecho el 14 oct; falta iOS).
+
+Próximos TODO:
+- **Web e iOS — el camarero puede borrar sus pedidos completados ya facturados** (16 oct).
+  Decidido al construir CAM-08 en Android: tiene más sentido que lo borre el camarero,
+  que es quien crea el pedido, aunque el cocinero conserva el permiso. Las reglas ya están
+  desplegadas (`allow delete` para el camarero con `camareroId == uid` y `cuentaId != null`,
+  en el pedido y en sus líneas) y Android ya lo hace. Falta añadir el botón "Borrar" en
+  `/camarero/completados` (web, hoy solo lectura) y en la pantalla de completados de iOS
+  (todavía sin construir), y actualizar CAM-08 en `USER_STORIES.md`.
 
 ## Datos del proyecto Firebase (referencia rápida)
 

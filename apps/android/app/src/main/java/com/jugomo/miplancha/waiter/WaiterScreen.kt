@@ -3,11 +3,14 @@ package com.jugomo.miplancha.waiter
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -27,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.jugomo.miplancha.shared.LOW_STOCK_THRESHOLD
 import com.jugomo.miplancha.shared.OrderLine
 import com.jugomo.miplancha.shared.ProductInfo
+import com.jugomo.miplancha.shared.SmallTonalButton
 import com.jugomo.miplancha.shared.fetchProducts
 import com.jugomo.miplancha.shared.startListeningProducts
 import kotlinx.coroutines.launch
@@ -36,7 +40,8 @@ fun WaiterScreen(
     companyId: String,
     waiterId: String,
     onTableCLick: (Table) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCompletedClick: () -> Unit
 ) {
 
     // reactive states
@@ -105,7 +110,8 @@ fun WaiterScreen(
                 companyId,
                 onTableCLick,
                 tablesWithLowStock,
-                modifier
+                modifier,
+                onCompletedClick
         )
     }
 }
@@ -118,7 +124,8 @@ fun Content(tables : List<Table>,
             companyId: String,
             onTableCLick: (Table) -> Unit,
             tablesWithLowStock: Set<Int>,
-            modifier: Modifier
+            modifier: Modifier,
+            onCompletedClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var tableParaAbrir by remember { mutableStateOf<Table?>(null) }
@@ -158,12 +165,23 @@ fun Content(tables : List<Table>,
     Column(
         modifier.padding(16.dp),
     ) {
-        Text(
-            "Mesas",
-            Modifier.padding(bottom = 16.dp),
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Row {
+            Text(
+                "Mesas",
+                Modifier.padding(bottom = 16.dp),
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer( Modifier.weight(1f))
+
+            SmallTonalButton(
+                "Completados",
+                onClick = onCompletedClick,
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),

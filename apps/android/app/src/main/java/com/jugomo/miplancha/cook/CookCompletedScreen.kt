@@ -3,6 +3,7 @@ package com.jugomo.miplancha.cook
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -116,13 +117,22 @@ fun CookCompletedScreen(
                 Box {
                     LazyColumn(
                         modifier = Modifier
-                            .padding(top = 24.dp, bottom = 16.dp)
+                            .padding(top = 24.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
                             .padding(innerPadding)
                             .clip(RoundedCornerShape(12.dp))
                     ) {
                         items(completed) { order ->
-                            Row {
-                                Text("Mesa ${order.tableNumber} · ${order.clientName}")
+                            Row(
+                                modifier = Modifier.padding(vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "Mesa ${order.tableNumber} · ",
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(order.clientName)
+
+                                Spacer(Modifier.weight(1f))
+
                                 if(order.billId != null) {
                                     SmallTonalButton(
                                         "Borrar",

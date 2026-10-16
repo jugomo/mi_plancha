@@ -177,6 +177,12 @@ service cloud.firestore {
         allow delete: if esRolEnEmpresa('cocinero', empresaId)
           && resource.data.cocineroId == request.auth.uid
           && resource.data.cuentaId != null;
+
+        // Same cleanup for the waiter who created the order (CAM-08), also
+        // only once it has been billed.
+        allow delete: if esRolEnEmpresa('camarero', empresaId)
+          && resource.data.camareroId == request.auth.uid
+          && resource.data.cuentaId != null;
       }
 
       match /pedidos/{pedidoId}/lineas/{lineaId} {
@@ -212,6 +218,11 @@ service cloud.firestore {
         // solo el cocinero que lo llevó.
         allow delete: if esRolEnEmpresa('cocinero', empresaId)
           && get(/databases/$(database)/documents/empresas/$(empresaId)/pedidos/$(pedidoId)).data.cocineroId == request.auth.uid
+          && get(/databases/$(database)/documents/empresas/$(empresaId)/pedidos/$(pedidoId)).data.cuentaId != null;
+
+        // Same for the waiter responsible for the parent order.
+        allow delete: if esRolEnEmpresa('camarero', empresaId)
+          && get(/databases/$(database)/documents/empresas/$(empresaId)/pedidos/$(pedidoId)).data.camareroId == request.auth.uid
           && get(/databases/$(database)/documents/empresas/$(empresaId)/pedidos/$(pedidoId)).data.cuentaId != null;
       }
 

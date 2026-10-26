@@ -9,6 +9,7 @@ import SwiftUI
 
 struct WaiterView: View {
     let companyId: String
+    let userId: String
     let columns = [GridItem(.adaptive(minimum: 120))]
     @State private var service = TablesService()
     @State private var tableToOpen: Table? = nil
@@ -93,6 +94,17 @@ struct WaiterView: View {
                     linesService.stopListening()
                 }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(
+                    destination: CompletedOrdersView(
+                        companyId: companyId, userId: userId, field: "camareroId"
+                    )
+                ) {
+                    Label("Completados", systemImage: "checklist")
+                }
+            }
+        }
     }
     
     private func summary(for table: Table) -> TableOrderSummary? {
@@ -108,5 +120,5 @@ struct WaiterView: View {
 }
 
 #Preview {
-    WaiterView(companyId: "V628" )
+    WaiterView(companyId: "V628" , userId: "dummy")
 }

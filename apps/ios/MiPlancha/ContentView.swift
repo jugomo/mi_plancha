@@ -26,9 +26,12 @@ struct ContentView: View {
                 }
             
             case .camarero:
-                if let companyId = usuario.companyId {
+                if let companyId = usuario.companyId, let userId = auth.user?.uid {
                     RoleContainerView(usuario: usuario, onLogout: logout) {
-                        WaiterView(companyId: companyId)
+                        WaiterView(
+                            companyId: companyId,
+                            userId: userId
+                        )
                     }
                 }
             }

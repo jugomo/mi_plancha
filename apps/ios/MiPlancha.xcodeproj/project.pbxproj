@@ -20,11 +20,14 @@
 		4327E66530500027000CBE03 /* CookSuggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327E66430500023000CBE03 /* CookSuggestion.swift */; };
 		4338DDCE303D9E31004F39EE /* RoleContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */; };
 		4338DDD0303DB445004F39EE /* TablesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4338DDCF303DB440004F39EE /* TablesService.swift */; };
+		4351A6F7308A76D600CE3165 /* OrderSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4351A6F6308A76CF00CE3165 /* OrderSummary.swift */; };
+		4351A6F9308A7D0500CE3165 /* CompletedOrdersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4351A6F8308A7CFB00CE3165 /* CompletedOrdersService.swift */; };
 		43A3D2D7303C51C50021724D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A3D2D6303C51C00021724D /* User.swift */; };
 		43A843643045725100FC8836 /* CuentaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A843633045724C00FC8836 /* CuentaView.swift */; };
 		43AEB8363041703400DEE2EB /* ProductUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AEB8353041703000DEE2EB /* ProductUtils.swift */; };
 		43AEB83830417E5800DEE2EB /* AddLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AEB83730417E5500DEE2EB /* AddLineView.swift */; };
 		43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */; };
+		43E33B2D308FC10100863D0C /* CompletedOrdersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E33B2C308FC0F400863D0C /* CompletedOrdersView.swift */; };
 		43EB207E30408FC500EB2FBE /* CookLinesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43EB207D30408FBF00EB2FBE /* CookLinesService.swift */; };
 		43EB2080304091D200EB2FBE /* CookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43EB207F304091CB00EB2FBE /* CookView.swift */; };
 		43FE1B4C303ED95D0090B216 /* TableCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FE1B4B303ED9520090B216 /* TableCardView.swift */; };
@@ -49,11 +52,14 @@
 		4327E66430500023000CBE03 /* CookSuggestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookSuggestion.swift; sourceTree = "<group>"; };
 		4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleContainerView.swift; sourceTree = "<group>"; };
 		4338DDCF303DB440004F39EE /* TablesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TablesService.swift; sourceTree = "<group>"; };
+		4351A6F6308A76CF00CE3165 /* OrderSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderSummary.swift; sourceTree = "<group>"; };
+		4351A6F8308A7CFB00CE3165 /* CompletedOrdersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedOrdersService.swift; sourceTree = "<group>"; };
 		43A3D2D6303C51C00021724D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		43A843633045724C00FC8836 /* CuentaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CuentaView.swift; sourceTree = "<group>"; };
 		43AEB8353041703000DEE2EB /* ProductUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductUtils.swift; sourceTree = "<group>"; };
 		43AEB83730417E5500DEE2EB /* AddLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLineView.swift; sourceTree = "<group>"; };
 		43D3F1B7303DEA4A0062ED70 /* WaiterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaiterView.swift; sourceTree = "<group>"; };
+		43E33B2C308FC0F400863D0C /* CompletedOrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedOrdersView.swift; sourceTree = "<group>"; };
 		43EB207D30408FBF00EB2FBE /* CookLinesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookLinesService.swift; sourceTree = "<group>"; };
 		43EB207F304091CB00EB2FBE /* CookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookView.swift; sourceTree = "<group>"; };
 		43FE1B4B303ED9520090B216 /* TableCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableCardView.swift; sourceTree = "<group>"; };
@@ -120,6 +126,9 @@
 		43A843683045980C00FC8836 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				43E33B2C308FC0F400863D0C /* CompletedOrdersView.swift */,
+				4351A6F8308A7CFB00CE3165 /* CompletedOrdersService.swift */,
+				4351A6F6308A76CF00CE3165 /* OrderSummary.swift */,
 				43AEB8353041703000DEE2EB /* ProductUtils.swift */,
 				4338DDCD303D9E2F004F39EE /* RoleContainerView.swift */,
 			);
@@ -242,12 +251,15 @@
 				43FE1B50303EF2D10090B216 /* TableDetailView.swift in Sources */,
 				43A843643045725100FC8836 /* CuentaView.swift in Sources */,
 				4338DDD0303DB445004F39EE /* TablesService.swift in Sources */,
+				43E33B2D308FC10100863D0C /* CompletedOrdersView.swift in Sources */,
 				43FE1B4E303EEB180090B216 /* LinesService.swift in Sources */,
 				43D3F1B8303DEA4B0062ED70 /* WaiterView.swift in Sources */,
 				DA5F7B63A8985DB9234C0B6C /* MiPlanchaApp.swift in Sources */,
 				43A3D2D7303C51C50021724D /* User.swift in Sources */,
+				4351A6F7308A76D600CE3165 /* OrderSummary.swift in Sources */,
 				43AEB83830417E5800DEE2EB /* AddLineView.swift in Sources */,
 				43AEB8363041703400DEE2EB /* ProductUtils.swift in Sources */,
+				4351A6F9308A7D0500CE3165 /* CompletedOrdersService.swift in Sources */,
 				4327E66530500027000CBE03 /* CookSuggestion.swift in Sources */,
 				4326C9B830386E6C002469B6 /* UsernameEmail.swift in Sources */,
 				4326C9BC3038B121002469B6 /* LoginView.swift in Sources */,

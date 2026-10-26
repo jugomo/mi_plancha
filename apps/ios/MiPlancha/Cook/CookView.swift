@@ -24,7 +24,17 @@ struct CookView: View {
         .navigationTitle("")
         .onAppear {service.startListening(companyId: companyId)}
         .onDisappear {service.stopListening()}
-        
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(
+                    destination: CompletedOrdersView(
+                        companyId: companyId, userId: userId, field: "cocineroId"
+                    )
+                ) {
+                    Label("Completados", systemImage: "checklist")
+                }
+            }
+        }
     }
     
     @ViewBuilder func orders() -> some View {
@@ -60,41 +70,45 @@ struct CookView: View {
                 }
             }
             
-            Section("En curso") {
-                let grouped: [String : [OrderLine]] = Dictionary(grouping: cooking, by: \.orderId)
-                let cookingByOrder = grouped.sorted { a,b in
-                    let aDate = (a.value.map(\.createdAt).min() ?? .distantFuture)
-                    let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
-                    return aDate < bDate
-                }
-                ForEach(cookingByOrder, id: \.key) { group in
-                    let tableNumber: Int = group.value.first?.tableNumber ?? 0
-                    
-                    inCourseHeader(tableNumber: tableNumber, lines: group.value)
-
-                    ForEach(group.value) { line in
-                        lineRow(line)
-                    }
-                }
-            }
-            Section("Pendientes") {
-                let grouped: [String : [OrderLine]] = Dictionary(grouping: pending, by: \.orderId)
-                let pendingByOrder = grouped.sorted { a,b in
+            if !cooking.isEmpty {
+                Section("En curso") {
+                    let grouped: [String : [OrderLine]] = Dictionary(grouping: cooking, by: \.orderId)
+                    let cookingByOrder = grouped.sorted { a,b in
                         let aDate = (a.value.map(\.createdAt).min() ?? .distantFuture)
                         let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
                         return aDate < bDate
-                }
-                ForEach(pendingByOrder, id: \.key) { group in
-                    let tableNumber: Int = group.value.first?.tableNumber ?? 0
-                    
-                    pendingHeader(tableNumber: tableNumber, lines: group.value)
-                    
-                    ForEach(group.value) { line in
-                        lineRow(line)
+                    }
+                    ForEach(cookingByOrder, id: \.key) { group in
+                        let tableNumber: Int = group.value.first?.tableNumber ?? 0
+                        
+                        inCourseHeader(tableNumber: tableNumber, lines: group.value)
+                        
+                        ForEach(group.value) { line in
+                            lineRow(line)
+                        }
                     }
                 }
             }
             
+            if !pending.isEmpty {
+                Section("Pendientes") {
+                    let grouped: [String : [OrderLine]] = Dictionary(grouping: pending, by: \.orderId)
+                    let pendingByOrder = grouped.sorted { a,b in
+                        let aDate = (a.value.map(\.createdAt).min() ?? .distantFuture)
+                        let bDate = (b.value.map(\.createdAt).min() ?? .distantFuture)
+                        return aDate < bDate
+                    }
+                    ForEach(pendingByOrder, id: \.key) { group in
+                        let tableNumber: Int = group.value.first?.tableNumber ?? 0
+                        
+                        pendingHeader(tableNumber: tableNumber, lines: group.value)
+                        
+                        ForEach(group.value) { line in
+                            lineRow(line)
+                        }
+                    }
+                }
+            }
         }
         .overlay {
             if service.lines.isEmpty {

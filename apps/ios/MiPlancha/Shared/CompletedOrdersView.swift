@@ -45,6 +45,7 @@ struct CompletedOrdersView: View {
             }
         }
         .navigationTitle("Pedidos completados")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             service.startListening(
                 companyId: companyId,

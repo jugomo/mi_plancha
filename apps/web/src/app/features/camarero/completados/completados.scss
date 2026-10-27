@@ -18,6 +18,12 @@ h2 {
   font-size: 1.05rem;
 }
 
+.error {
+  margin: 0;
+  color: #c1443b;
+  font-size: 0.85rem;
+}
+
 .lista {
   display: flex;
   flex-direction: column;
@@ -34,15 +40,8 @@ h2 {
   padding: 12px 14px;
   background: #e1f3e9;
   border-color: #2f8a5b;
-  text-decoration: none;
   color: #1c2530;
   font-size: 0.88rem;
-
-  > div {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
 
   .id {
     font-weight: 600;
@@ -58,6 +57,40 @@ h2 {
     font-weight: 600;
     font-size: 0.8rem;
     white-space: nowrap;
+  }
+
+  button.borrar {
+    border: 1.5px solid #c1443b;
+    border-radius: 7px;
+    padding: 8px 14px;
+    background: #fff;
+    color: #c1443b;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .info {
+    flex: 1;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
   }
 }
 

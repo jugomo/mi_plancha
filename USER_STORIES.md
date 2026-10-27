@@ -117,7 +117,7 @@ Como camarero, quiero confirmar cuándo he entregado en la mesa un producto que 
 Como camarero, quiero consultar en una pantalla aparte los pedidos que ya he entregado del todo, para revisarlos sin que ocupen sitio en el panel de mesas en vivo.
 - Un botón "Completados", accesible desde el panel de mesas, lleva a esta pantalla.
 - Solo veo mis propios pedidos (de los que soy el camarero responsable) cuyas líneas están todas en "listo".
-- Es solo de consulta: el borrado del pedido operativo, una vez facturado, es cosa del cocinero (`COC-01`), no mía.
+- Puedo borrar un pedido completado una vez facturado (con `cuentaId` asignado), previa confirmación; los no facturados no se pueden borrar. El cocinero conserva también ese permiso (`COC-01`).
 
 ## Cocinero (`COC-`)
 

@@ -8,7 +8,7 @@ Las secciones P0–P3 de más abajo describen la implementación **web** (`apps/
 la de referencia para dominio y reglas de negocio. El estado de las apps móviles
 (`apps/ios`, `apps/android`) está en "Apps móviles — cobertura por historia".
 
-_Última actualización: 16 oct 2026._
+_Última actualización: 27 oct 2026._
 
 ## Estado actual
 
@@ -24,9 +24,10 @@ el script de migración de la cuenta de Julio a superadmin (ver Datos del proyec
 
 **iOS** — (25 ago → 11 sep) roles camarero y cocinero completos para P0/P1 y casi todo
 P2; administrador/superadmin solo tienen un placeholder (el CMS es solo web por diseño).
-Los últimos commits alinearon la lógica con la web: abrir/cerrar mesa, límites de
-capacidad de la plancha al crear pedidos y al colocar en plancha, y la carga de la config
-de la plancha.
+Después se alineó la lógica con la web (abrir/cerrar mesa, límites de capacidad de la
+plancha, carga de la config). El 26 oct se añadió la pantalla de pedidos completados
+(`Shared/CompletedOrdersView` + `CompletedOrdersService`), compartida por cocinero y
+camarero, con borrado de los ya facturados.
 
 **Android** — (sep → 9 oct) en paridad funcional con iOS en camarero y cocinero, con la
 misma estructura `auth/ cook/ waiter/ shared/`. Lo último fue pulido de UI: componentes
@@ -54,8 +55,8 @@ Ninguna tiene todavía confirmación formal del usuario en dispositivo.
 | CAM-05 Alerta de stock bajo/agotado | ✓ | ~ | ✓ | Android: productos en tiempo real (`startListeningProducts`), aviso en la tarjeta de mesa y por línea en el detalle (umbral `LOW_STOCK_THRESHOLD = 5`, solo líneas no entregadas). iOS: solo al añadir línea (muestra stock y oculta agotados). |
 | CAM-06 Generar cuenta | ✓ | ✓ | ✓ | Sin pedidos, cierra la mesa sin crear documento en `cuentas/`. |
 | CAM-07 Confirmar entrega | ✓ | ✓ | ✓ | Por línea y por pedido completo. |
-| CAM-08 Pedidos completados | ✓ | — | ✓ | Android: el camarero también puede borrar los ya facturados (TODO en web/iOS, ver abajo). |
-| COC-01 Pedidos pendientes | ✓ | ~ | ✓ | "En curso" + "Pendientes"; Android además con pantalla de completados y borrado de facturados (iOS sin ella). |
+| CAM-08 Pedidos completados | ✓ | ✓ | ✓ | El camarero puede borrar los ya facturados (igual que en web). |
+| COC-01 Pedidos pendientes | ✓ | ✓ | ✓ | "En curso" + "Pendientes", más pantalla de completados con borrado de facturados. |
 | COC-02 Sugerencia activa | ✓ | ✓ | ✓ | |
 | COC-03 Tomar pedido | ✓ | ✓ | ✓ | |
 | COC-04 Colocar en plancha | ✓ | ✓ | ✓ | Respeta la capacidad, contando lo que hay en plancha de toda la empresa. |
@@ -70,13 +71,8 @@ Pendientes transversales de móvil:
 - Pasar a inglés los comentarios en español (Android hecho el 14 oct; falta iOS).
 
 Próximos TODO:
-- **Web e iOS — el camarero puede borrar sus pedidos completados ya facturados** (16 oct).
-  Decidido al construir CAM-08 en Android: tiene más sentido que lo borre el camarero,
-  que es quien crea el pedido, aunque el cocinero conserva el permiso. Las reglas ya están
-  desplegadas (`allow delete` para el camarero con `camareroId == uid` y `cuentaId != null`,
-  en el pedido y en sus líneas) y Android ya lo hace. Falta añadir el botón "Borrar" en
-  `/camarero/completados` (web, hoy solo lectura) y en la pantalla de completados de iOS
-  (todavía sin construir), y actualizar CAM-08 en `USER_STORIES.md`.
+- _(vacío — el borrado de completados facturados por el camarero ya está en las tres
+  apps desde el 27 oct)_
 
 ## Datos del proyecto Firebase (referencia rápida)
 
@@ -150,7 +146,7 @@ depender de scripts manuales cada vez.
 ## P3 — Conveniencia
 
 - [ ] GEN-02 — Ver la app como otro rol (solo lectura)
-- [x] CAM-08 — Ver mis pedidos completados (pantalla nueva `/camarero/completados`, con un botón dedicado en la cabecera del panel de mesas, junto a "+ Abrir mesa"; nuevo `PedidosService.pedidosDeCamarero()` + índice compuesto `camareroId + creadoEn` — desplegado y verificado con custom-token real que la query funciona sin error de índice; solo lectura, sin borrar — eso sigue siendo cosa del cocinero en COC-01; falta confirmación del usuario en el navegador)
+- [x] CAM-08 — Ver mis pedidos completados (pantalla nueva `/camarero/completados`, con un botón dedicado en la cabecera del panel de mesas, junto a "+ Abrir mesa"; nuevo `PedidosService.pedidosDeCamarero()` + índice compuesto `camareroId + creadoEn` — desplegado y verificado con custom-token real que la query funciona sin error de índice; con botón "Borrar" en los pedidos ya facturados (`cuentaId`), previa confirmación — decidido el 16 oct que el camarero, que crea el pedido, también pueda borrarlo; el cocinero conserva el permiso (COC-01); reglas: `allow delete` con `camareroId == uid` y `cuentaId != null` en el pedido y sus líneas. Borrado confirmado por el usuario en el navegador el 27 oct)
 
 ## Infraestructura (no son historias de usuario, pero bloquean las de arriba)
 
